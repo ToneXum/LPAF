@@ -50,6 +50,12 @@ typedef unsigned int GRESULT;
 
 namespace tsd // tonexum software division
 {
+    // Start the entirety of this framework up so it can be used.
+    GRESULT Initialise(void);
+
+    // commit self delete :)
+    GRESULT Uninitialise(void);
+
     // window procedure
     LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
@@ -65,28 +71,16 @@ namespace tsd // tonexum software division
         wchar_t name;
     };
 
-    class WindowClass
+    struct
     {
     public:
-        static WindowClass& Get();
         unsigned int GetWindowCount();
         char* GetRegisteredClassName();
 
-        // bruh
-        ~WindowClass();
-
     private:
-        WindowClass();        
-
         std::vector<Window> windows{};
         unsigned int windowCount;
         const char* className;
         HINSTANCE hInstance{};
-    };
-
-    // Start the entirety of this framework up so it can be used.
-    GRESULT Initialise(void);
-
-    // commit self delete :)
-    GRESULT Uninitialise(void);
+    } WindowInfo;
 }
