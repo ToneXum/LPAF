@@ -147,14 +147,10 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="internals\Error.hpp" />
     <ClInclude Include="Framework.hpp" />
-    <ClInclude Include="internals\Modules.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Framework.cpp" />
-    <ClCompile Include="internals\Error.cpp" />
-    <ClCompile Include="internals\Modules.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

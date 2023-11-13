@@ -42,11 +42,51 @@
 #define STRICT
 
 #include <Windows.h>
-#include "internals/Modules.hpp"
 
-typedef unsigned int result;
+#include <vector>
+#include <iostream>
+
+typedef unsigned int GRESULT;
 
 namespace tsd // tonexum software division
 {
-    result Initialise(void);
+    // window procedure
+    LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+
+    // A window class to represent an open window
+    class Window
+    {
+    public:
+        Window();
+        ~Window();
+
+    private:
+        unsigned int id;
+        wchar_t name;
+    };
+
+    class WindowClass
+    {
+    public:
+        static WindowClass& Get();
+        unsigned int GetWindowCount();
+        char* GetRegisteredClassName();
+
+        // bruh
+        ~WindowClass();
+
+    private:
+        WindowClass();        
+
+        std::vector<Window> windows{};
+        unsigned int windowCount;
+        const char* className;
+        HINSTANCE hInstance{};
+    };
+
+    // Start the entirety of this framework up so it can be used.
+    GRESULT Initialise(void);
+
+    // commit self delete :)
+    GRESULT Uninitialise(void);
 }

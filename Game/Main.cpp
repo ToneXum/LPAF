@@ -6,6 +6,6 @@ int WINAPI wWinMain(
     PWSTR pCmdLine,
     int nCmdShow)
 {
-    tsd::Initialise();
+    tsd::WindowClass::Get();
     return 0;
 }
