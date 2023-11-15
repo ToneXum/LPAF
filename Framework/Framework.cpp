@@ -1,64 +1,10 @@
-
-// throw away a bunch of windows garbage
-#ifndef FULL_WINTARD
-#define WIN32_LEAN_AND_MEAN
-#define NOGDICAPMASKS
-#define NOSYSMETRICS
-#define NOMENUS
-#define NOICONS
-#define NOSYSCOMMANDS
-#define NORASTEROPS
-#define OEMRESOURCE
-#define NOATOM
-#define NOCLIPBOARD
-#define NOCOLOR
-#define NOCTLMGR
-#define NODRAWTEXT
-#define NOKERNEL
-#define NONLS
-#define NOMEMMGR
-#define NOMETAFILE
-#define NOOPENFILE
-#define NOSCROLL
-#define NOSERVICE
-#define NOSOUND
-#define NOTEXTMETRIC
-#define NOWH
-#define NOCOMM
-#define NOKANJI
-#define NOHELP
-#define NOPROFILER
-#define NODEFERWINDOWPOS
-#define NOMCX
-#define NORPC
-#define NOPROXYSTUB
-#define NOIMAGE
-#define NOTAPE
-#endif
-
-#define NOMINMAX
-
-#define STRICT
-
-#include <Windows.h>
-
-#include <vector>
-#include <iostream>
-#include <thread>
-#include <sstream>
-
 #include "Framework.hpp"
+#include "Internals.hpp"
 
 void CreateWin32Error(int line)
 {
     MessageBox(nullptr, "An error occoured, the application must quit now", "Error!", MB_ICONERROR | MB_TASKMODAL | MB_OK);
 }
-
-// Error check for Win32 API calls
-#define WIN32_EC(x) { if (!x) { CreateWin32Error(__LINE__); } }
-
-// Error check for Win32 API calls but the return value is saved
-#define WIN32_EC_RET(x, y) { x = y; if (!x) { CreateWin32Error(__LINE__); } } // 
 
 // Pumps the windows messages from the queue
 void MessageHandler(void)
@@ -71,23 +17,48 @@ void MessageHandler(void)
     }
 }
 
-struct
-{
-    std::vector<tsd::Window> windows{};
-    const char* windowClassName{"GGFW Window Class"};
-    HINSTANCE hInstance{0};
-    ATOM classAtom{0};
-    int windowCount{0};
-    std::thread* msgThread;
-} WindowInfo;
+// Get window by window handle
 
-LRESULT WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+LRESULT WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
-    return DefWindowProc(hwnd, uMsg, wParam, lParam);
+    switch (uMsg)
+    {
+    case WM_CLOSE: // closing of a window has been requested
+    {
+        DestroyWindow(hWnd);
+        break;
+    }
+    case WM_DESTROY: // closing a window was ordered and confirmed
+    {
+        WindowData window = GetWindow(hWnd);
+        if (window.wnd->GetId() == 1) // quit program if origin window is closed
+        {
+            PostQuitMessage(0);
+            return 0;
+        }
+        break;
+    }
+    }
+    return DefWindowProc(hWnd, uMsg, wParam, lParam);
+}
+
+WindowData GetWindow(HWND handle)
+{
+    for (WindowData i : WindowInfo.windows)
+    {
+        if (i.hWnd == handle)
+        {
+            return i;
+        }
+    }
+    return (WindowData)0;
 }
 
 void tsd::Initialise(void)
 {
+    // Get hInstance since the program does not use the winMain entry point
+    WindowInfo.hInstance = GetModuleHandle(0);
+
     WNDCLASSEX wc = {};
 
     wc.cbClsExtra       = 0;
@@ -117,16 +88,18 @@ void tsd::Uninitialise(void)
 }
 
 tsd::Window::Window(const char* name, int width, int height)
-    : id(WindowInfo.windowCount + 1),
+    : id(WindowInfo.windowsOpened + 1),
       isVisible(true),
       name(const_cast<char*>(name))
 {
-    WIN32_EC_RET(HWND(hWnd), CreateWindowEx(
+    HWND hWnd;
+    
+    WIN32_EC_RET(hWnd, CreateWindowEx(
         0,
         WindowInfo.windowClassName,
         name,
         WS_MINIMIZEBOX | WS_CAPTION | WS_SYSMENU,
-        CW_DEFAULT, CW_DEFAULT,
+        100, 100, // to do: place in the middle of screen by getting resolution
         width, height,
         nullptr,
         nullptr,
@@ -134,11 +107,29 @@ tsd::Window::Window(const char* name, int width, int height)
         nullptr
     ));
     WindowInfo.windowCount += 1;
+    WindowInfo.windowsOpened += 1;
 
-    ShowWindow(HWND(hWnd), 1);
+    WindowData wndData{ this, hWnd };
+    WindowInfo.windows.push_back(wndData);
+    ShowWindow(hWnd, 1);
 }
 
 tsd::Window::~Window()
 {
+    WindowInfo.windowCount -= 1;
+}
 
+unsigned int tsd::Window::GetId(void)
+{
+    return id;
+}
+
+char* tsd::Window::GetName(void)
+{
+    return name;
+}
+
+bool tsd::Window::GetVisibility(void)
+{
+    return isVisible;
 }

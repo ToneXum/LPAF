@@ -26,7 +26,7 @@ namespace tsd // tonexum software division
         unsigned int id;
         char* name;
         bool isVisible;
-        long long hWnd; // haha, nice hack ;)
+        //long long hWnd; in memory of a not so nice hack
     };
     
     // Returns the number of open windows
