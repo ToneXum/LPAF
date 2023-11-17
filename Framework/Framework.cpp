@@ -1,13 +1,13 @@
 #include "Framework.hpp"
 #include "Internals.hpp"
 
-void CreateWin32Error(int line)
+void in::CreateWin32Error(int line)
 {
     MessageBox(nullptr, "An error occoured, the application must quit now", "Error!", MB_ICONERROR | MB_TASKMODAL | MB_OK);
 }
 
 // Pumps the windows messages from the queue
-void MessageHandler(void)
+void in::MessageHandler(void)
 {
     MSG msg = { };
     while (GetMessage(&msg, NULL, 0, 0) > 0)
@@ -19,7 +19,7 @@ void MessageHandler(void)
 
 // Get window by window handle
 
-LRESULT WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+LRESULT in::WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
     switch (uMsg)
     {
@@ -42,7 +42,7 @@ LRESULT WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
     return DefWindowProc(hWnd, uMsg, wParam, lParam);
 }
 
-WindowData GetWindow(HWND handle)
+in::WindowData in::GetWindow(HWND handle)
 {
     for (WindowData i : WindowInfo.windows)
     {
@@ -57,7 +57,7 @@ WindowData GetWindow(HWND handle)
 void tsd::Initialise(void)
 {
     // Get hInstance since the program does not use the winMain entry point
-    WindowInfo.hInstance = GetModuleHandle(0);
+    in::WindowInfo.hInstance = GetModuleHandle(0);
 
     WNDCLASSEX wc = {};
 
@@ -68,13 +68,13 @@ void tsd::Initialise(void)
     wc.hCursor          = nullptr;
     wc.hIcon            = nullptr;
     wc.hIconSm          = nullptr;
-    wc.hInstance        = WindowInfo.hInstance;
-    wc.lpfnWndProc      = WindowProc;
-    wc.lpszClassName    = WindowInfo.windowClassName;
+    wc.hInstance        = in::WindowInfo.hInstance;
+    wc.lpfnWndProc      = in::WindowProc;
+    wc.lpszClassName    = in::WindowInfo.windowClassName;
     wc.lpszMenuName     = nullptr;
     wc.style            = 0;
 
-    WIN32_EC_RET(WindowInfo.classAtom, RegisterClassEx(&wc));
+    WIN32_EC_RET(in::WindowInfo.classAtom, RegisterClassEx(&wc));
 
     //static std::thread MessageThread(MessageHandler);
     //WindowInfo.msgThread = &MessageThread;
@@ -84,39 +84,69 @@ void tsd::Uninitialise(void)
 {
     PostQuitMessage(0);
     //WindowInfo.msgThread->join();
-    UnregisterClass(WindowInfo.windowClassName, WindowInfo.hInstance);
+    UnregisterClass(in::WindowInfo.windowClassName, in::WindowInfo.hInstance);
+}
+
+int tsd::GetWindowCount(void)
+{
+    return in::WindowInfo.windowCount;
+}
+
+tsd::Window* tsd::GetWindow(int id)
+{
+    for (in::WindowData i : in::WindowInfo.windows)
+    {
+        if (i.wnd->GetId() == id)
+        {
+            return i.wnd;
+        }
+    }
+    return reinterpret_cast<Window*>(0); // bruh
+}
+
+tsd::Window* tsd::GetWindow(const char* name)
+{
+    for (in::WindowData i : in::WindowInfo.windows)
+    {
+        if (i.wnd->GetName() == name)
+        {
+            return i.wnd;
+        }
+    }
+    return reinterpret_cast<Window*>(0); // bruh
 }
 
 tsd::Window::Window(const char* name, int width, int height)
-    : id(WindowInfo.windowsOpened + 1),
+    : id(in::WindowInfo.windowsOpened + 1),
       isVisible(true),
-      name(const_cast<char*>(name))
+      name(const_cast<char*>(name)),
+      width(width), height(height), xPos(0), yPos(0)
 {
     HWND hWnd;
     
     WIN32_EC_RET(hWnd, CreateWindowEx(
         0,
-        WindowInfo.windowClassName,
+        in::WindowInfo.windowClassName,
         name,
         WS_MINIMIZEBOX | WS_CAPTION | WS_SYSMENU,
-        100, 100, // to do: place in the middle of screen by getting resolution
+        CW_USEDEFAULT, CW_USEDEFAULT, // to do: place in the middle of screen by getting resolution
         width, height,
         nullptr,
         nullptr,
-        WindowInfo.hInstance,
+        in::WindowInfo.hInstance,
         nullptr
     ));
-    WindowInfo.windowCount += 1;
-    WindowInfo.windowsOpened += 1;
+    in::WindowInfo.windowCount += 1;
+    in::WindowInfo.windowsOpened += 1;
 
-    WindowData wndData{ this, hWnd };
-    WindowInfo.windows.push_back(wndData);
+    in::WindowData wndData{ this, hWnd };
+    in::WindowInfo.windows.push_back(wndData);
     ShowWindow(hWnd, 1);
 }
 
 tsd::Window::~Window()
 {
-    WindowInfo.windowCount -= 1;
+    in::WindowInfo.windowCount -= 1;
 }
 
 unsigned int tsd::Window::GetId(void)

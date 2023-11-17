@@ -17,6 +17,9 @@ namespace tsd // tonexum software division
 
         void ChangeName(const char* newName);
         void ChangeVisibility(bool state);
+        void Minimize(bool state);
+        void Resize(int width, int height);
+        void Reposition(int xPos, int yPos);
 
         unsigned int GetId(void);
         char* GetName(void);
@@ -27,14 +30,15 @@ namespace tsd // tonexum software division
         char* name;
         bool isVisible;
         //long long hWnd; in memory of a not so nice hack
+        int xPos, yPos, width, height;
     };
     
     // Returns the number of open windows
     int GetWindowCount(void);
 
     // Returns an instance of a window. Identified by Id
-    Window GetWindow(int id);
+    Window* GetWindow(int id);
 
     // Returns an instance of a window. Identified by name
-    Window GetWindow(const char* name);
+    Window* GetWindow(const char* name);
 }

@@ -47,6 +47,7 @@
 #define STRICT
 
 #include <Windows.h>
+#include <WinUser.h>
 
 #include <vector>
 #include <iostream>
@@ -55,31 +56,37 @@
 #include <algorithm>
 
 // Error check for Win32 API calls
-#define WIN32_EC(x) { if (!x) { CreateWin32Error(__LINE__); } }
+#define WIN32_EC(x) { if (!x) { in::CreateWin32Error(__LINE__); } }
 
 // Error check for Win32 API calls but the return value is saved
-#define WIN32_EC_RET(x, y) { x = y; if (!x) { CreateWin32Error(__LINE__); } }
+#define WIN32_EC_RET(x, y) { x = y; if (!x) { in::CreateWin32Error(__LINE__); } }
 
-void CreateWin32Error(int line);
-
-struct WindowData // additional data that is not exposed to the end user
+namespace in
 {
-    tsd::Window* wnd;
-    HWND hWnd;
-};
+    void CreateWin32Error(int line);
 
-struct // general information about the state of the windows
-{
-    std::vector<WindowData> windows{};
-    const char* windowClassName{ "GGFW Window Class" };
-    HINSTANCE hInstance{ 0 };
-    ATOM classAtom{ 0 }; // idk what this is even supposed to do
-    int windowCount{ 0 };
-    int windowsOpened{}; // ammount of windows this program has opened in the past
-    std::thread* msgThread;
-} WindowInfo;
+    struct WindowData // additional data that is not exposed to the end user
+    {
+        tsd::Window* wnd;
+        HWND hWnd;
+    };
 
-LRESULT WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+    struct // general information about the state of the windows
+    {
+        std::vector<WindowData> windows{};
+        const char* windowClassName{ "GGFW Window Class" };
+        HINSTANCE hInstance{ 0 };
+        ATOM classAtom{ 0 }; // idk what this is even supposed to do
+        int windowCount{ 0 };
+        int windowsOpened{}; // ammount of windows this program has opened in the past
+        std::thread* msgThread{};
+    } WindowInfo;
 
-// Look through WindowInfo and return the instance matching the handle
-WindowData GetWindow(HWND handle);
+    LRESULT WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+
+    // Look through WindowInfo and return the instance matching the handle
+    WindowData GetWindow(HWND handle);
+
+    // message pump
+    void MessageHandler(void);
+}
