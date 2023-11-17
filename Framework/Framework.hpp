@@ -7,7 +7,17 @@ namespace tsd // tonexum software division
 
     // commit self delete :)
     void Uninitialise(void);
-    struct Something;
+
+    class Mouse
+    {
+        // todo
+    };
+
+    class Keyboard
+    {
+        // todo
+    };
+
     // A window class to represent an open window
     class Window
     {
@@ -24,6 +34,8 @@ namespace tsd // tonexum software division
         unsigned int GetId(void);
         char* GetName(void);
         bool GetVisibility(void);
+        int GetWidth(void);
+        int GetHeight(void);
 
     private:
         unsigned int id;
@@ -41,4 +53,10 @@ namespace tsd // tonexum software division
 
     // Returns an instance of a window. Identified by name
     Window* GetWindow(const char* name);
+
+    // Returns the progam running state, false means you should exit
+    bool Running();
+
+    // Sleep for specified ammout of ms
+    void Halt(int ms);
 }
