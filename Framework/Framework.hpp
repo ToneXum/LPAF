@@ -25,6 +25,8 @@ namespace tsd // tonexum software division
         Window(const char* name, int width, int height);
         ~Window();
 
+        Window(const Window&) = delete;
+
         void ChangeName(const char* newName);
         void ChangeVisibility(bool state);
         void Minimize(bool state);

@@ -52,32 +52,62 @@
 #include <iostream>
 #include <thread>
 #include <sstream>
-#include <algorithm>
 #include <mutex>
+#include <memory>
+#include <cstdlib>
+#include <exception>
+#include <fstream>
+
+#ifdef _DEBUG
 
 // Error check for Win32 API calls
-#define WIN32_EC(x) { if (!x) { in::CreateWin32Error(__LINE__); } }
+#define WIN32_EC(x) { if (!x) { in::CreateWin32DebugError(__LINE__); } }
 
 // Error check for Win32 API calls but the return value is saved
-#define WIN32_EC_RET(x, y) { x = y; if (!x) { in::CreateWin32Error(__LINE__); } }
+#define WIN32_EC_RET(x, y) { x = y; if (!x) { in::CreateWin32DebugError(__LINE__); } }
+
+// Create an error to notify the framework user that he fucked up
+#define USER_ERROR in::CreateUserDebugError(__LINE__);
+
+#endif // DEBUG
+#ifdef NDEBUG
+
+// Error check for Win32 API calls
+#define WIN32_EC(x) { if (!x) {in::CreateWin32ReleaseError(__LINE__); } }
+
+// Error check for Win32 API calls but the return value is saved
+#define WIN32_EC_RET(x, y) { x = y; if (!x) { in::CreateWin32ReleaseError(__LINE__); } }
+
+#endif // NDEBUG
+
 
 namespace in
 {
-    void CreateWin32Error(int line);
+    // Win32 Error creation
+    void CreateWin32DebugError(int line);
+    void CreateWin32ReleaseError(int line);
 
-    // Window creator and message pump
-    void MessageHandler(tsd::Window* wnd, HWND* hWnd);
+    // User error creation
+    void CreateUserDebugError(int line, const char* file, const char* function);
+    void CreateUserReleaseError(int line, const char* file, const char* function);
 
     struct WindowData // additional data that is not exposed to the end user
     {
+        WindowData() = default;
+        ~WindowData(void);
+
         tsd::Window* wnd;
         HWND hWnd;
-        std::thread& GetThread(tsd::Window* wnd, HWND* hWnd);
+        std::thread* msgThread;
+
+        // Window creator and message pump
+        void MessageHandler();
     };
 
     struct // general information about the state of the windows
     {
-        std::vector<WindowData> windows{};
+
+        std::vector<WindowData*> windows{};
         const char* windowClassName{ "GGFW Window Class" };
         HINSTANCE hInstance{ 0 };
         ATOM classAtom{ 0 }; // idk what this is even supposed to do

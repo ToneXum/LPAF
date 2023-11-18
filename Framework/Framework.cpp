@@ -1,16 +1,69 @@
 #include "Framework.hpp"
 #include "Internals.hpp"
 
-void in::CreateWin32Error(int line)
+void in::CreateWin32DebugError(int line)
 {
     int e = GetLastError();
-    MessageBox(nullptr, "An error occoured, the application must quit now", "Error!", MB_ICONERROR | MB_TASKMODAL | MB_OK);
+    std::ostringstream msg;
+    char* eMsg = nullptr;
+
+    FormatMessage(
+        FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
+        nullptr,
+        e,
+        MAKELANGID(LANG_ENGLISH, SUBLANG_ENGLISH_US),
+        reinterpret_cast<LPSTR>(&eMsg),
+        0,
+        nullptr
+    );
+
+    msg << "A Win32 API call resulted in error " << e << " at line " << line << ".\n\n" << eMsg;
+    msg << "\n" << "This is an internal error likely caused by the framework itself, the application must quit now.";
+
+    MessageBox(nullptr, msg.str().c_str(), "Internal Error!", MB_ICONERROR | MB_TASKMODAL | MB_OK);
+    LocalFree((LPSTR)eMsg);
+
+    std::exception exc;
+    throw exc;
 }
 
-// Pumps the windows messages from the queue
-void in::MessageHandler(tsd::Window* wnd, HWND* hWnd)
+void in::CreateWin32ReleaseError(int line)
 {
-    WIN32_EC_RET(*hWnd, CreateWindowEx(
+    std::ofstream file("Last_Error.txt");
+    
+    int e = GetLastError();
+    char* eMsg = nullptr;
+    FormatMessage(
+        FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
+        nullptr,
+        e,
+        MAKELANGID(LANG_ENGLISH, SUBLANG_ENGLISH_US),
+        reinterpret_cast<LPSTR>(&eMsg),
+        0,
+        nullptr
+    );
+
+    file << "[ " << __TIMESTAMP__ << " ]: " << "A Win32 API call resulted in error " << e << " at line " << line << "\n";
+    file << "[ " << __TIMESTAMP__ << " ]: " << eMsg << std::endl;
+
+    file.close();
+
+    std::exception exc;
+    throw exc;
+}
+
+in::WindowData::~WindowData()
+{
+    if (msgThread->joinable())
+    {
+        msgThread->join();
+    }
+    delete msgThread;
+}
+
+void in::WindowData::MessageHandler()
+{
+    WIN32_EC_RET(hWnd, CreateWindowEx(
         0,
         in::WindowInfo.windowClassName,
         wnd->GetName(),
@@ -25,7 +78,7 @@ void in::MessageHandler(tsd::Window* wnd, HWND* hWnd)
     in::WindowInfo.windowCount += 1;
     in::WindowInfo.windowsOpened += 1;
 
-    ShowWindow(*hWnd, 1);
+    ShowWindow(hWnd, 1);
     
     // work is done, let the main thread continue
     std::unique_lock<std::mutex> lock(in::WindowInfo.mtx);
@@ -35,17 +88,11 @@ void in::MessageHandler(tsd::Window* wnd, HWND* hWnd)
 
     // message pump for the window
     MSG msg = { };
-    while (GetMessage(&msg, *hWnd, 0, 0) > 0)
+    while (GetMessage(&msg, hWnd, 0, 0) > 0)
     {
         TranslateMessage(&msg);
         DispatchMessage(&msg);
     }
-}
-
-std::thread& in::WindowData::GetThread(tsd::Window* wnd, HWND* hWnd)
-{
-    static std::thread trd(MessageHandler, wnd, hWnd);
-    return trd;
 }
 
 LRESULT in::WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
@@ -59,8 +106,7 @@ LRESULT in::WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
     }
     case WM_DESTROY: // closing a window was ordered and confirmed
     {
-        WindowData window = *GetWindowData(hWnd);
-        if (window.wnd->GetId() == 1) // quit program if origin window is closed
+        if (in::GetWindowData(hWnd)->wnd->GetId() == 1) // quit program if origin window is closed
         {
             WindowInfo.isRunning = false;
             PostQuitMessage(0);
@@ -74,11 +120,11 @@ LRESULT in::WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 in::WindowData* in::GetWindowData(HWND handle)
 {
-    for (WindowData i : WindowInfo.windows)
+    for (WindowData* i : WindowInfo.windows)
     {
-        if (i.hWnd == handle)
+        if (i->hWnd == handle)
         {
-            return &i;
+            return i;
         }
     }
     return nullptr;
@@ -86,11 +132,11 @@ in::WindowData* in::GetWindowData(HWND handle)
 
 in::WindowData* in::GetWindowData(int id)
 {
-    for (WindowData i : WindowInfo.windows)
+    for (WindowData* i : WindowInfo.windows)
     {
-        if (i.wnd->GetId() == id)
+        if (i->wnd->GetId() == id)
         {
-            return &i;
+            return i;
         }
     }
     return nullptr;
@@ -114,45 +160,14 @@ void tsd::Initialise(void)
     wc.lpfnWndProc      = in::WindowProc;
     wc.lpszClassName    = in::WindowInfo.windowClassName;
     wc.lpszMenuName     = nullptr;
-    wc.style            = 0;
+    wc.style            = 69;
 
     WIN32_EC_RET(in::WindowInfo.classAtom, RegisterClassEx(&wc));
 }
 
 void tsd::Uninitialise(void)
 {
-    in::WindowData wd = *in::GetWindowData(1);
-    wd.GetThread(wd.wnd, &wd.hWnd).join(); // join the thread of the origin window, all other must be closed
     WIN32_EC(UnregisterClass(in::WindowInfo.windowClassName, in::WindowInfo.hInstance));
-}
-
-int tsd::GetWindowCount(void)
-{
-    return in::WindowInfo.windowCount;
-}
-
-tsd::Window* tsd::GetWindow(int id)
-{
-    for (in::WindowData i : in::WindowInfo.windows)
-    {
-        if (i.wnd->GetId() == id)
-        {
-            return i.wnd;
-        }
-    }
-    return reinterpret_cast<Window*>(0); // bruh
-}
-
-tsd::Window* tsd::GetWindow(const char* name)
-{
-    for (in::WindowData i : in::WindowInfo.windows)
-    {
-        if (i.wnd->GetName() == name)
-        {
-            return i.wnd;
-        }
-    }
-    return reinterpret_cast<Window*>(0); // bruh
 }
 
 tsd::Window::Window(const char* name, int width, int height)
@@ -161,22 +176,52 @@ tsd::Window::Window(const char* name, int width, int height)
       name(const_cast<char*>(name)),
       width(width), height(height), xPos(0), yPos(0)
 {
-    HWND hWnd{};
-    in::WindowData wndData{};
-    wndData.GetThread(this, &hWnd); // start the thread to construct the window
-    wndData.wnd = this;
+    in::WindowData* wndData = new in::WindowData;
+    wndData->msgThread = new std::thread(&in::WindowData::MessageHandler, wndData);    
+    wndData->wnd = this;
 
-    // guard the getting of the handle
+    // wait for window creation to finish
     std::unique_lock<std::mutex> lock(in::WindowInfo.mtx);
     in::WindowInfo.cv.wait(lock, []{ return in::WindowInfo.windowIsFinished; });
 
-    wndData.hWnd = hWnd;
     in::WindowInfo.windows.push_back(wndData);
+
+    in::WindowInfo.windowIsFinished = false;
 }
 
 tsd::Window::~Window()
 {
+    delete in::GetWindowData(id);
     in::WindowInfo.windowCount -= 1;
+}
+
+tsd::Window* tsd::GetWindow(int id)
+{
+    for (in::WindowData* i : in::WindowInfo.windows)
+    {
+        if (i->wnd->GetId() == id)
+        {
+            return i->wnd;
+        }
+    }
+    return nullptr;
+}
+
+tsd::Window* tsd::GetWindow(const char* name)
+{
+    for (in::WindowData* i : in::WindowInfo.windows)
+    {
+        if (i->wnd->GetName() == name)
+        {
+            return i->wnd;
+        }
+    }
+    return nullptr;
+}
+
+void tsd::Window::ChangeName(const char* newName)
+{
+    SetWindowText(in::GetWindowData(id)->hWnd, newName);
 }
 
 unsigned int tsd::Window::GetId(void)
@@ -202,6 +247,11 @@ int tsd::Window::GetWidth(void)
 int tsd::Window::GetHeight(void)
 {
     return height;
+}
+
+int tsd::GetWindowCount(void)
+{
+    return in::WindowInfo.windowCount;
 }
 
 bool tsd::Running()

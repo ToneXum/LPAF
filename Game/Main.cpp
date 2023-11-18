@@ -1,21 +1,27 @@
 #include "Framework.hpp"
+#include <exception>
 
-//int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine, int nCmdShow)
 int main()
 {
-    tsd::Initialise();
-
-    const char* windowName = "Boring Box";
-    tsd::Window wnd(windowName, 900, 600);
-    tsd::Window wind(windowName, 1000, 500);
-
-    while (tsd::Running())
+    try
     {
-        // simulate computation
-        tsd::Halt(16);
+        tsd::Initialise();
+
+        const char* windowName = "Borin Box";
+        tsd::Window wnd(windowName, 1000, 500);
+
+        while (tsd::Running())
+        {
+            // simulate computation
+            tsd::Halt(16);
+        }
+
+        tsd::Uninitialise();
     }
-    
-    tsd::Uninitialise();
+    catch (const std::exception&)
+    {
+        return -1;
+    }   
 
     return 0;
 }
