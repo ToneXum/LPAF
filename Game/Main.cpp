@@ -13,7 +13,7 @@ int main()
         while (tsd::Running())
         {
             // simulate computation
-            tsd::Halt(16);
+            tsd::Halt(16);            
         }
 
         tsd::Uninitialise();

@@ -1,12 +1,29 @@
 #pragma once
 
+// For anyone recieving a copy of this file:
+// Modify at your own risk ;)
+
 namespace tsd // tonexum software division
 {
     // Start the entirety of this framework up so it can be used.
-    void Initialise(void);
+    void Initialise();
 
     // commit self delete :)
-    void Uninitialise(void);
+    void Uninitialise();
+
+    // If an error occours, check the code with this function
+    // Beware only check the return value of functions that actually set the 
+    int GetLastError();
+
+    // some information about an error
+    struct Error
+    {
+        bool isValidError; // use for controll 
+        const char* msg; // message or meaning
+    };
+
+    // translates the error by code into a readable message
+    const char* GetErrorInformation(int code);
 
     class Mouse
     {
@@ -33,11 +50,11 @@ namespace tsd // tonexum software division
         void Resize(int width, int height);
         void Reposition(int xPos, int yPos);
 
-        unsigned int GetId(void);
-        char* GetName(void);
-        bool GetVisibility(void);
-        int GetWidth(void);
-        int GetHeight(void);
+        unsigned int GetId();
+        char* GetName();
+        bool GetVisibility();
+        int GetWidth();
+        int GetHeight();
 
     private:
         unsigned int id;
@@ -48,12 +65,14 @@ namespace tsd // tonexum software division
     };
     
     // Returns the number of open windows
-    int GetWindowCount(void);
+    int GetWindowCount();
 
     // Returns an instance of a window. Identified by Id
+    // This function can fail when there is no window with the specified id
     Window* GetWindow(int id);
 
     // Returns an instance of a window. Identified by name
+    // This function can fail when there is no window with the specified name
     Window* GetWindow(const char* name);
 
     // Returns the progam running state, false means you should exit

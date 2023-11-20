@@ -58,6 +58,9 @@
 #include <exception>
 #include <fstream>
 
+#include "Errors.hpp"
+#include "Framework.hpp"
+
 #ifdef _DEBUG
 
 // Error check for Win32 API calls
@@ -65,9 +68,6 @@
 
 // Error check for Win32 API calls but the return value is saved
 #define WIN32_EC_RET(x, y) { x = y; if (!x) { in::CreateWin32DebugError(__LINE__); } }
-
-// Create an error to notify the framework user that he fucked up
-#define USER_ERROR in::CreateUserDebugError(__LINE__);
 
 #endif // DEBUG
 #ifdef NDEBUG
@@ -87,14 +87,13 @@ namespace in
     void CreateWin32DebugError(int line);
     void CreateWin32ReleaseError(int line);
 
-    // User error creation
-    void CreateUserDebugError(int line, const char* file, const char* function);
-    void CreateUserReleaseError(int line, const char* file, const char* function);
+    // Error handling for the user
+    void SetLastError(int code);
 
     struct WindowData // additional data that is not exposed to the end user
     {
         WindowData() = default;
-        ~WindowData(void);
+        ~WindowData();
 
         tsd::Window* wnd;
         HWND hWnd;
@@ -107,16 +106,20 @@ namespace in
     struct // general information about the state of the windows
     {
 
-        std::vector<WindowData*> windows{};
+        std::vector<WindowData*> windows{}; // contains information about the currently open windows
         const char* windowClassName{ "GGFW Window Class" };
-        HINSTANCE hInstance{ 0 };
+        HINSTANCE hInstance{ 0 }; // hinstance handle to window class
         ATOM classAtom{ 0 }; // idk what this is even supposed to do
-        int windowCount{ 0 };
+
+        int windowCount{ 0 };  // guess what, its the count of the currently open windows
         int windowsOpened{ 0 }; // ammount of windows this program has opened in the past
         bool isRunning{true}; // becomes false when origin window is closed
+
         std::mutex mtx; // mutex used to prevent funny shit from happening when creating a window
         std::condition_variable cv; // goes along side mtx
-        bool windowIsFinished = false; // creation of a window is finished
+        bool windowIsFinished{ false }; // creation of a window is finished
+
+        int lastErrorCode{ 0 };
     } WindowInfo;
 
     LRESULT WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);

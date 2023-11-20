@@ -21,10 +21,17 @@
     <ClInclude Include="Internals.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Errors.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Framework.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Usage_Doc.md" />
+    <None Include="Internal_Doc.md" />
   </ItemGroup>
 </Project>

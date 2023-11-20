@@ -149,11 +149,16 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="Errors.hpp" />
     <ClInclude Include="Framework.hpp" />
     <ClInclude Include="Internals.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Framework.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Internal_Doc.md" />
+    <None Include="Usage_Doc.md" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
