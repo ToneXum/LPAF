@@ -25,8 +25,9 @@ void in::CreateWin32DebugError(int line)
     }
     else
     {
-        msg << "An Error occoured which even the error handler could not handle." << "\n\n";
-        msg << "I guess I fucked up...";
+        msg << "An Error occoured which even the error handler could not handle. This is usually caused by the error";
+        msg << " message being to long" << "\n\n";
+        msg << "I guess I fucked up..." << std::endl;
     }
 
     MessageBox(nullptr, msg.str().c_str(), "Internal Error!", MB_ICONERROR | MB_TASKMODAL | MB_OK);
@@ -42,8 +43,8 @@ void in::CreateWin32ReleaseError(int line)
     
     int e = GetLastError();
 
-    file << "[ " << __TIMESTAMP__ << " ]: " << "Unhandled Win32 error! " << e << " at " << line << std::endl;
-    file << "[ " << __TIMESTAMP__ << " ]: " << "Fatal Error, application must abort!";
+    file << "[ " << __TIMESTAMP__ << " ]: " << "Unhandled Win32 error! " << e << " at " << line << "\n";
+    file << "[ " << __TIMESTAMP__ << " ]: " << "Fatal Error, application must abort!" << std::endl;
 
     file.close();
 

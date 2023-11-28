@@ -11,18 +11,11 @@ namespace tsd // tonexum software division
     // commit self delete :)
     void Uninitialise();
 
-    // If an error occours, check the code with this function
-    // Beware only check the return value of functions that actually set the 
+    // If an error occours, the callee returns null. Read the error code with this function
+    // Beware only check the return value of functions that actually set errors
     int GetLastError();
 
-    // some information about an error
-    struct Error
-    {
-        bool isValidError; // use for controll 
-        const char* msg; // message or meaning
-    };
-
-    // translates the error by code into a readable message
+    // Translates the error by code into a readable message
     const char* GetErrorInformation(int code);
 
     class Mouse
@@ -32,7 +25,7 @@ namespace tsd // tonexum software division
 
     class Keyboard
     {
-        // todo
+        // idk man
     };
 
     // A window class to represent an open window
@@ -40,6 +33,7 @@ namespace tsd // tonexum software division
     {
     public:
         Window(const char* name, int width, int height);
+        Window(const char* name, int width, int height, int xPos, int yPos);
         ~Window();
 
         Window(const Window&) = delete;
@@ -67,17 +61,17 @@ namespace tsd // tonexum software division
     // Returns the number of open windows
     int GetWindowCount();
 
-    // Returns an instance of a window. Identified by Id
-    // This function can fail when there is no window with the specified id
+    // Returns a pointer to the instance of a window which matches the specified id
+    // This function can fail when there is no window with the specified id, if so, it returns nullptr
     Window* GetWindow(int id);
 
-    // Returns an instance of a window. Identified by name
-    // This function can fail when there is no window with the specified name
+    // Returns a pointer to the instance of a window which matches the specified name
+    // This function can fail when there is no window with the specified name, if so, it returns nullptr
     Window* GetWindow(const char* name);
 
-    // Returns the progam running state, false means you should exit
-    bool Running();
+    // Lets put it this way: is the program still running?
+    inline bool Running();
 
-    // Sleep for specified ammout of ms
+    // Pause the caller thread for the specified ammout of ms
     void Halt(int ms);
 }
