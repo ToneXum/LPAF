@@ -69,7 +69,7 @@ namespace tsd // tonexum software division
     // This function can fail when there is no window with the specified name, if so, it returns nullptr
     Window* GetWindow(const char* name);
 
-    // Lets put it this way: is the program still running?
+    // Returns true as long as any window is open
     inline bool Running();
 
     // Pause the caller thread for the specified ammout of ms

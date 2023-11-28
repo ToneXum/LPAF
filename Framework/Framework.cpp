@@ -271,7 +271,7 @@ int tsd::GetWindowCount(void)
     return in::WindowInfo.windowCount;
 }
 
-bool tsd::Running()
+extern inline bool tsd::Running()
 {
     return in::WindowInfo.isRunning;
 }
