@@ -157,8 +157,9 @@
     <ClCompile Include="Framework.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="int_doc.md" />
-    <None Include="usr_doc.md" />
+    <None Include="Documentation.md" />
+    <None Include="Reference.md" />
+    <None Include="Usage.md" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

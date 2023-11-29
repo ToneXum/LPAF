@@ -108,18 +108,19 @@ namespace in
 
         std::vector<WindowData*> windows{}; // contains information about the currently open windows
         const char* windowClassName{ "GGFW Window Class" };
-        HINSTANCE hInstance{ 0 }; // hinstance handle to window class
-        ATOM classAtom{ 0 }; // idk what this is even supposed to do
+        HINSTANCE hInstance = 0; // hinstance handle to window class
+        ATOM classAtom = 0; // idk what this is even supposed to do
 
-        int windowCount{ 0 };  // guess what, its the count of the currently open windows
-        int windowsOpened{ 0 }; // ammount of windows this program has opened in the past
-        bool isRunning{true}; // becomes false when origin window is closed
+        int windowCount = 0;  // guess what, its the count of the currently open windows
+        int windowsOpened = 0; // ammount of windows this program has opened in the past
+        bool isRunning = true; // becomes false when origin window is closed
 
         std::mutex mtx; // mutex used to prevent funny shit from happening when creating a window
         std::condition_variable cv; // goes along side mtx
-        bool windowIsFinished{ false }; // creation of a window is finished
+        bool windowIsFinished = false; // creation of a window is finished
 
-        int lastErrorCode{ 0 };
+        int lastErrorCode = 0;
+        bool isInitialised = false; // becomes true when initialise is called
     } WindowInfo;
 
     LRESULT WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);

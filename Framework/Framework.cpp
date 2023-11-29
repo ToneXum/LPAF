@@ -168,6 +168,8 @@ void tsd::Initialise(void)
     wc.style            = 0;
 
     WIN32_EC_RET(in::WindowInfo.classAtom, RegisterClassEx(&wc));
+
+    in::WindowInfo.isInitialised = true;
 }
 
 void tsd::Uninitialise(void)
@@ -181,6 +183,9 @@ tsd::Window::Window(const char* name, int width, int height)
       name(const_cast<char*>(name)),
       width(width), height(height), xPos(0), yPos(0)
 {
+    if (!in::WindowInfo.isInitialised) { in::SetLastError(2); return; }
+    if (!name) { in::SetLastError(3); return; }
+
     in::WindowData* wndData = new in::WindowData;
     wndData->msgThread = new std::thread(&in::WindowData::MessageHandler, wndData);    
     wndData->wnd = this;
@@ -271,7 +276,7 @@ int tsd::GetWindowCount(void)
     return in::WindowInfo.windowCount;
 }
 
-extern inline bool tsd::Running()
+bool tsd::Running()
 {
     return in::WindowInfo.isRunning;
 }

@@ -31,7 +31,8 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="usr_doc.md" />
-    <None Include="int_doc.md" />
+    <None Include="Usage.md" />
+    <None Include="Documentation.md" />
+    <None Include="Reference.md" />
   </ItemGroup>
 </Project>

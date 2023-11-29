@@ -70,7 +70,7 @@ namespace tsd // tonexum software division
     Window* GetWindow(const char* name);
 
     // Returns true as long as any window is open
-    inline bool Running();
+    bool Running();
 
     // Pause the caller thread for the specified ammout of ms
     void Halt(int ms);

@@ -1,6 +1,7 @@
 #include "Framework.hpp"
 #include <exception>
 
+// This is a simple test program
 int main()
 {
     try

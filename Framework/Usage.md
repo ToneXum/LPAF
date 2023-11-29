@@ -1,13 +1,13 @@
 # User Documentation
 GGFW is a perfomant and light-weight application framework used for development on Windows systems.
 
-### 1. Getting started
+## 1. Getting started
 To use the framework, you have to link the library as well as including the header(s) in your project.
 
 This is a static library which means it has to be linked at compile time. (I personaly see no reason to use a 
 dynamic library so here you go.)
 
-#### Setup for Visual Studio
+### Setup for Visual Studio
 Including the header:
 - go to the project properties
 - in the `C++` section, open the `General` page
@@ -36,10 +36,10 @@ section of the `Command Line` page. Otherwise your entrypoint would look like th
 
 **If you use a different IDE, look up how you can replicate the same steps in your environment**
 
-### 2. Usage
+## 2. Usage
 The usage of this framwork is kept as simple as possible without comprimising on performance.
 
-#### Starting up
+#### Basic Program
 To start using the framework you need to initialise it and make a window. After that comes your logic loop 
 followed by a clean-up. For this framework, the most basic setup should look like this:
 
@@ -52,8 +52,10 @@ int main()
 
 	// Create a window
 	const char* windowName = "Borin Box";
-    tsd::Window wnd(windowName, 1000, 500);
+	tsd::Window wnd(windowName, 1000, 500);
 
+	// tsd::Running will return a boolean indicating whether the origin window is open or not
+	// See chapter 
 	while (tsd::Running())
 	{
 		// Logic loop goes here
@@ -65,3 +67,12 @@ int main()
 	return 0;
 }
 ```
+
+#### Kinds of Windows
+There are exactly 2 types of windows that you can encounter when using this framework. There are origin windows 
+and non-origin windows. The origin window can be viewed as a main window for your application. When it is 
+closed, the entire program will quit. A non-origin window is like every other window, you can create and destroy
+them as you like.
+
+So how do you request an origin window? Simple, you dont. The first window you will create (where id is 1) is
+automatically your origin window. Note that you can only have 1 origin window.

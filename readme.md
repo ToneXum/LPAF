@@ -4,6 +4,7 @@ any kind like videogames and tools. It focuses on simplicity and performace whil
 
 ### Documentation and Information
 For an installation guide as well as information about usage of this framework, check the user documentation.
+At the moment you can find it in `Framework/`.
 
 ### Future
 If this project gets larger over time and I dont abandon it, it may evolve into a full flegded Game Engine with
