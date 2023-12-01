@@ -51,7 +51,7 @@ int main()
 	tsd::Initialise();
 
 	// Create a window
-	const char* windowName = "Borin Box";
+	const char* windowName = "Boring Box";
 	tsd::Window wnd(windowName, 1000, 500);
 
 	// tsd::Running will return a boolean indicating whether the origin window is open or not
@@ -76,3 +76,14 @@ them as you like.
 
 So how do you request an origin window? Simple, you dont. The first window you will create (where id is 1) is
 automatically your origin window. Note that you can only have 1 origin window.
+
+## 3. Error handling
+The framework features error handling very similar to the Win32 API. This maximises the flexibility about how 
+you handle the actual errors.
+
+When an error occours, the callee will set an internal variable which indicates the code of the last error. You
+can retrieve that code by calling `GetLastError()`. To get a readable message out of said error code you can
+pass it to `GetErrorInformation(int)`.
+
+Note that the error is only valid when the callee return `null` or `null-pointer` and also be sure that the
+underlying function *can* set an error code in the first place.
