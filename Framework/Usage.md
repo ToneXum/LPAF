@@ -39,7 +39,7 @@ section of the `Command Line` page. Otherwise your entrypoint would look like th
 ## 2. Usage
 The usage of this framwork is kept as simple as possible without comprimising on performance.
 
-#### Basic Program
+### Basic Program
 To start using the framework you need to initialise it and make a window. After that comes your logic loop 
 followed by a clean-up. For this framework, the most basic setup should look like this:
 
@@ -68,7 +68,7 @@ int main()
 }
 ```
 
-#### Kinds of Windows
+### Kinds of Windows
 There are exactly 2 types of windows that you can encounter when using this framework. There are origin windows 
 and non-origin windows. The origin window can be viewed as a main window for your application. When it is 
 closed, the entire program will quit. A non-origin window is like every other window, you can create and destroy

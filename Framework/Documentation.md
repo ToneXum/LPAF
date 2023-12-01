@@ -13,9 +13,9 @@ When an internal error occours it will be handled by the framework itself. If th
 application must quit.
 
 Internal Error sources are:
-	- inner framework operations
-	- Win32 API
-	- Vulkan
+- inner framework operations
+- Win32 API
+- Vulkan
 
 Depending on the build type the error will be created differently. For Debug, a message box will be created,
 displaying debug level information. When building release, the same information will be writen to a file
