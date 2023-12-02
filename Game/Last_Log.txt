@@ -1,0 +1,2 @@
+[ Fri Dec  1 20:28:46 2023 ]: Unhandled Win32 error! 0 at 177
+[ Fri Dec  1 20:28:46 2023 ]: Fatal Error, application must abort!

@@ -87,3 +87,5 @@ pass it to `GetErrorInformation(int)`.
 
 Note that the error is only valid when the callee return `null` or `null-pointer` and also be sure that the
 underlying function *can* set an error code in the first place.
+
+### Internal Errors

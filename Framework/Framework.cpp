@@ -57,24 +57,15 @@ void in::SetLastError(int code)
     WindowInfo.lastErrorCode = code;
 }
 
-in::WindowData::~WindowData()
-{
-    if (msgThread->joinable())
-    {
-        msgThread->join();
-    }
-    delete msgThread;
-}
-
 void in::WindowData::MessageHandler()
 {
     WIN32_EC_RET(hWnd, CreateWindowEx(
         0,
         in::WindowInfo.windowClassName,
-        wnd->GetName(),
+        name,
         WS_MINIMIZEBOX | WS_CAPTION | WS_SYSMENU,
-        CW_USEDEFAULT, CW_USEDEFAULT, // this comment is here in memory of my stupidity
-        wnd->GetWidth(), wnd->GetHeight(),
+        !xPos ? CW_USEDEFAULT : xPos, !yPos ? CW_DEFAULT : yPos, // man do I love tenary expression :)
+        width, height,
         nullptr,
         nullptr,
         in::WindowInfo.hInstance,
@@ -83,12 +74,14 @@ void in::WindowData::MessageHandler()
     in::WindowInfo.windowCount += 1;
     in::WindowInfo.windowsOpened += 1;
 
+    id = in::WindowInfo.windowsOpened; 
+
     ShowWindow(hWnd, 1);
     
     // work is done, let the main thread continue
-    std::unique_lock<std::mutex> lock(in::WindowInfo.mtx);
+    std::unique_lock<std::mutex> lock1(in::WindowInfo.mtx);
     WindowInfo.windowIsFinished = true;
-    lock.unlock();
+    lock1.unlock();
     in::WindowInfo.cv.notify_one();
 
     // message pump for the window
@@ -98,6 +91,9 @@ void in::WindowData::MessageHandler()
         TranslateMessage(&msg);
         DispatchMessage(&msg);
     }
+
+    WindowInfo.windowCount -= 1;
+    isValid = false;
 }
 
 LRESULT in::WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
@@ -111,7 +107,7 @@ LRESULT in::WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
     }
     case WM_DESTROY: // closing a window was ordered and confirmed
     {
-        if (in::GetWindowData(hWnd)->wnd->GetId() == 1) // quit program if origin window is closed
+        if (in::GetWindowData(hWnd)->id == 1) // quit program if origin window is closed
         {
             WindowInfo.isRunning = false;
             PostQuitMessage(0);
@@ -127,7 +123,7 @@ in::WindowData* in::GetWindowData(HWND handle)
 {
     for (WindowData* i : WindowInfo.windows)
     {
-        if (i->hWnd == handle)
+        if ((i->hWnd == handle) && (i->isValid))
         {
             return i;
         }
@@ -139,7 +135,7 @@ in::WindowData* in::GetWindowData(int id)
 {
     for (WindowData* i : WindowInfo.windows)
     {
-        if (i->wnd->GetId() == id)
+        if ((i->id == id) && (i->isValid))
         {
             return i;
         }
@@ -174,25 +170,36 @@ void tsd::Initialise(void)
 
 void tsd::Uninitialise(void)
 {
+    for (in::WindowData* w : in::WindowInfo.windows)
+    {
+        w->msgThread->join();
+    }
+
     WIN32_EC(UnregisterClass(in::WindowInfo.windowClassName, in::WindowInfo.hInstance));
 }
 
-tsd::Window::Window(const char* name, int width, int height)
-    : id(in::WindowInfo.windowsOpened + 1),
-      isVisible(true),
-      name(const_cast<char*>(name)),
-      width(width), height(height), xPos(0), yPos(0)
+// Whoops
+#undef CreateWindow
+
+short tsd::CreateWindow(const char* name, int width, int height, int xPos, int yPos)
 {
-    if (!in::WindowInfo.isInitialised) { in::SetLastError(2); return; }
-    if (!name) { in::SetLastError(3); return; }
+    if (!in::WindowInfo.isInitialised) { in::SetLastError(2); return 0; }
+    if (!name) { in::SetLastError(3); return 0; }
+    if ((height <= 0) || (width <= 0)) { in::SetLastError(3); return 0; }
 
     in::WindowData* wndData = new in::WindowData;
-    wndData->msgThread = new std::thread(&in::WindowData::MessageHandler, wndData);    
-    wndData->wnd = this;
+    wndData->msgThread = new std::thread(&in::WindowData::MessageHandler, wndData);
+
+    wndData->name       = const_cast<char*>(name);
+    wndData->width      = width;
+    wndData->height     = height;
+    wndData->xPos       = xPos;
+    wndData->yPos       = yPos;
+    wndData->isValid    = true;
 
     // wait for window creation to finish
     std::unique_lock<std::mutex> lock(in::WindowInfo.mtx);
-    in::WindowInfo.cv.wait(lock, []{ return in::WindowInfo.windowIsFinished; });
+    in::WindowInfo.cv.wait(lock, [] { return in::WindowInfo.windowIsFinished; });
 
     in::WindowInfo.windows.push_back(wndData);
 
@@ -206,69 +213,27 @@ int tsd::GetLastError()
 
 const char* tsd::GetErrorInformation(int code)
 {
-    return e::errors.find(code) != e::errors.end() ? e::errors[code] : "Invalid error Code!"; // best one-liner so far
+    return in::errors.find(code) != in::errors.end() ? in::errors[code] : "Invalid error Code!"; // best one-liner so far
 }
 
-tsd::Window::~Window()
+char* tsd::GetWindowName(short id)
 {
-    delete in::GetWindowData(id);
-    in::WindowInfo.windowCount -= 1;
+    return in::GetWindowData(id)->name;
 }
 
-tsd::Window* tsd::GetWindow(int id)
+bool tsd::GetWindowVisibility(short id)
 {
-    for (in::WindowData* i : in::WindowInfo.windows)
-    {
-        if (i->wnd->GetId() == id)
-        {
-            return i->wnd;
-        }
-    }
-    in::SetLastError(1); // item was now found
-    return nullptr;
+    return in::GetWindowData(id)->isVisible;
 }
 
-tsd::Window* tsd::GetWindow(const char* name)
+int tsd::GetWindowWidth(short id)
 {
-    for (in::WindowData* i : in::WindowInfo.windows)
-    {
-        if (i->wnd->GetName() == name)
-        {
-            return i->wnd;
-        }
-    }
-    in::SetLastError(1); // item was now found
-    return nullptr;
+    return in::GetWindowData(id)->width;
 }
 
-void tsd::Window::ChangeName(const char* newName)
+int tsd::GetWindowHeight(short id)
 {
-    SetWindowText(in::GetWindowData(id)->hWnd, newName);
-}
-
-unsigned int tsd::Window::GetId(void)
-{
-    return id;
-}
-
-char* tsd::Window::GetName(void)
-{
-    return name;
-}
-
-bool tsd::Window::GetVisibility(void)
-{
-    return isVisible;
-}
-
-int tsd::Window::GetWidth(void)
-{
-    return width;
-}
-
-int tsd::Window::GetHeight(void)
-{
-    return height;
+    return in::GetWindowData(id)->height;
 }
 
 int tsd::GetWindowCount(void)

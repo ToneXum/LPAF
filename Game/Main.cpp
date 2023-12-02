@@ -1,6 +1,11 @@
 #include "Framework.hpp"
 #include <exception>
 
+void SomeFunction(int = 1)
+{
+    return;
+}
+
 // This is a simple test program
 int main()
 {
@@ -8,8 +13,8 @@ int main()
     {
         tsd::Initialise();
 
-        const char* windowName = "Borin Box";
-        tsd::Window wnd(windowName, 1000, 500);
+        const char* windowName = "Boring Box";
+        short handle = tsd::CreateWindow(windowName, 1000, 500);
 
         while (tsd::Running())
         {
@@ -18,6 +23,8 @@ int main()
         }
 
         tsd::Uninitialise();
+
+        return 0; // Wow, just wow. How can I forget this?
     }
     catch (const std::exception&)
     {

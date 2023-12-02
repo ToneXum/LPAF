@@ -92,18 +92,20 @@ namespace in
 
     struct WindowData // additional data that is not exposed to the end user
     {
-        WindowData() = default;
-        ~WindowData();
+        // Window creator and message pump
+        void MessageHandler();
 
-        tsd::Window* wnd;
         HWND hWnd;
         std::thread* msgThread;
 
-        // Window creator and message pump
-        void MessageHandler();
+        short id;
+        char* name;
+        bool isVisible;
+        int xPos, yPos, width, height;
+        bool isValid;
     };
 
-    struct // general information about the state of the windows
+    struct // general information about the state of the application
     {
 
         std::vector<WindowData*> windows{}; // contains information about the currently open windows

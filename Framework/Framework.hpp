@@ -18,56 +18,27 @@ namespace tsd // tonexum software division
     // Translates the error by code into a readable message
     const char* GetErrorInformation(int code);
 
-    class Mouse
-    {
-        // todo
-    };
+    // Create a new window 
+    short CreateWindow(const char* name, int width, int height, int xPos = 0, int yPos = 0);
 
-    class Keyboard
-    {
-        // idk man
-    };
+    // Returns the name of the window which matches the given handle
+    // This function can fail if the handle is not valid
+    char* GetWindowName(short id);
 
-    // A window class to represent an open window
-    class Window
-    {
-    public:
-        Window(const char* name, int width, int height);
-        Window(const char* name, int width, int height, int xPos, int yPos);
-        ~Window();
+    // Returns the state of visibility of the window which matches the given handle
+    // This function can fail if the handle is not valid
+    bool GetWindowVisibility(short id);
 
-        Window(const Window&) = delete;
+    // Returns the width of the window which matches the given handle
+    // This function can fail if the handle is not valid
+    int GetWindowWidth(short id);
 
-        void ChangeName(const char* newName);
-        void ChangeVisibility(bool state);
-        void Minimize(bool state);
-        void Resize(int width, int height);
-        void Reposition(int xPos, int yPos);
+    // Returns the height of the window which matches the given handle
+    // This function can fail if the handle is not valid
+    int GetWindowHeight(short id);
 
-        unsigned int GetId();
-        char* GetName();
-        bool GetVisibility();
-        int GetWidth();
-        int GetHeight();
-
-    private:
-        unsigned int id;
-        char* name;
-        bool isVisible;
-        //long long hWnd; in memory of a not so nice hack
-        int xPos, yPos, width, height;
-    };
-    
     // Returns the number of open windows
     int GetWindowCount();
-
-    // Returns a pointer to the instance of a window which matches the specified id
-    // This function can fail when there is no window with the specified id, if so, it returns nullptr
-    Window* GetWindow(int id);
-
-    // Returns a pointer to the instance of a window which matches the specified name
-    // This function can fail when there is no window with the specified name, if so, it returns nullptr
-    Window* GetWindow(const char* name);
 
     // Returns true as long as any window is open
     bool Running();
