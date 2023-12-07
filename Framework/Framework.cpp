@@ -75,7 +75,7 @@ void in::WindowData::MessageHandler()
     in::WindowInfo.windowsOpened += 1;
 
     id = in::WindowInfo.windowsOpened; 
-
+    
     ShowWindow(hWnd, 1);
     
     // work is done, let the main thread continue
@@ -115,8 +115,9 @@ LRESULT in::WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
         }
         break;
     }
+    default:
+        return DefWindowProc(hWnd, uMsg, wParam, lParam);
     }
-    return DefWindowProc(hWnd, uMsg, wParam, lParam);
 }
 
 in::WindowData* in::GetWindowData(HWND handle)
@@ -171,11 +172,15 @@ void tsd::Initialise(void)
 void tsd::Uninitialise(void)
 {
     for (in::WindowData* w : in::WindowInfo.windows)
-    {
         w->msgThread->join();
-    }
 
     WIN32_EC(UnregisterClass(in::WindowInfo.windowClassName, in::WindowInfo.hInstance));
+
+    for (in::WindowData* w : in::WindowInfo.windows)
+    {
+        delete w->msgThread;
+        delete w;
+    }
 }
 
 // Whoops
@@ -204,6 +209,8 @@ short tsd::CreateWindow(const char* name, int width, int height, int xPos, int y
     in::WindowInfo.windows.push_back(wndData);
 
     in::WindowInfo.windowIsFinished = false;
+
+    return wndData->id;
 }
 
 int tsd::GetLastError()
@@ -250,3 +257,60 @@ void tsd::Halt(int ms)
 {
     Sleep(ms);
 }
+
+#undef IGNORE
+tsd::MBR tsd::CreateMessageBox(short owner, const char* title, const char* msg, int flags)
+{
+    // return null if the window is not found so I dont care
+    in::WindowData* ownerData = in::GetWindowData(owner);
+
+    long rawFlags = 0;
+
+    // Where switch statement?
+    // Cant put expressions into switch cases
+    if (flags & tsd::MBF::TASKMODAL)
+        rawFlags = rawFlags | MB_TASKMODAL;
+
+    if (flags & tsd::MBF::ICON_WARNING)
+        rawFlags = rawFlags | MB_ICONWARNING;
+    if (flags & tsd::MBF::ICON_ERROR)
+        rawFlags = rawFlags | MB_ICONERROR;
+    if (flags & tsd::MBF::ICON_INFO)
+        rawFlags = rawFlags | MB_ICONINFORMATION;
+    if (flags & tsd::MBF::ICON_QUESTION)
+        rawFlags = rawFlags | MB_ICONQUESTION;
+
+    if (flags & tsd::MBF::BUTTON_OK)
+        rawFlags = rawFlags | MB_OK;
+    if (flags & tsd::MBF::BUTTON_OK_CANCEL)
+        rawFlags = rawFlags | MB_OKCANCEL;
+    if (flags & tsd::MBF::BUTTON_YES_NO)
+        rawFlags = rawFlags | MB_YESNO;
+    if (flags & tsd::MBF::BUTTON_RETRY_CANEL)
+        rawFlags = rawFlags | MB_RETRYCANCEL;
+
+    if (flags & tsd::MBF::BUTTON_YES_NO_CANCEL)
+        rawFlags = rawFlags | MB_YESNOCANCEL;
+    if (flags & tsd::MBF::BUTTON_ABORT_RETRY_IGNORE)
+        rawFlags = rawFlags | MB_ABORTRETRYIGNORE;
+    if (flags & tsd::MBF::BUTTON_CANCEL_RETRY_CONTINUE)
+        rawFlags = rawFlags | MB_CANCELTRYCONTINUE;
+
+    // intentional nullptr reference
+    int result = MessageBox(ownerData ? ownerData->hWnd : 0, msg, title, rawFlags);
+
+
+    switch (result)
+    {
+    case IDABORT: return tsd::MBR::ABORT;
+    case IDCANCEL: return tsd::MBR::CANCEL;
+    case IDCONTINUE: return tsd::MBR::CONTINUE;
+    case IDIGNORE: return tsd::MBR::IGNORE;
+    case IDNO: return tsd::MBR::NO;
+    case IDOK: return tsd::MBR::OK;
+    case IDRETRY: return tsd::MBR::RETRY;
+    case IDTRYAGAIN: return tsd::MBR::TRYAGAIN;
+    case IDYES: return tsd::MBR::YES;
+    }
+}
+#define IGNORE 0

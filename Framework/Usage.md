@@ -52,7 +52,7 @@ int main()
 
 	// Create a window
 	const char* windowName = "Boring Box";
-	tsd::Window wnd(windowName, 1000, 500);
+	tsd::CreateWindow(windowName, 1000, 500);
 
 	// tsd::Running will return a boolean indicating whether the origin window is open or not
 	// See chapter 
