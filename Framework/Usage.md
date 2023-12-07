@@ -51,11 +51,11 @@ int main()
 	tsd::Initialise();
 
 	// Create a window
+	// If `tsd::CreateWindow()` succedes, you get a handle which with you can identify your window
 	const char* windowName = "Boring Box";
-	tsd::CreateWindow(windowName, 1000, 500);
+	short handle = tsd::CreateWindow(windowName, 1000, 500);
 
-	// tsd::Running will return a boolean indicating whether the origin window is open or not
-	// See chapter 
+	// `tsd::Running` will return a boolean indicating whether any window is open or 
 	while (tsd::Running())
 	{
 		// Logic loop goes here
@@ -67,15 +67,6 @@ int main()
 	return 0;
 }
 ```
-
-### Kinds of Windows
-There are exactly 2 types of windows that you can encounter when using this framework. There are origin windows 
-and non-origin windows. The origin window can be viewed as a main window for your application. When it is 
-closed, the entire program will quit. A non-origin window is like every other window, you can create and destroy
-them as you like.
-
-So how do you request an origin window? Simple, you dont. The first window you will create (where id is 1) is
-automatically your origin window. Note that you can only have 1 origin window.
 
 ## 3. Error handling
 The framework features error handling very similar to the Win32 API. This maximises the flexibility about how 
@@ -89,3 +80,4 @@ Note that the error is only valid when the callee return `null` or `null-pointer
 underlying function *can* set an error code in the first place.
 
 ### Internal Errors
+TODO

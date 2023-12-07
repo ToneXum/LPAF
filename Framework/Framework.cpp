@@ -107,10 +107,9 @@ LRESULT in::WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
     }
     case WM_DESTROY: // closing a window was ordered and confirmed
     {
-        if (in::GetWindowData(hWnd)->id == 1) // quit program if origin window is closed
+        if (tsd::GetWindowCount() == 1) // quit program if last window remaining is closed
         {
             WindowInfo.isRunning = false;
-            PostQuitMessage(0);
             return 0;
         }
         break;
@@ -267,7 +266,7 @@ tsd::MBR tsd::CreateMessageBox(short owner, const char* title, const char* msg, 
     long rawFlags = 0;
 
     // Where switch statement?
-    // Cant put expressions into switch cases
+    // Cant put (non-constant) expressions into switch cases
     if (flags & tsd::MBF::TASKMODAL)
         rawFlags = rawFlags | MB_TASKMODAL;
 
@@ -296,9 +295,7 @@ tsd::MBR tsd::CreateMessageBox(short owner, const char* title, const char* msg, 
     if (flags & tsd::MBF::BUTTON_CANCEL_RETRY_CONTINUE)
         rawFlags = rawFlags | MB_CANCELTRYCONTINUE;
 
-    // intentional nullptr reference
     int result = MessageBox(ownerData ? ownerData->hWnd : 0, msg, title, rawFlags);
-
 
     switch (result)
     {
