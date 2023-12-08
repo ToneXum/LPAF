@@ -119,9 +119,8 @@ LRESULT in::WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
         }
         break;
     }
-    default:
-        return DefWindowProc(hWnd, uMsg, wParam, lParam);
     }
+    return DefWindowProc(hWnd, uMsg, wParam, lParam);
 }
 
 in::WindowData* in::GetWindowData(HWND handle)
@@ -331,5 +330,6 @@ tsd::MBR tsd::CreateMessageBox(short owner, const char* title, const char* msg, 
     case IDTRYAGAIN: return tsd::MBR::TRYAGAIN;
     case IDYES: return tsd::MBR::YES;
     }
+    return tsd::MBR::CANCEL; // should never reach this
 }
 #define IGNORE 0
