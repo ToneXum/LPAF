@@ -149,22 +149,21 @@ in::WindowData* in::GetWindowData(int id)
 
 bool tsd::Initialise(int iconId, int cursorId)
 {
-    bool error = false;
+    bool success = true;
+
     // Get hInstance since the program does not use the winMain entry point
     in::WindowInfo.hInstance = GetModuleHandle(0);
 
     if (iconId)
     {
         in::WindowInfo.hIcon = LoadIcon(in::WindowInfo.hInstance, MAKEINTRESOURCE(iconId));
-        if (!in::WindowInfo.hIcon) { in::SetLastError(5); }
-        error = true;
+        if (in::WindowInfo.hIcon == 0) { in::SetLastError(5); success = false; }
     }
 
     if (cursorId)
     {
         in::WindowInfo.hCursor = LoadCursor(in::WindowInfo.hInstance, MAKEINTRESOURCE(cursorId));
-        if (!in::WindowInfo.hCursor) { in::SetLastError(6); }
-        error = true;
+        if (!in::WindowInfo.hCursor) { in::SetLastError(6); success = false; }
     }
     
     WNDCLASSEX wc = {};
@@ -186,7 +185,7 @@ bool tsd::Initialise(int iconId, int cursorId)
 
     in::WindowInfo.isInitialised = true;
 
-    return !error;
+    return success;
 }
 
 void tsd::Uninitialise(void)
@@ -231,6 +230,27 @@ short tsd::CreateWindow(const char* name, int width, int height, int xPos, int y
     in::WindowInfo.windowIsFinished = false;
 
     return wndData->id;
+}
+
+void tsd::CreateAutoDebugError(int line, bool quit)
+{
+    std::ostringstream msg;
+    msg << "Error " << tsd::GetLastError() << " has occoured at line " << line << ".\n\n";
+    msg << tsd::GetErrorInformation(tsd::GetLastError()) << "\n\n";
+    if (quit) { msg << "The application must quit now."; }
+
+    MessageBox(nullptr, msg.str().c_str(), "Error!", MB_TASKMODAL | MB_OK | MB_ICONERROR);
+
+    if (quit)
+    {
+    std::exception exc;
+    throw exc;
+    }
+}
+
+void tsd::CreateAutoReleaseError(int line, bool quit)
+{
+    // Heheheha
 }
 
 int tsd::GetLastError()
@@ -278,8 +298,9 @@ void tsd::Halt(int ms)
     Sleep(ms);
 }
 
+#undef MessageBox
 #undef IGNORE
-tsd::MBR tsd::CreateMessageBox(short owner, const char* title, const char* msg, int flags)
+MBR tsd::MessageBox(short owner, const char* title, const char* msg, int flags)
 {
     // return null if the window is not found so I dont care
     in::WindowData* ownerData = in::GetWindowData(owner);
@@ -288,48 +309,55 @@ tsd::MBR tsd::CreateMessageBox(short owner, const char* title, const char* msg, 
 
     // Where switch statement?
     // Cant put (non-constant) expressions into switch cases
-    if (flags & tsd::MBF::TASKMODAL)
+    if (flags & MBF::TASKMODAL)
         rawFlags = rawFlags | MB_TASKMODAL;
 
-    if (flags & tsd::MBF::ICON_WARNING)
+    if (flags & MBF::ICON_WARNING)
         rawFlags = rawFlags | MB_ICONWARNING;
-    if (flags & tsd::MBF::ICON_ERROR)
+    if (flags & MBF::ICON_ERROR)
         rawFlags = rawFlags | MB_ICONERROR;
-    if (flags & tsd::MBF::ICON_INFO)
+    if (flags & MBF::ICON_INFO)
         rawFlags = rawFlags | MB_ICONINFORMATION;
-    if (flags & tsd::MBF::ICON_QUESTION)
+    if (flags & MBF::ICON_QUESTION)
         rawFlags = rawFlags | MB_ICONQUESTION;
-
-    if (flags & tsd::MBF::BUTTON_OK)
+    
+    if (flags & MBF::BUTTON_OK)
         rawFlags = rawFlags | MB_OK;
-    if (flags & tsd::MBF::BUTTON_OK_CANCEL)
+    if (flags & MBF::BUTTON_OK_CANCEL)
         rawFlags = rawFlags | MB_OKCANCEL;
-    if (flags & tsd::MBF::BUTTON_YES_NO)
+    if (flags & MBF::BUTTON_YES_NO)
         rawFlags = rawFlags | MB_YESNO;
-    if (flags & tsd::MBF::BUTTON_RETRY_CANEL)
+    if (flags & MBF::BUTTON_RETRY_CANEL)
         rawFlags = rawFlags | MB_RETRYCANCEL;
 
-    if (flags & tsd::MBF::BUTTON_YES_NO_CANCEL)
+    if (flags & MBF::BUTTON_YES_NO_CANCEL)
         rawFlags = rawFlags | MB_YESNOCANCEL;
-    if (flags & tsd::MBF::BUTTON_ABORT_RETRY_IGNORE)
+    if (flags & MBF::BUTTON_ABORT_RETRY_IGNORE)
         rawFlags = rawFlags | MB_ABORTRETRYIGNORE;
-    if (flags & tsd::MBF::BUTTON_CANCEL_RETRY_CONTINUE)
+    if (flags & MBF::BUTTON_CANCEL_RETRY_CONTINUE)
         rawFlags = rawFlags | MB_CANCELTRYCONTINUE;
+
+// by now win32 is just getting anoying
+#ifdef UNICODE
+#define MessageBox  MessageBoxW
+#else
+#define MessageBox  MessageBoxA
+#endif
 
     int result = MessageBox(ownerData ? ownerData->hWnd : 0, msg, title, rawFlags);
 
     switch (result)
     {
-    case IDABORT: return tsd::MBR::ABORT;
-    case IDCANCEL: return tsd::MBR::CANCEL;
-    case IDCONTINUE: return tsd::MBR::CONTINUE;
-    case IDIGNORE: return tsd::MBR::IGNORE;
-    case IDNO: return tsd::MBR::NO;
-    case IDOK: return tsd::MBR::OK;
-    case IDRETRY: return tsd::MBR::RETRY;
-    case IDTRYAGAIN: return tsd::MBR::TRYAGAIN;
-    case IDYES: return tsd::MBR::YES;
+    case IDABORT: return MBR::ABORT;
+    case IDCANCEL: return MBR::CANCEL;
+    case IDCONTINUE: return MBR::CONTINUE;
+    case IDIGNORE: return MBR::IGNORE;
+    case IDNO: return MBR::NO;
+    case IDOK: return MBR::OK;
+    case IDRETRY: return MBR::RETRY;
+    case IDTRYAGAIN: return MBR::TRYAGAIN;
+    case IDYES: return MBR::YES;
     }
-    return tsd::MBR::CANCEL; // should never reach this
+    return MBR::CANCEL; // should never reach this
 }
 #define IGNORE 0

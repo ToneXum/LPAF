@@ -6,16 +6,20 @@ int main()
 {
     try
     {
-        bool state = tsd::Initialise(104, 105);
+        TSD_CALL(tsd::Initialise(104, 105), true);
 
         const char* windowName = "Boring Box";
-        short handle1 = tsd::CreateWindow(windowName, 1000, 500);
-        short handle2 = tsd::CreateWindow(windowName, 600, 1000);
+
+        short handle1;
+        TSD_CALL_RET(handle1, tsd::CreateWindow(windowName, 1000, 500), true);
+
+        short handle2;
+        TSD_CALL_RET(handle2, tsd::CreateWindow(windowName, 600, 1000), true);
 
         while (tsd::Running())
         {
             // simulate computation
-            tsd::Halt(16);            
+            tsd::Halt(16);
         }
 
         tsd::Uninitialise();
