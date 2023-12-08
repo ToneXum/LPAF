@@ -18,7 +18,7 @@
 #define TSD_CALL(callee, q) { if (!callee) { tsd::CreateAutoReleaseError(__LINE__, q); } }
 
 // Automatic errror handling, the return value is saved
-#define TSD_CALL_RET(ret, callee, q) { ret = callee; if (!var) { tsd::CreateAutoReleaseError(__LINE__, q); } }
+#define TSD_CALL_RET(ret, callee, q) { ret = callee; if (!ret) { tsd::CreateAutoReleaseError(__LINE__, q); } }
 #endif // NDEBUG
 
 
