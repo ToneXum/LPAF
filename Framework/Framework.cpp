@@ -47,6 +47,12 @@ void in::CreateWin32ReleaseError(int line)
 
     file.close();
 
+    std::ostringstream msg;
+    msg << "A critical error occoured, the application must quit now!\n\nFor more information check the logfiles in the application";
+    msg << " directory" << std::endl; 
+
+    MessageBox(nullptr, msg.str().c_str(), "Critical Error!", MB_TASKMODAL | MB_OK | MB_ICONERROR);
+
     std::exception exc;
     throw exc;
 }

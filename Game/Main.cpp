@@ -6,7 +6,7 @@ int main()
 {
     try
     {
-        tsd::Initialise(104, 105);
+        bool state = tsd::Initialise(104, 105);
 
         const char* windowName = "Boring Box";
         short handle1 = tsd::CreateWindow(windowName, 1000, 500);

@@ -67,7 +67,7 @@
 #define WIN32_EC(x) { if (!x) { in::CreateWin32DebugError(__LINE__); } }
 
 // Error check for Win32 API calls but the return value is saved
-#define WIN32_EC_RET(x, y) { x = y; if (!x) { in::CreateWin32DebugError(__LINE__); } }
+#define WIN32_EC_RET(var, func) { var = func; if (!var) { in::CreateWin32DebugError(__LINE__); } }
 
 #endif // DEBUG
 #ifdef NDEBUG
@@ -76,7 +76,7 @@
 #define WIN32_EC(x) { if (!x) {in::CreateWin32ReleaseError(__LINE__); } }
 
 // Error check for Win32 API calls but the return value is saved
-#define WIN32_EC_RET(var, func) { x = y; if (!x) { in::CreateWin32ReleaseError(__LINE__); } }
+#define WIN32_EC_RET(var, func) { var = func; if (!var) { in::CreateWin32ReleaseError(__LINE__); } }
 
 #endif // NDEBUG
 
