@@ -6,7 +6,7 @@ int main()
 {
     try
     {
-        TSD_CALL(tsd::Initialise(104, 105), true);
+        TSD_CALL(tsd::Initialise(0, 105), true);
 
         const char* windowName = "Boring Box";
 
@@ -23,12 +23,11 @@ int main()
         }
 
         tsd::Uninitialise();
+        return 0;
     }
     catch (const std::exception&)
     {
         tsd::Uninitialise();
         return -1;
     }
-
-    return 0;
 }

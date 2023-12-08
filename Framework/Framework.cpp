@@ -112,7 +112,7 @@ LRESULT in::WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
     }
     case WM_DESTROY: // closing a window was ordered and confirmed
     {
-        if (tsd::GetWindowCount() == 1) // quit program if last window remaining is closed
+        if (tsd::WindowGetCount() == 1) // quit program if last window remaining is closed
         {
             WindowInfo.isRunning = false;
             return 0;
@@ -238,6 +238,7 @@ void tsd::CreateAutoDebugError(int line, bool quit)
     msg << "Error " << tsd::GetLastError() << " has occoured at line " << line << ".\n\n";
     msg << tsd::GetErrorInformation(tsd::GetLastError()) << "\n\n";
     if (quit) { msg << "The application must quit now."; }
+    msg << std::endl;
 
     MessageBox(nullptr, msg.str().c_str(), "Error!", MB_TASKMODAL | MB_OK | MB_ICONERROR);
 
@@ -250,7 +251,7 @@ void tsd::CreateAutoDebugError(int line, bool quit)
 
 void tsd::CreateAutoReleaseError(int line, bool quit)
 {
-    // Heheheha
+    // todo
 }
 
 int tsd::GetLastError()
@@ -263,29 +264,121 @@ const char* tsd::GetErrorInformation(int code)
     return in::errors.find(code) != in::errors.end() ? in::errors[code] : "Invalid error Code!"; // best one-liner so far
 }
 
-char* tsd::GetWindowName(short id)
+char* tsd::WindowGetName(short id)
 {
-    return in::GetWindowData(id)->name;
+    in::WindowData* wndData = in::GetWindowData(id);
+    if (!wndData) { in::SetLastError(4); return nullptr; }
+    return wndData->name;
 }
 
-bool tsd::GetWindowVisibility(short id)
+bool tsd::WindowGetVisibility(short id)
 {
-    return in::GetWindowData(id)->isVisible;
+    in::WindowData* wndData = in::GetWindowData(id);
+    if (!wndData) { in::SetLastError(4); return false; }
+    return wndData->isVisible;
 }
 
-int tsd::GetWindowWidth(short id)
+int tsd::WindowGetWidth(short id)
 {
-    return in::GetWindowData(id)->width;
+    in::WindowData* wndData = in::GetWindowData(id);
+    if (!wndData) { in::SetLastError(4); return false; }
+    return wndData->width;
 }
 
-int tsd::GetWindowHeight(short id)
+int tsd::WindowGetHeight(short id)
 {
-    return in::GetWindowData(id)->height;
+    in::WindowData* wndData = in::GetWindowData(id);
+    if (!wndData) { in::SetLastError(4); return false; }
+    return wndData->height;
 }
 
-int tsd::GetWindowCount(void)
+std::pair<int, int> tsd::WindowGetDimensions(short id)
+{
+    in::WindowData* wndData = in::GetWindowData(id);
+    if (!wndData) { in::SetLastError(4); return {0, 0}; }
+    return {wndData->width, wndData->height};
+}
+
+int tsd::WindowGetXPos(short id, WPR wpr)
+{
+    in::WindowData* wndData = in::GetWindowData(id);
+    if (!wndData) { in::SetLastError(4); return 0; }
+    RECT rect{};
+    GetWindowRect(wndData->hWnd, &rect);
+
+    switch (wpr)
+    {
+    case LEFT:
+        return rect.left;
+    case RIGHT:
+        return rect.right;
+    }
+
+    in::SetLastError(3);
+    return 0;
+}
+
+int tsd::WindowGetYPos(short id, WPR wpr)
+{
+    in::WindowData* wndData = in::GetWindowData(id);
+    if (!wndData) { in::SetLastError(4); return 0; }
+    RECT rect{};
+    GetWindowRect(wndData->hWnd, &rect);
+
+    switch (wpr)
+    {
+    case TOP:
+        return rect.top;
+    case BOTTOM:
+        return rect.bottom;
+    }
+
+    in::SetLastError(3);
+    return 0;
+}
+
+std::pair<int, int> tsd::WindowGetPosition(short id, WPR wpr)
+{
+    in::WindowData* wndData = in::GetWindowData(id);
+    if (!wndData) { in::SetLastError(4); return {0, 0}; }
+    RECT rect{};
+    GetWindowRect(wndData->hWnd, &rect);
+    
+    switch (wpr)
+    {
+    case TOP_LEFT:
+        return { rect.left, rect.top };
+    case TOP_RIGHT:
+        return { rect.right, rect.top };
+    case BOTTOM_LEFT:
+        return { rect.left, rect.bottom };
+    case BOTTOM_RIGHT:
+        return { rect.right, rect.bottom };
+    }
+
+    in::SetLastError(3);
+    return {0, 0};
+}
+
+int tsd::WindowGetCount(void)
 {
     return in::WindowInfo.windowCount;
+}
+
+bool tsd::WindowChangeName(short id, const char* name)
+{
+    in::WindowData* wndData = in::GetWindowData(id);
+    if (!wndData) { in::SetLastError(4); return false; }
+    SetWindowText(wndData->hWnd, name);
+    wndData->name = const_cast<char*>(name);
+    return true;
+}
+
+bool tsd::IsValidHandle(short handle)
+{
+    if (in::GetWindowData(handle))
+        return true;
+    return false;
 }
 
 bool tsd::Running()

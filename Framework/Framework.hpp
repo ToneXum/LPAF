@@ -1,5 +1,7 @@
 #pragma once
 
+#include <complex>
+
 // For anyone recieving a copy of this file:
 // Modify at your own risk ;)
 
@@ -61,6 +63,25 @@ enum MBR
     YES
 };
 
+// Window position relation
+// Used for the WindowGetPosition function
+enum WPR
+{
+    // WindowGetXPos
+    LEFT,
+    RIGHT,
+
+    // WindowGetYPos
+    TOP,
+    BOTTOM,
+
+    // WindowGetPosition
+    TOP_LEFT,
+    TOP_RIGHT,
+    BOTTOM_LEFT,
+    BOTTOM_RIGHT
+};
+
 namespace tsd // tonexum software division
 {
     // Start the entirety of this framework up so it can be used.
@@ -90,22 +111,45 @@ namespace tsd // tonexum software division
 
     // Returns the name of the window which matches the given handle
     // This function can fail if the handle is not valid
-    char* GetWindowName(short id);
+    char* WindowGetName(short id);
 
     // Returns the state of visibility of the window which matches the given handle
     // This function can fail if the handle is not valid
-    bool GetWindowVisibility(short id);
+    bool WindowGetVisibility(short id);
 
     // Returns the width of the window which matches the given handle
     // This function can fail if the handle is not valid
-    int GetWindowWidth(short id);
+    int WindowGetWidth(short id);
 
     // Returns the height of the window which matches the given handle
     // This function can fail if the handle is not valid
-    int GetWindowHeight(short id);
+    int WindowGetHeight(short id);
+
+    // Returns the window size
+    // This function can fail if the handle is not valid
+    std::pair<int, int> WindowGetDimensions(short id);
+
+    // Returns the window positions on the x-axis
+    // This function can fail if the handle is invalid
+    int WindowGetXPos(short id, WPR wpr);
+
+    // Returns the window position on the y-axis
+    // This function can fail if the handle is invalid
+    int WindowGetYPos(short id, WPR wpr);
+
+    // Returns the distance from the top-left corner from the display to the specified corner of the window
+    // This function can fail if the handle is invalid
+    std::pair<int, int> WindowGetPosition(short id, WPR wpr);
 
     // Returns the number of open windows
-    int GetWindowCount();
+    int WindowGetCount();
+
+    // Changes the name of the specified window to the given name
+    // Can fail if the handle is invalid
+    bool WindowChangeName(short id, const char* name);
+
+    // Returns whether the passed handle is valid or not
+    bool IsValidHandle(short handle);
 
     // Returns true as long as any window is open
     bool Running();

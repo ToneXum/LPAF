@@ -170,7 +170,9 @@
     <ResourceCompile Include="Resource.rc" />
   </ItemGroup>
   <ItemGroup>
+    <Image Include="res\icon1.ico" />
     <Image Include="res\terminal.ico" />
+    <Image Include="res\terminal.png" />
   </ItemGroup>
   <ItemGroup>
     <None Include="res\cursor1.cur" />
