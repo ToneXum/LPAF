@@ -20,8 +20,7 @@ void in::CreateWin32DebugError(int line)
     if (eMsg)
     {
         msg << "A Win32 API call resulted in a fatal error " << e << " at line " << line << " in the source of the framework.\n\n" << eMsg;
-        msg << "\n" << "This is an internal error likely caused by the framework itself, the application must quit now. If this ";
-        msg << "keeps happening then notify the dev about his fuckup." << std::endl;
+        msg << "\n" << "This is an internal error likely caused by the framework itself, the application must quit now." << std::endl;
     }
     else
     {
@@ -143,20 +142,35 @@ in::WindowData* in::GetWindowData(int id)
     return nullptr;
 }
 
-void tsd::Initialise(void)
+bool tsd::Initialise(int iconId, int cursorId)
 {
+    bool error = false;
     // Get hInstance since the program does not use the winMain entry point
     in::WindowInfo.hInstance = GetModuleHandle(0);
 
+    if (iconId)
+    {
+        in::WindowInfo.hIcon = LoadIcon(in::WindowInfo.hInstance, MAKEINTRESOURCE(iconId));
+        if (!in::WindowInfo.hIcon) { in::SetLastError(5); }
+        error = true;
+    }
+
+    if (cursorId)
+    {
+        in::WindowInfo.hCursor = LoadCursor(in::WindowInfo.hInstance, MAKEINTRESOURCE(cursorId));
+        if (!in::WindowInfo.hCursor) { in::SetLastError(6); }
+        error = true;
+    }
+    
     WNDCLASSEX wc = {};
 
     wc.cbClsExtra       = 0;
     wc.cbSize           = sizeof(WNDCLASSEX);
     wc.cbWndExtra       = 0;
     wc.hbrBackground    = nullptr;
-    wc.hCursor          = nullptr;
-    wc.hIcon            = nullptr;
-    wc.hIconSm          = nullptr;
+    wc.hCursor          = in::WindowInfo.hCursor;
+    wc.hIcon            = in::WindowInfo.hIcon;
+    wc.hIconSm          = in::WindowInfo.hIcon;
     wc.hInstance        = in::WindowInfo.hInstance;
     wc.lpfnWndProc      = in::WindowProc;
     wc.lpszClassName    = in::WindowInfo.windowClassName;
@@ -166,6 +180,8 @@ void tsd::Initialise(void)
     WIN32_EC_RET(in::WindowInfo.classAtom, RegisterClassEx(&wc));
 
     in::WindowInfo.isInitialised = true;
+
+    return !error;
 }
 
 void tsd::Uninitialise(void)

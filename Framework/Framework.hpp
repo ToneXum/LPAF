@@ -6,7 +6,7 @@
 namespace tsd // tonexum software division
 {
     // Start the entirety of this framework up so it can be used.
-    void Initialise();
+    bool Initialise(int icon, int cursor);
 
     // commit self delete :)
     void Uninitialise();

@@ -74,10 +74,39 @@ you handle the actual errors.
 
 When an error occours, the callee will set an internal variable which indicates the code of the last error. You
 can retrieve that code by calling `GetLastError()`. To get a readable message out of said error code you can
-pass it to `GetErrorInformation(int)`.
+pass it to `GetErrorInformation(int)` and from there you can handle the error in anyway you like. I personally
+recommend throwing an exception to conform to the way internal errors are handled.
 
 Note that the error is only valid when the callee return `null` or `null-pointer` and also be sure that the
 underlying function *can* set an error code in the first place.
 
-### Internal Errors
-TODO
+#### Internal Errors
+Errors however can not only be caused by the user. Sometimes errors can occour within the the framework itself.
+In that case, the framework will automatically open a message box with debugging information and quit the entire
+application. After the message box is closed it will throw an exception on the main thread. To properly clean up
+everything with stack unwinding it is advised to put everything into a try-catch statement.
+
+```C++
+int main()
+{
+	try
+	{
+		// All your stuff goes here
+
+		return 0;
+	}
+	catch (const std::exception&) // The framework only throws std::exception
+	{
+		// Still perform clean-up to avoid memory leaks
+		tsd::Unitialise();
+		return -1;
+	}
+}
+```
+
+### Specifics
+Now that you have a basic program running you can get into more specific topics such as customisation, interaction
+and many more things.
+
+These are the more specific topics currently available
+- [Window Customisation](/Usage_Customisation.md)

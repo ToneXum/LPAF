@@ -6,13 +6,11 @@ int main()
 {
     try
     {
-        tsd::Initialise();
+        tsd::Initialise(104, 105);
 
         const char* windowName = "Boring Box";
         short handle1 = tsd::CreateWindow(windowName, 1000, 500);
         short handle2 = tsd::CreateWindow(windowName, 600, 1000);
-
-        tsd::CreateMessageBox(handle1, "Yank", "Hehehehaw", tsd::MBF::TASKMODAL | tsd::MBF::BUTTON_OK | tsd::MBF::ICON_INFO);
 
         while (tsd::Running())
         {
@@ -24,6 +22,7 @@ int main()
     }
     catch (const std::exception&)
     {
+        tsd::Uninitialise();
         return -1;
     }
 

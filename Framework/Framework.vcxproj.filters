@@ -30,9 +30,4 @@
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
-  <ItemGroup>
-    <None Include="Usage.md" />
-    <None Include="Documentation.md" />
-    <None Include="Reference.md" />
-  </ItemGroup>
 </Project>

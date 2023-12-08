@@ -76,7 +76,7 @@
 #define WIN32_EC(x) { if (!x) {in::CreateWin32ReleaseError(__LINE__); } }
 
 // Error check for Win32 API calls but the return value is saved
-#define WIN32_EC_RET(x, y) { x = y; if (!x) { in::CreateWin32ReleaseError(__LINE__); } }
+#define WIN32_EC_RET(var, func) { x = y; if (!x) { in::CreateWin32ReleaseError(__LINE__); } }
 
 #endif // NDEBUG
 
@@ -123,6 +123,9 @@ namespace in
 
         int lastErrorCode = 0;
         bool isInitialised = false; // becomes true when initialise is called
+
+        HICON hIcon{};
+        HCURSOR hCursor{};
     } WindowInfo;
 
     LRESULT WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
