@@ -1,4 +1,4 @@
-**This project is still far, far from finished. Use at your own risk**
+**This project is still far, far from finished and cannot possibly be used for production.**
 
 # GAFW
 The **G**eneric **A**pplication **F**ramwork (for **W**indows) is a lightweight framework to create applications of 
