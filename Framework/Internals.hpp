@@ -120,11 +120,10 @@ namespace in
         HWND hWnd;
         std::thread* msgThread;
 
-        short id;
+        unsigned short id;
         char* name;
-        bool isVisible;
-        int xPos, yPos, width, height;
-        bool isValid;
+        bool isVisible, isValid, hasFocus;
+        short xPos, yPos, width, height;
     };
 
     struct // general information about the state of the application
@@ -153,8 +152,10 @@ namespace in
     LRESULT WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
     // Look through WindowInfo.windows and return the instance matching the handle
+    // Time complexity is linear to the ammount of windows open
     WindowData* GetWindowData(HWND handle);
 
     // Look through WindowInfo.windows and return the instance matching the id of the underlying window
+    // Time complexity is linear to the ammount of windows open
     WindowData* GetWindowData(int id);
 }

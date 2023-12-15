@@ -83,7 +83,7 @@ enum MBR
 };
 
 // Window position relation
-// Used for the WindowGetPosition function
+// Used for the WindowGetPosition functions
 enum WPR
 {
     // WindowGetXPos
@@ -116,9 +116,10 @@ namespace tsd // tonexum software division
     // Use this if you are lazy
     void CreateAutoDebugError(int line, bool quit);
 
+    // UNIMPLEMENTED!!
     // Automatic user error handling
     // Use this if you are lazy
-    void CreateAutoReleaseError(int line, bool quit); // UNIMPLEMENTED!!
+    void CreateAutoReleaseError(int line, bool quit); 
 
     // If an error occours, the callee returns null. Read the error code with this function
     // Beware only check the return value of functions that actually set errors
@@ -128,7 +129,7 @@ namespace tsd // tonexum software division
     const char* GetErrorInformation(int code);
 
     // Create a new window 
-    short CreateWindow(const char* name, int width, int height, int xPos = 0, int yPos = 0);
+    unsigned short CreateWindow(const char* name, int width, int height, int xPos = 0, int yPos = 0);
 
     // Returns the name of the window which matches the given handle
     // This function can fail if the handle is not valid

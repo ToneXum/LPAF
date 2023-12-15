@@ -29,12 +29,13 @@ namespace in
     // Performance is not important here so yes, have a hashmap
     std::unordered_map<int, const char*> errors =
     {
-        { 0, "The operation went smoothly." }, // no error
-        { 1, "" }, // reserved
-        { 2, "The framework is not initialised" }, // tsd::Initialise was not called
-        { 3, "Invalid parameter data"}, // general missuse
-        { 4, "Invalid window handle"},
-        { 5, "Invalid Icon Resource" }, // tsd::Initialise
-        { 6, "Invalid Cursor Resource" } // tsd::Initialise
+    { 0, "The operation went smoothly." }, // no error
+    { 1, "The framework is already initialised." }, // tsd::Initialise was called more than once
+    { 2, "The framework is not initialised." }, // tsd::Initialise was not called
+    { 3, "Invalid parameter data."}, // general missuse
+    { 4, "Invalid window handle."},
+    { 5, "Invalid Icon Resource." }, // tsd::Initialise
+    { 6, "Invalid Cursor Resource." }, // tsd::Initialise
+    { 7, "65535 windows have been opened, cannot create more." } // I hope no one will have to fetch this...
     };
 }

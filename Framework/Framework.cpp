@@ -228,10 +228,10 @@ void tsd::Uninitialise(void)
 // Whoops
 #undef CreateWindow
 
-short tsd::CreateWindow(const char* name, int width, int height, int xPos, int yPos)
+unsigned short tsd::CreateWindow(const char* name, int width, int height, int xPos, int yPos)
 {
-    if (!in::WindowInfo.isInitialised) { in::SetLastError(2); return 0; }
-    if (!name) { in::SetLastError(3); return 0; }
+    if (!in::WindowInfo.isInitialised) { in::SetLastError(2); return 0; } // init was not called
+    if (!name) { in::SetLastError(3); return 0; } // name is nullptr
     if ((height <= 0) || (width <= 0)) { in::SetLastError(3); return 0; }
 
     in::WindowData* wndData = new in::WindowData;
@@ -251,6 +251,13 @@ short tsd::CreateWindow(const char* name, int width, int height, int xPos, int y
     in::WindowInfo.windows.push_back(wndData);
 
     in::WindowInfo.windowIsFinished = false;
+
+    // ran out of range
+    if (wndData->id == 65535)
+    {
+        in::SetLastError(7); 
+        return 0;
+    }
 
     return wndData->id;
 }
