@@ -24,9 +24,6 @@
 
 #include <complex>
 
-// For anyone recieving a copy of this file:
-// Modify at your own risk ;)
-
 // Displays debug information depending on the build type
 #ifdef _DEBUG
 // Automatic error handling, the return value is thrown away
@@ -110,7 +107,9 @@ namespace tsd // tonexum software division
     // Can fail if a resource id is invalid
     bool Initialise(int icon, int cursor);
 
-    // commit self delete :)
+    // Shutdown, cleanup.
+    // Only call when it is garanteed that all windows are closed. Otherwise it will get the execution of the
+    // Caller stuck
     void Uninitialise();
 
     // Automatic user error handling
@@ -119,7 +118,7 @@ namespace tsd // tonexum software division
 
     // Automatic user error handling
     // Use this if you are lazy
-    void CreateAutoReleaseError(int line, bool quit);
+    void CreateAutoReleaseError(int line, bool quit); // UNIMPLEMENTED!!
 
     // If an error occours, the callee returns null. Read the error code with this function
     // Beware only check the return value of functions that actually set errors
