@@ -119,6 +119,7 @@ void in::WindowData::MessageHandler()
         DispatchMessage(&msg);
     }
 
+    // Window is closed, update window information
     WindowInfo.windowCount -= 1;
     isValid = false;
 }

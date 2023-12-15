@@ -112,7 +112,7 @@ namespace in
     // Error handling for the user
     void SetLastError(int code);
 
-    struct WindowData // additional data that is not exposed to the end user
+    struct WindowData // additional data associated to each window
     {
         // Window creator and message pump
         void MessageHandler();
@@ -130,16 +130,16 @@ namespace in
     struct // general information about the state of the application
     {
 
-        std::vector<WindowData*> windows{}; // contains information about the currently open windows
+        std::vector<WindowData*> windows{}; // window specific information container
         const char* windowClassName{ "GGFW Window Class" };
-        HINSTANCE hInstance = 0; // hinstance handle to window class
+        HINSTANCE hInstance = 0; // handle to window class
         ATOM classAtom = 0; // idk what this is even supposed to do
 
         int windowCount = 0;  // guess what, its the count of the currently open windows
         int windowsOpened = 0; // ammount of windows this program has opened in the past
-        bool isRunning = true; // becomes false when origin window is closed
+        bool isRunning = true; // becomes false when no window is open anymore
 
-        std::mutex mtx; // mutex used to prevent funny shit from happening when creating a window
+        std::mutex mtx; // mutex used halt execution to prevent usage of initialised memory
         std::condition_variable cv; // goes along side mtx
         bool windowIsFinished = false; // creation of a window is finished
 
@@ -152,9 +152,9 @@ namespace in
 
     LRESULT WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
-    // Look through WindowInfo and return the instance matching the handle
+    // Look through WindowInfo.windows and return the instance matching the handle
     WindowData* GetWindowData(HWND handle);
 
-    // Look through WindowInfo and return the instance matching the id of the underlying window
+    // Look through WindowInfo.windows and return the instance matching the id of the underlying window
     WindowData* GetWindowData(int id);
 }
