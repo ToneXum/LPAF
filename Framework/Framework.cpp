@@ -187,10 +187,16 @@ LRESULT in::WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
         }
         break;
     }
+    case WM_SETFOCUS:
+    {
+        in::GetWindowData(hWnd)->hasFocus = true;
+        break;
+    }
     case WM_KILLFOCUS:
     {
         // reset keystates when window looses focus
         in::WindowInfo.keystates.reset();
+        in::GetWindowData(hWnd)->hasFocus = false;
         break;
     }
     }
@@ -297,6 +303,7 @@ short tsd::CreateWindow(const wchar_t* name, int width, int height, int xPos, in
     wndData->xPos       = xPos;
     wndData->yPos       = yPos;
     wndData->isValid    = true;
+    wndData->hasFocus   = true;
 
     // wait for window creation to finish
     std::unique_lock<std::mutex> lock(in::WindowInfo.mtx);
@@ -316,7 +323,7 @@ short tsd::CreateWindow(const wchar_t* name, int width, int height, int xPos, in
     return wndData->id;
 }
 
-void tsd::CreateAutoDebugError(int line, bool quit)
+void tsd::CreateAutoError(int line, bool quit)
 {
     std::ostringstream msg;
     msg << "Error " << tsd::GetLastError() << " has occoured at line " << line << ".\n\n";
@@ -331,11 +338,6 @@ void tsd::CreateAutoDebugError(int line, bool quit)
     std::exception exc;
     throw exc;
     }
-}
-
-void tsd::CreateAutoReleaseError(int line, bool quit)
-{
-    // todo
 }
 
 int tsd::GetLastError()
@@ -456,6 +458,13 @@ bool tsd::WindowChangeName(short id, const wchar_t* name)
     SetWindowText(wndData->hWnd, name);
     wndData->name = const_cast<wchar_t*>(name);
     return true;
+}
+
+bool tsd::WindowHasFocus(short id)
+{
+    in::WindowData* wndData = in::GetWindowData(id);
+    if (!wndData) { return false; }
+    return wndData->hasFocus;
 }
 
 bool tsd::IsValidHandle(short handle)

@@ -28,17 +28,17 @@
 // Displays debug information depending on the build type
 #ifdef _DEBUG
 // Automatic error handling, the return value is thrown away
-#define TSD_CALL(callee, q) { if (!callee) { tsd::CreateAutoDebugError(__LINE__, q); } }
+#define TSD_CALL(callee, q) { if (!callee) { tsd::CreateAutoError(__LINE__, q); } }
 
 // Automatic errror handling, the return value is saved
-#define TSD_CALL_RET(ret, callee, q) { ret = callee; if (!ret) { tsd::CreateAutoDebugError(__LINE__, q); } }
+#define TSD_CALL_RET(ret, callee, q) { ret = callee; if (!ret) { tsd::CreateAutoError(__LINE__, q); } }
 #endif
 #ifdef NDEBUG
 // Automatic error handling, the return value is thrown away
-#define TSD_CALL(callee, q) { if (!callee) { tsd::CreateAutoReleaseError(__LINE__, q); } }
+#define TSD_CALL(callee, q) { if (!callee) { tsd::CreateAutoError(__LINE__, q); } }
 
 // Automatic errror handling, the return value is saved
-#define TSD_CALL_RET(ret, callee, q) { ret = callee; if (!ret) { tsd::CreateAutoReleaseError(__LINE__, q); } }
+#define TSD_CALL_RET(ret, callee, q) { ret = callee; if (!ret) { tsd::CreateAutoError(__LINE__, q); } }
 #endif // NDEBUG
 
 namespace tsd // tonexum software division
@@ -54,12 +54,7 @@ namespace tsd // tonexum software division
 
     // Automatic user error handling
     // Use this if you are lazy
-    void CreateAutoDebugError(int line, bool quit);
-
-    // UNIMPLEMENTED!!
-    // Automatic user error handling
-    // Use this if you are lazy
-    void CreateAutoReleaseError(int line, bool quit); 
+    void CreateAutoError(int line, bool quit);
 
     // If an error occours, the callee returns null. Read the error code with this function
     // Beware only check the return value of functions that actually set errors
@@ -109,6 +104,9 @@ namespace tsd // tonexum software division
     // Changes the name of the specified window to the given name
     // Can fail if the handle is invalid
     bool WindowChangeName(short id, const wchar_t* name);
+
+    // Return whether the specified window has keyboard focus or not
+    bool WindowHasFocus(short id);
 
     // Returns whether the passed handle is valid or not
     bool IsValidHandle(short handle);

@@ -29,24 +29,24 @@ namespace tsd
     enum class MBF
     {
         // Block execution as long as the message box is open
-        TASKMODAL = 0b1,
+        TASKMODAL                       = 0b1,
 
         // Icons
-        ICON_WARNING = 0b10,
-        ICON_ERROR = 0b100,
-        ICON_INFO = 0b1000,
-        ICON_QUESTION = 0b10000,
+        ICON_WARNING                    = 0b10,
+        ICON_ERROR                      = 0b100,
+        ICON_INFO                       = 0b1000,
+        ICON_QUESTION                   = 0b10000,
 
         // Buttons, 2 options
-        BUTTON_OK = 0b100000,
-        BUTTON_OK_CANCEL = 0b1000000,
-        BUTTON_YES_NO = 0b10000000,
-        BUTTON_RETRY_CANEL = 0b100000000,
+        BUTTON_OK                       = 0b100000,
+        BUTTON_OK_CANCEL                = 0b1000000,
+        BUTTON_YES_NO                   = 0b10000000,
+        BUTTON_RETRY_CANEL              = 0b100000000,
 
         // Buttons, 3 options
-        BUTTON_YES_NO_CANCEL = 0b1000000000,
-        BUTTON_ABORT_RETRY_IGNORE = 0b100000000000,
-        BUTTON_CANCEL_RETRY_CONTINUE = 0b1000000000000
+        BUTTON_YES_NO_CANCEL            = 0b1000000000,
+        BUTTON_ABORT_RETRY_IGNORE       = 0b100000000000,
+        BUTTON_CANCEL_RETRY_CONTINUE    = 0b1000000000000
     };
 
     // Message box return
@@ -54,7 +54,7 @@ namespace tsd
     // Basically just the button that was pressed
     enum class MBR
     {
-        ABORT = 1,
+        ABORT   = 1,
         CANCEL,
         CONTINUE,
         IGNORE,
@@ -70,7 +70,7 @@ namespace tsd
     enum class WPR
     {
         // WindowGetXPos
-        LEFT = 1,
+        LEFT    = 1,
         RIGHT,
 
         // WindowGetYPos
@@ -91,7 +91,7 @@ namespace tsd
     {
         LBUTTON         = 0x01, // left mouse button
         RBUTTON         = 0x02, // right mouse button
-        CANCEL          = 0x03, // cancel key, also why cant I name things the same across enums?
+        CANCEL          = 0x03, // cancel key
         MBUTTON         = 0x04, // middle mouse button
         XBUTTON1        = 0x05, // extra mouse button 1, usually on the side
         XBUTTON2        = 0x06, // extra mouse button 2, usually on the side

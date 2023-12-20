@@ -12,6 +12,9 @@ int main()
         short windowHandle = 0;
         TSD_CALL_RET(windowHandle, tsd::CreateWindow(L"Boring Box", 500, 500), true);
 
+        short windowHandle2 = 0;
+        TSD_CALL_RET(windowHandle2, tsd::CreateWindow(L"Even more boring box", 1000, 400), true)
+
         while (tsd::Running())
         {
             if (!tsd::IsTextInputEnabled())

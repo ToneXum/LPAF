@@ -81,7 +81,6 @@ namespace in
         int windowCount = 0;  // guess what, its the count of the currently open windows
         int windowsOpened = 0; // ammount of windows this program has opened in the past
         bool isRunning = true; // becomes false when no window is open anymore
-        bool hasFocus = false;
         int lastErrorCode = 0;
         bool isInitialised = false; // becomes true when initialise is called
     } WindowInfo;
