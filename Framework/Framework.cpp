@@ -87,7 +87,7 @@ void in::SetLastError(int code)
 
 void in::WindowData::MessageHandler()
 {
-    WIN32_EC_RET(hWnd, CreateWindowEx(
+    WIN32_EC_RET(hWnd, CreateWindowExW(
         0,
         in::WindowInfo.windowClassName,
         name,
@@ -143,6 +143,56 @@ LRESULT in::WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
         }
         break;
     }
+    case WM_KEYDOWN:
+    {
+        if (!(lParam & 0x40000000)) // bitmask, check previous keystate
+        {
+            in::WindowInfo.keystates.set(wParam);
+        }
+        break;
+    }
+    case WM_KEYUP:
+    {
+        in::WindowInfo.keystates.reset(wParam);
+        break;
+    }
+    case WM_SYSKEYDOWN:
+    {
+        if (!(lParam & 0x40000000)) // bitmask, check previous keystate
+        {
+            in::WindowInfo.keystates.set(wParam);
+        }
+        break;
+    }
+    case WM_SYSKEYUP:
+    {
+        in::WindowInfo.keystates.reset(wParam);
+        break;
+    }
+    case WM_CHAR:
+    { 
+        if (in::WindowInfo.textInputEnabled)
+        {
+            if (wParam != 0x0008) // is not backspace
+            {
+                in::WindowInfo.textInput[in::WindowInfo.textInputIndex] = wParam;
+                in::WindowInfo.textInputIndex++;
+            }
+            else
+            {
+                in::WindowInfo.textInput[in::WindowInfo.textInputIndex] = 0;
+                if (in::WindowInfo.textInputIndex > 0)
+                    in::WindowInfo.textInputIndex--;
+            }
+        }
+        break;
+    }
+    case WM_KILLFOCUS:
+    {
+        // reset keystates when window looses focus
+        in::WindowInfo.keystates.reset();
+        break;
+    }
     }
     return DefWindowProc(hWnd, uMsg, wParam, lParam);
 }
@@ -190,10 +240,10 @@ bool tsd::Initialise(int iconId, int cursorId)
         if (!in::WindowInfo.hCursor) { in::SetLastError(6); success = false; }
     }
     
-    WNDCLASSEX wc = {};
+    WNDCLASSEXW wc = {};
 
     wc.cbClsExtra       = 0;
-    wc.cbSize           = sizeof(WNDCLASSEX);
+    wc.cbSize           = sizeof(WNDCLASSEXW);
     wc.cbWndExtra       = 0;
     wc.hbrBackground    = nullptr;
     wc.hCursor          = in::WindowInfo.hCursor;
@@ -205,7 +255,10 @@ bool tsd::Initialise(int iconId, int cursorId)
     wc.lpszMenuName     = nullptr;
     wc.style            = 0;
 
-    WIN32_EC_RET(in::WindowInfo.classAtom, RegisterClassEx(&wc));
+    WIN32_EC_RET(in::WindowInfo.classAtom, RegisterClassExW(&wc));
+
+    // allocate memory for text input field
+    in::WindowInfo.textInput = new wchar_t[100000]{0}; // thats 200 whole kilobytes of ram right there
 
     in::WindowInfo.isInitialised = true;
 
@@ -217,7 +270,7 @@ void tsd::Uninitialise(void)
     for (in::WindowData* w : in::WindowInfo.windows)
         w->msgThread->join();
 
-    WIN32_EC(UnregisterClass(in::WindowInfo.windowClassName, in::WindowInfo.hInstance));
+    WIN32_EC(UnregisterClassW(in::WindowInfo.windowClassName, in::WindowInfo.hInstance));
 
     for (in::WindowData* w : in::WindowInfo.windows)
     {
@@ -229,7 +282,7 @@ void tsd::Uninitialise(void)
 // Whoops
 #undef CreateWindow
 
-unsigned short tsd::CreateWindow(const char* name, int width, int height, int xPos, int yPos)
+short tsd::CreateWindow(const wchar_t* name, int width, int height, int xPos, int yPos)
 {
     if (!in::WindowInfo.isInitialised) { in::SetLastError(2); return 0; } // init was not called
     if (!name) { in::SetLastError(3); return 0; } // name is nullptr
@@ -238,7 +291,7 @@ unsigned short tsd::CreateWindow(const char* name, int width, int height, int xP
     in::WindowData* wndData = new in::WindowData;
     wndData->msgThread = new std::thread(&in::WindowData::MessageHandler, wndData);
 
-    wndData->name       = const_cast<char*>(name);
+    wndData->name       = const_cast<wchar_t*>(name);
     wndData->width      = width;
     wndData->height     = height;
     wndData->xPos       = xPos;
@@ -254,7 +307,7 @@ unsigned short tsd::CreateWindow(const char* name, int width, int height, int xP
     in::WindowInfo.windowIsFinished = false;
 
     // ran out of range
-    if (wndData->id == 65535)
+    if (wndData->id == SHRT_MAX)
     {
         in::SetLastError(7); 
         return 0;
@@ -295,7 +348,7 @@ const char* tsd::GetErrorInformation(int code)
     return in::errors.find(code) != in::errors.end() ? in::errors[code] : "Invalid error Code!"; // best one-liner so far
 }
 
-char* tsd::WindowGetName(short id)
+wchar_t* tsd::WindowGetName(short id)
 {
     in::WindowData* wndData = in::GetWindowData(id);
     if (!wndData) { in::SetLastError(4); return nullptr; }
@@ -339,9 +392,9 @@ int tsd::WindowGetXPos(short id, WPR wpr)
 
     switch (wpr)
     {
-    case LEFT:
+    case WPR::LEFT:
         return rect.left;
-    case RIGHT:
+    case WPR::RIGHT:
         return rect.right;
     }
 
@@ -358,9 +411,9 @@ int tsd::WindowGetYPos(short id, WPR wpr)
 
     switch (wpr)
     {
-    case TOP:
+    case WPR::TOP:
         return rect.top;
-    case BOTTOM:
+    case WPR::BOTTOM:
         return rect.bottom;
     }
 
@@ -377,13 +430,13 @@ std::pair<int, int> tsd::WindowGetPosition(short id, WPR wpr)
     
     switch (wpr)
     {
-    case TOP_LEFT:
+    case WPR::TOP_LEFT:
         return { rect.left, rect.top };
-    case TOP_RIGHT:
+    case WPR::TOP_RIGHT:
         return { rect.right, rect.top };
-    case BOTTOM_LEFT:
+    case WPR::BOTTOM_LEFT:
         return { rect.left, rect.bottom };
-    case BOTTOM_RIGHT:
+    case WPR::BOTTOM_RIGHT:
         return { rect.right, rect.bottom };
     }
 
@@ -396,12 +449,12 @@ int tsd::WindowGetCount(void)
     return in::WindowInfo.windowCount;
 }
 
-bool tsd::WindowChangeName(short id, const char* name)
+bool tsd::WindowChangeName(short id, const wchar_t* name)
 {
     in::WindowData* wndData = in::GetWindowData(id);
     if (!wndData) { in::SetLastError(4); return false; }
-    SetWindowText(wndData->hWnd, name);
-    wndData->name = const_cast<char*>(name);
+    SetWindowTextW(wndData->hWnd, name);
+    wndData->name = const_cast<wchar_t*>(name);
     return true;
 }
 
@@ -433,32 +486,32 @@ tsd::MBR tsd::MessageBox(short owner, const char* title, const char* msg, int fl
 
     // Where switch statement?
     // Cant put (non-constant) expressions into switch cases
-    if (flags & MBF::TASKMODAL)
+    if (flags & (int)MBF::TASKMODAL)
         rawFlags = rawFlags | MB_TASKMODAL;
 
-    if (flags & MBF::ICON_WARNING)
+    if (flags & (int)MBF::ICON_WARNING)
         rawFlags = rawFlags | MB_ICONWARNING;
-    if (flags & MBF::ICON_ERROR)
+    if (flags & (int)MBF::ICON_ERROR)
         rawFlags = rawFlags | MB_ICONERROR;
-    if (flags & MBF::ICON_INFO)
+    if (flags & (int)MBF::ICON_INFO)
         rawFlags = rawFlags | MB_ICONINFORMATION;
-    if (flags & MBF::ICON_QUESTION)
+    if (flags & (int)MBF::ICON_QUESTION)
         rawFlags = rawFlags | MB_ICONQUESTION;
     
-    if (flags & MBF::BUTTON_OK)
+    if (flags & (int)MBF::BUTTON_OK)
         rawFlags = rawFlags | MB_OK;
-    if (flags & MBF::BUTTON_OK_CANCEL)
+    if (flags & (int)MBF::BUTTON_OK_CANCEL)
         rawFlags = rawFlags | MB_OKCANCEL;
-    if (flags & MBF::BUTTON_YES_NO)
+    if (flags & (int)MBF::BUTTON_YES_NO)
         rawFlags = rawFlags | MB_YESNO;
-    if (flags & MBF::BUTTON_RETRY_CANEL)
+    if (flags & (int)MBF::BUTTON_RETRY_CANEL)
         rawFlags = rawFlags | MB_RETRYCANCEL;
 
-    if (flags & MBF::BUTTON_YES_NO_CANCEL)
+    if (flags & (int)MBF::BUTTON_YES_NO_CANCEL)
         rawFlags = rawFlags | MB_YESNOCANCEL;
-    if (flags & MBF::BUTTON_ABORT_RETRY_IGNORE)
+    if (flags & (int)MBF::BUTTON_ABORT_RETRY_IGNORE)
         rawFlags = rawFlags | MB_ABORTRETRYIGNORE;
-    if (flags & MBF::BUTTON_CANCEL_RETRY_CONTINUE)
+    if (flags & (int)MBF::BUTTON_CANCEL_RETRY_CONTINUE)
         rawFlags = rawFlags | MB_CANCELTRYCONTINUE;
 
 // by now win32 is just getting anoying
@@ -485,3 +538,43 @@ tsd::MBR tsd::MessageBox(short owner, const char* title, const char* msg, int fl
     return MBR::CANCEL; // should never reach this
 }
 #define IGNORE 0
+
+bool tsd::IsKeyPressed(Key code)
+{
+    return in::WindowInfo.keystates.test((int)code);
+}
+
+bool tsd::IsAnyKeyPressed()
+{
+    return in::WindowInfo.keystates.any();
+}
+
+void tsd::SetTextInputState(bool state, bool clear)
+{
+    in::WindowInfo.textInputEnabled = state;
+    if (clear)
+    {
+        for (int i = 0; i < 100000; i++)
+        {
+            in::WindowInfo.textInput[i] = 0;
+        }
+    }
+}
+
+wchar_t* tsd::GetTextInput()
+{
+    return in::WindowInfo.textInput;
+}
+
+void tsd::ClearTextInput()
+{
+    for (int i = 0; i < 100000; i++)
+    {
+        in::WindowInfo.textInput[i] = 0;
+    }
+}
+
+bool tsd::IsTextInputEnabled()
+{
+    return in::WindowInfo.textInputEnabled;
+}

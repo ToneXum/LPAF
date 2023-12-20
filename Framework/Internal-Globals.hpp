@@ -26,6 +26,7 @@
 
 #pragma once
 #include <unordered_map>
+#include <bitset>
 
 namespace in
 {
@@ -39,7 +40,7 @@ namespace in
     { 4, "Invalid window handle."},
     { 5, "Invalid Icon Resource." }, // tsd::Initialise
     { 6, "Invalid Cursor Resource." }, // tsd::Initialise
-    { 7, "65535 windows have been opened, cannot create more." } // I hope no one will have to fetch this...
+    { 7, "32767 windows have been opened, cannot create more." } // I hope no one will have to fetch this...
     };
 
     struct WindowData // additional data associated to each window
@@ -50,8 +51,8 @@ namespace in
         HWND hWnd;
         std::thread* msgThread;
 
-        unsigned short id;
-        char* name;
+        short id;
+        wchar_t* name;
         bool isVisible, isValid, hasFocus;
         short xPos, yPos, width, height;
     };
@@ -59,21 +60,28 @@ namespace in
     struct // general information about the state of the application
     {
         std::vector<WindowData*> windows{}; // window specific information container
-        const char* windowClassName{ "GGFW Window Class" };
         HINSTANCE hInstance = 0; // handle to window class
         ATOM classAtom = 0; // idk what this is even supposed to do
         HICON hIcon{};
         HCURSOR hCursor{};
 
-        int windowCount = 0;  // guess what, its the count of the currently open windows
-        int windowsOpened = 0; // ammount of windows this program has opened in the past
-        bool isRunning = true; // becomes false when no window is open anymore
-
         std::mutex mtx; // mutex used halt execution to prevent usage of initialised memory
         std::condition_variable cv; // goes along side mtx
         bool windowIsFinished = false; // creation of a window is finished
-        bool hasFocus = false;
 
+        // Bitset for keyboard key states
+        std::bitset<256> keystates = 0;
+
+        // Charfield for text input
+        wchar_t* textInput; // pointer to the character field
+        bool textInputEnabled = false;
+        int textInputIndex = 0; // numbers of written characters in textInput
+
+        const wchar_t* windowClassName = L"GGFW Window Class";
+        int windowCount = 0;  // guess what, its the count of the currently open windows
+        int windowsOpened = 0; // ammount of windows this program has opened in the past
+        bool isRunning = true; // becomes false when no window is open anymore
+        bool hasFocus = false;
         int lastErrorCode = 0;
         bool isInitialised = false; // becomes true when initialise is called
     } WindowInfo;

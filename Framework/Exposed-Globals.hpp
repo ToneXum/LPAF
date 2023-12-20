@@ -26,7 +26,7 @@ namespace tsd
 {
     // Messagebox flags
     // biggest possible size is 3 bytes + 1 bit, passed as 4 byte int
-    enum MBF
+    enum class MBF
     {
         // Block execution as long as the message box is open
         TASKMODAL = 0b1,
@@ -52,7 +52,7 @@ namespace tsd
     // Message box return
     // This is the meaning of the return value gotten from CreateMessageBox
     // Basically just the button that was pressed
-    enum MBR
+    enum class MBR
     {
         ABORT = 1,
         CANCEL,
@@ -67,7 +67,7 @@ namespace tsd
 
     // Window position relation
     // Used for the WindowGetPosition functions
-    enum WPR
+    enum class WPR
     {
         // WindowGetXPos
         LEFT = 1,
@@ -87,11 +87,11 @@ namespace tsd
     // Keys used for keyboard related functions
     // Basically a forward of the Win32 symbols
     // And yes I had to hand write this
-    enum Key
+    enum class Key
     {
         LBUTTON         = 0x01, // left mouse button
         RBUTTON         = 0x02, // right mouse button
-        CANCEL_         = 0x03, // cancel key, also why cant I name things the same across enums?
+        CANCEL          = 0x03, // cancel key, also why cant I name things the same across enums?
         MBUTTON         = 0x04, // middle mouse button
         XBUTTON1        = 0x05, // extra mouse button 1, usually on the side
         XBUTTON2        = 0x06, // extra mouse button 2, usually on the side
@@ -104,7 +104,7 @@ namespace tsd
         // 0x0A and 0x0B are reserved
 
         CLEAR           = 0x0C, // clear
-        RETURN          = 0x0D, // return or enter
+        ENTER           = 0x0D, // return or enter
 
         // 0x0E and 0x0F are reserved
 
@@ -131,10 +131,10 @@ namespace tsd
         NEXT            = 0x22, // page down
         END             = 0x23, // end
         HOME            = 0x24, // home
-        LEFT_ARROW      = 0x25, // left arrow key
-        UP_ARROW        = 0x26, // up arrow key
-        RIGHT_ARROW     = 0x27, // right arrow key
-        DOWN_ARROW      = 0x28, // down arrow key
+        LEFT            = 0x25, // left arrow key
+        UP              = 0x26, // up arrow key
+        RIGHT           = 0x27, // right arrow key
+        DOWN            = 0x28, // down arrow key
         SELECT          = 0x29, // select
         PRINT           = 0x2A, // print
         EXECUTE         = 0x2B, // hmmm ... where could this one be?

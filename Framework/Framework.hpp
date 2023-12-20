@@ -69,11 +69,11 @@ namespace tsd // tonexum software division
     const char* GetErrorInformation(int code);
 
     // Create a new window 
-    unsigned short CreateWindow(const char* name, int width, int height, int xPos = 0, int yPos = 0);
+    short CreateWindow(const wchar_t* name, int width, int height, int xPos = 0, int yPos = 0);
 
     // Returns the name of the window which matches the given handle
     // This function can fail if the handle is not valid
-    char* WindowGetName(short id);
+    wchar_t* WindowGetName(short id);
 
     // Returns the state of visibility of the window which matches the given handle
     // This function can fail if the handle is not valid
@@ -108,7 +108,7 @@ namespace tsd // tonexum software division
 
     // Changes the name of the specified window to the given name
     // Can fail if the handle is invalid
-    bool WindowChangeName(short id, const char* name);
+    bool WindowChangeName(short id, const wchar_t* name);
 
     // Returns whether the passed handle is valid or not
     bool IsValidHandle(short handle);
@@ -122,4 +122,22 @@ namespace tsd // tonexum software division
     // Creates a message box with the given information
     // Can only have one owner
     MBR MessageBox(short owner, const char* title, const char* msg, int flags);
+
+    // Check the keystate for the specified key, return true if the the key is pressed
+    bool IsKeyPressed(Key code);
+
+    // Returns true if any key is pressed
+    bool IsAnyKeyPressed();
+
+    // Enables / disables the text input field
+    void SetTextInputState(bool state, bool clear = true);
+
+    // Returns a pointer to the text input field
+    wchar_t* GetTextInput();
+
+    // Clears the text input field out to all 0's
+    void ClearTextInput();
+
+    // Returns whether the text input field is enabled or not
+    bool IsTextInputEnabled();
 }
