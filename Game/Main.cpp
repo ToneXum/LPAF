@@ -8,13 +8,16 @@ int main()
     {
         TSD_CALL(tsd::Initialise(0, 105), true);
 
-        const char* windowName = "Boring Box";
+        short windowHandle = 0;
+        TSD_CALL_RET(windowHandle, tsd::CreateWindow(nullptr, 500, 500), true);
+
+        short windowHandle2 = 0;
+        TSD_CALL_RET(windowHandle2, tsd::CreateWindow("Even more Boring Box", 1000, 600, -1000, 200), true);
 
         while (tsd::Running())
         {
             // simulate computation
             tsd::Halt(16);
-            TSD_CALL(tsd::CreateWindow(windowName, 500, 500), true)
         }
 
         tsd::Uninitialise();

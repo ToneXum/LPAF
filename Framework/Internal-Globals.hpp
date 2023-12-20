@@ -27,7 +27,6 @@
 #pragma once
 #include <unordered_map>
 
-
 namespace in
 {
     // Performance is not important here so yes, have a hashmap
@@ -63,6 +62,8 @@ namespace in
         const char* windowClassName{ "GGFW Window Class" };
         HINSTANCE hInstance = 0; // handle to window class
         ATOM classAtom = 0; // idk what this is even supposed to do
+        HICON hIcon{};
+        HCURSOR hCursor{};
 
         int windowCount = 0;  // guess what, its the count of the currently open windows
         int windowsOpened = 0; // ammount of windows this program has opened in the past
@@ -71,11 +72,9 @@ namespace in
         std::mutex mtx; // mutex used halt execution to prevent usage of initialised memory
         std::condition_variable cv; // goes along side mtx
         bool windowIsFinished = false; // creation of a window is finished
+        bool hasFocus = false;
 
         int lastErrorCode = 0;
         bool isInitialised = false; // becomes true when initialise is called
-
-        HICON hIcon{};
-        HCURSOR hCursor{};
     } WindowInfo;
 }

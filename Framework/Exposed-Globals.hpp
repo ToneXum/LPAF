@@ -1,7 +1,89 @@
+// MIT License
+//
+// Copyright(c) 2023 ToneXum
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this softwareand associated documentation files(the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and /or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions :
+// 
+// The above copyright noticeand this permission notice shall be included in all
+// copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
+
 #pragma once
 
 namespace tsd
 {
+    // Messagebox flags
+    // biggest possible size is 3 bytes + 1 bit, passed as 4 byte int
+    enum MBF
+    {
+        // Block execution as long as the message box is open
+        TASKMODAL = 0b1,
+
+        // Icons
+        ICON_WARNING = 0b10,
+        ICON_ERROR = 0b100,
+        ICON_INFO = 0b1000,
+        ICON_QUESTION = 0b10000,
+
+        // Buttons, 2 options
+        BUTTON_OK = 0b100000,
+        BUTTON_OK_CANCEL = 0b1000000,
+        BUTTON_YES_NO = 0b10000000,
+        BUTTON_RETRY_CANEL = 0b100000000,
+
+        // Buttons, 3 options
+        BUTTON_YES_NO_CANCEL = 0b1000000000,
+        BUTTON_ABORT_RETRY_IGNORE = 0b100000000000,
+        BUTTON_CANCEL_RETRY_CONTINUE = 0b1000000000000
+    };
+
+    // Message box return
+    // This is the meaning of the return value gotten from CreateMessageBox
+    // Basically just the button that was pressed
+    enum MBR
+    {
+        ABORT = 1,
+        CANCEL,
+        CONTINUE,
+        IGNORE,
+        NO,
+        OK,
+        RETRY,
+        TRYAGAIN,
+        YES
+    };
+
+    // Window position relation
+    // Used for the WindowGetPosition functions
+    enum WPR
+    {
+        // WindowGetXPos
+        LEFT = 1,
+        RIGHT,
+
+        // WindowGetYPos
+        TOP,
+        BOTTOM,
+
+        // WindowGetPosition
+        TOP_LEFT,
+        TOP_RIGHT,
+        BOTTOM_LEFT,
+        BOTTOM_RIGHT
+    };
+
     // Keys used for keyboard related functions
     // Basically a forward of the Win32 symbols
     // And yes I had to hand write this
@@ -9,7 +91,7 @@ namespace tsd
     {
         LBUTTON         = 0x01, // left mouse button
         RBUTTON         = 0x02, // right mouse button
-        CANCEL          = 0x03, // only present on larger kbrd layouts
+        CANCEL_         = 0x03, // cancel key, also why cant I name things the same across enums?
         MBUTTON         = 0x04, // middle mouse button
         XBUTTON1        = 0x05, // extra mouse button 1, usually on the side
         XBUTTON2        = 0x06, // extra mouse button 2, usually on the side
@@ -49,10 +131,10 @@ namespace tsd
         NEXT            = 0x22, // page down
         END             = 0x23, // end
         HOME            = 0x24, // home
-        LEFT            = 0x25, // left arrow key
-        UP              = 0x26, // up arrow key
-        RIGHT           = 0x27, // right arrow key
-        DOWN            = 0x28, // down arrow key
+        LEFT_ARROW      = 0x25, // left arrow key
+        UP_ARROW        = 0x26, // up arrow key
+        RIGHT_ARROW     = 0x27, // right arrow key
+        DOWN_ARROW      = 0x28, // down arrow key
         SELECT          = 0x29, // select
         PRINT           = 0x2A, // print
         EXECUTE         = 0x2B, // hmmm ... where could this one be?
@@ -124,7 +206,6 @@ namespace tsd
         BROWSER_SEARCH  = 0xAA, // browser search 
         BROWSER_FAV     = 0xAB, // browser favorites
         BROWSER_HOME    = 0xAC, // browser home
-
         VOLUME_MUTE     = 0xAD, // volume key, mute system sound
         VOLUME_DOWN     = 0xAE, // volume key, make system sound quieter
         VOLUME_UP       = 0xAF, // volume key, make system sound louder
@@ -174,65 +255,5 @@ namespace tsd
         NONAME          = 0xFC, // unused but still valid key
         PA1             = 0xFD, // pa1 key
         CLEAR_OEM       = 0xFE  // oem specific clear key
-    };
-
-    // Messagebox flags
-    // biggest possible size is 3 bytes + 1 bit, passed as 4 byte int
-    enum MBF
-    {
-        // Let the exexting thread sleep as long as the box is open
-        TASKMODAL = 0b1,
-
-        // Icons
-        ICON_WARNING = 0b10,
-        ICON_ERROR = 0b100,
-        ICON_INFO = 0b1000,
-        ICON_QUESTION = 0b10000,
-
-        // Buttons, 2 options
-        BUTTON_OK = 0b100000,
-        BUTTON_OK_CANCEL = 0b1000000,
-        BUTTON_YES_NO = 0b10000000,
-        BUTTON_RETRY_CANEL = 0b100000000,
-
-        // Buttons, 3 options
-        BUTTON_YES_NO_CANCEL = 0b1000000000,
-        BUTTON_ABORT_RETRY_IGNORE = 0b100000000000,
-        BUTTON_CANCEL_RETRY_CONTINUE = 0b1000000000000
-    };
-
-    // Message box return
-    // This is the meaning of the return value gotten from CreateMessageBox
-    // Basically just the button that was pressed
-    enum MBR
-    {
-        ABORT = 1,
-        CANCEL,
-        CONTINUE,
-        IGNORE,
-        NO,
-        OK,
-        RETRY,
-        TRYAGAIN,
-        YES
-    };
-
-    // Window position relation
-    // Used for the WindowGetPosition functions
-    enum WPR
-    {
-        // WindowGetXPos
-        LEFT,
-        RIGHT,
-
-        // WindowGetYPos
-        TOP,
-        BOTTOM,
-
-        // WindowGetPosition
-        TOP_LEFT,
-        TOP_RIGHT,
-        BOTTOM_LEFT,
-        BOTTOM_RIGHT
     };
 }
