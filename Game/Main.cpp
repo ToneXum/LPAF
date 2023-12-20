@@ -12,17 +12,21 @@ int main()
         short windowHandle = 0;
         TSD_CALL_RET(windowHandle, tsd::CreateWindow(L"Boring Box", 500, 500), true);
 
-        tsd::SetTextInputState(true);
-        tsd::WindowChangeName(windowHandle, L"Hello my man");
-
         while (tsd::Running())
         {
-            //if (tsd::IsKeyPressed(tsd::Key::ENTER))
-            //    tsd::SetTextInputState(tsd::IsTextInputEnabled() ? false : true);
-
-            tsd::WindowChangeName(windowHandle, tsd::GetTextInput());
-            wchar_t* name = tsd::GetTextInput();
-
+            if (!tsd::IsTextInputEnabled())
+            {
+                tsd::WindowChangeName(windowHandle, L"Text input is not enabled");
+                if (tsd::IsKeyPressed(tsd::Key::ENTER))
+                    tsd::SetTextInputState(true);
+            }
+            else
+            {
+                tsd::WindowChangeName(windowHandle, tsd::GetTextInput());
+                if (tsd::IsKeyPressed(tsd::Key::ENTER))
+                    tsd::SetTextInputState(false);
+            }
+            
             // simulate computation
             tsd::Halt(16);
         }

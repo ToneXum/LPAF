@@ -73,7 +73,7 @@ namespace in
         std::bitset<256> keystates = 0;
 
         // Charfield for text input
-        wchar_t* textInput; // pointer to the character field
+        wchar_t* textInput = nullptr; // pointer to the character field
         bool textInputEnabled = false;
         int textInputIndex = 0; // numbers of written characters in textInput
 

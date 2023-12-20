@@ -541,7 +541,10 @@ tsd::MBR tsd::MessageBox(short owner, const wchar_t* title, const wchar_t* msg, 
 
 bool tsd::IsKeyPressed(Key code)
 {
-    return in::WindowInfo.keystates.test((int)code);
+    bool state = in::WindowInfo.keystates.test((int)code);
+    if (state)
+        in::WindowInfo.keystates.reset((int)code);
+    return state;
 }
 
 bool tsd::IsAnyKeyPressed()
@@ -558,6 +561,7 @@ void tsd::SetTextInputState(bool state, bool clear)
         {
             in::WindowInfo.textInput[i] = 0;
         }
+        in::WindowInfo.textInputIndex = 0;
     }
 }
 
@@ -572,6 +576,7 @@ void tsd::ClearTextInput()
     {
         in::WindowInfo.textInput[i] = 0;
     }
+    in::WindowInfo.textInputIndex = 0;
 }
 
 bool tsd::IsTextInputEnabled()
