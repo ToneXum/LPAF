@@ -22,6 +22,7 @@
 
 #include "Framework.hpp"
 #include "Internals.hpp"
+#include "Internal-Globals.hpp"
 
 void in::CreateWin32DebugError(int line)
 {
@@ -423,7 +424,7 @@ void tsd::Halt(int ms)
 
 #undef MessageBox
 #undef IGNORE
-MBR tsd::MessageBox(short owner, const char* title, const char* msg, int flags)
+tsd::MBR tsd::MessageBox(short owner, const char* title, const char* msg, int flags)
 {
     // return null if the window is not found so I dont care
     in::WindowData* ownerData = in::GetWindowData(owner);

@@ -23,6 +23,7 @@
 #pragma once
 
 #include <complex>
+#include "Exposed-Globals.hpp"
 
 // Displays debug information depending on the build type
 #ifdef _DEBUG
@@ -39,67 +40,6 @@
 // Automatic errror handling, the return value is saved
 #define TSD_CALL_RET(ret, callee, q) { ret = callee; if (!ret) { tsd::CreateAutoReleaseError(__LINE__, q); } }
 #endif // NDEBUG
-
-
-// Messagebox flags
-// biggest possible size is 3 bytes + 1 bit, passed as 4 byte int
-enum MBF
-{
-    // Let the exexting thread sleep as long as the box is open
-    TASKMODAL = 0b1,
-
-    // Icons
-    ICON_WARNING = 0b10,
-    ICON_ERROR = 0b100,
-    ICON_INFO = 0b1000,
-    ICON_QUESTION = 0b10000,
-
-    // Buttons, 2 options
-    BUTTON_OK = 0b100000,
-    BUTTON_OK_CANCEL = 0b1000000,
-    BUTTON_YES_NO = 0b10000000,
-    BUTTON_RETRY_CANEL = 0b100000000,
-
-    // Buttons, 3 options
-    BUTTON_YES_NO_CANCEL = 0b1000000000,
-    BUTTON_ABORT_RETRY_IGNORE = 0b100000000000,
-    BUTTON_CANCEL_RETRY_CONTINUE = 0b1000000000000
-};
-
-// Message box return
-// This is the meaning of the return value gotten from CreateMessageBox
-// Basically just the button that was pressed
-enum MBR
-{
-    ABORT = 1,
-    CANCEL,
-    CONTINUE,
-    IGNORE,
-    NO,
-    OK,
-    RETRY,
-    TRYAGAIN,
-    YES
-};
-
-// Window position relation
-// Used for the WindowGetPosition functions
-enum WPR
-{
-    // WindowGetXPos
-    LEFT,
-    RIGHT,
-
-    // WindowGetYPos
-    TOP,
-    BOTTOM,
-
-    // WindowGetPosition
-    TOP_LEFT,
-    TOP_RIGHT,
-    BOTTOM_LEFT,
-    BOTTOM_RIGHT
-};
 
 namespace tsd // tonexum software division
 {

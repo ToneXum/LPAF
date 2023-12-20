@@ -153,7 +153,8 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="Errors.hpp" />
+    <ClInclude Include="Internal-Globals.hpp" />
+    <ClInclude Include="Exposed-Globals.hpp" />
     <ClInclude Include="Framework.hpp" />
     <ClInclude Include="Internals.hpp" />
   </ItemGroup>

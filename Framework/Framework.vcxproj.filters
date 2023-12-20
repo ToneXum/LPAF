@@ -21,7 +21,10 @@
     <ClInclude Include="Internals.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Errors.hpp">
+    <ClInclude Include="Internal-Globals.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Exposed-Globals.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

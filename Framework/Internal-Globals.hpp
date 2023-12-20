@@ -20,6 +20,10 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
+/// About this file:
+/// 
+/// This file only contains mass-definitions. This header is exposed to the end-user!
+
 #pragma once
 #include <unordered_map>
 
@@ -38,4 +42,40 @@ namespace in
     { 6, "Invalid Cursor Resource." }, // tsd::Initialise
     { 7, "65535 windows have been opened, cannot create more." } // I hope no one will have to fetch this...
     };
+
+    struct WindowData // additional data associated to each window
+    {
+        // Window creator and message pump
+        void MessageHandler();
+
+        HWND hWnd;
+        std::thread* msgThread;
+
+        unsigned short id;
+        char* name;
+        bool isVisible, isValid, hasFocus;
+        short xPos, yPos, width, height;
+    };
+
+    struct // general information about the state of the application
+    {
+        std::vector<WindowData*> windows{}; // window specific information container
+        const char* windowClassName{ "GGFW Window Class" };
+        HINSTANCE hInstance = 0; // handle to window class
+        ATOM classAtom = 0; // idk what this is even supposed to do
+
+        int windowCount = 0;  // guess what, its the count of the currently open windows
+        int windowsOpened = 0; // ammount of windows this program has opened in the past
+        bool isRunning = true; // becomes false when no window is open anymore
+
+        std::mutex mtx; // mutex used halt execution to prevent usage of initialised memory
+        std::condition_variable cv; // goes along side mtx
+        bool windowIsFinished = false; // creation of a window is finished
+
+        int lastErrorCode = 0;
+        bool isInitialised = false; // becomes true when initialise is called
+
+        HICON hIcon{};
+        HCURSOR hCursor{};
+    } WindowInfo;
 }
