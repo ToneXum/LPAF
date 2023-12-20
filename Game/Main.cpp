@@ -1,5 +1,6 @@
 #include "Framework.hpp"
 #include <exception>
+#include <ostream>
 
 // This is a simple test program
 int main()
@@ -8,16 +9,24 @@ int main()
     {
         TSD_CALL(tsd::Initialise(0, 105), true);
 
-        const char* windowName = "Boring Box";
-
-        short handle1;
-        TSD_CALL_RET(handle1, tsd::CreateWindow(windowName, 1000, 500), true);
-
-        short handle2;
-        TSD_CALL_RET(handle2, tsd::CreateWindow(windowName, 600, 1000), true);
+        short windowHandle = 0;
+        TSD_CALL_RET(windowHandle, tsd::CreateWindow(L"Boring Box", 500, 500), true);
 
         while (tsd::Running())
         {
+            if (!tsd::IsTextInputEnabled())
+            {
+                tsd::WindowChangeName(windowHandle, L"Text input is not enabled");
+                if (tsd::IsKeyPressed(tsd::Key::ENTER))
+                    tsd::SetTextInputState(true);
+            }
+            else
+            {
+                tsd::WindowChangeName(windowHandle, tsd::GetTextInput());
+                if (tsd::IsKeyPressed(tsd::Key::ENTER))
+                    tsd::SetTextInputState(false);
+            }
+            
             // simulate computation
             tsd::Halt(16);
         }

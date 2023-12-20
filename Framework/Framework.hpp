@@ -23,6 +23,7 @@
 #pragma once
 
 #include <complex>
+#include "Exposed-Globals.hpp"
 
 // Displays debug information depending on the build type
 #ifdef _DEBUG
@@ -40,67 +41,6 @@
 #define TSD_CALL_RET(ret, callee, q) { ret = callee; if (!ret) { tsd::CreateAutoReleaseError(__LINE__, q); } }
 #endif // NDEBUG
 
-
-// Messagebox flags
-// biggest possible size is 3 bytes + 1 bit, passed as 4 byte int
-enum MBF
-{
-    // Let the exexting thread sleep as long as the box is open
-    TASKMODAL = 0b1,
-
-    // Icons
-    ICON_WARNING = 0b10,
-    ICON_ERROR = 0b100,
-    ICON_INFO = 0b1000,
-    ICON_QUESTION = 0b10000,
-
-    // Buttons, 2 options
-    BUTTON_OK = 0b100000,
-    BUTTON_OK_CANCEL = 0b1000000,
-    BUTTON_YES_NO = 0b10000000,
-    BUTTON_RETRY_CANEL = 0b100000000,
-
-    // Buttons, 3 options
-    BUTTON_YES_NO_CANCEL = 0b1000000000,
-    BUTTON_ABORT_RETRY_IGNORE = 0b100000000000,
-    BUTTON_CANCEL_RETRY_CONTINUE = 0b1000000000000
-};
-
-// Message box return
-// This is the meaning of the return value gotten from CreateMessageBox
-// Basically just the button that was pressed
-enum MBR
-{
-    ABORT = 1,
-    CANCEL,
-    CONTINUE,
-    IGNORE,
-    NO,
-    OK,
-    RETRY,
-    TRYAGAIN,
-    YES
-};
-
-// Window position relation
-// Used for the WindowGetPosition function
-enum WPR
-{
-    // WindowGetXPos
-    LEFT,
-    RIGHT,
-
-    // WindowGetYPos
-    TOP,
-    BOTTOM,
-
-    // WindowGetPosition
-    TOP_LEFT,
-    TOP_RIGHT,
-    BOTTOM_LEFT,
-    BOTTOM_RIGHT
-};
-
 namespace tsd // tonexum software division
 {
     // Start the entirety of this framework up so it can be used.
@@ -116,9 +56,10 @@ namespace tsd // tonexum software division
     // Use this if you are lazy
     void CreateAutoDebugError(int line, bool quit);
 
+    // UNIMPLEMENTED!!
     // Automatic user error handling
     // Use this if you are lazy
-    void CreateAutoReleaseError(int line, bool quit); // UNIMPLEMENTED!!
+    void CreateAutoReleaseError(int line, bool quit); 
 
     // If an error occours, the callee returns null. Read the error code with this function
     // Beware only check the return value of functions that actually set errors
@@ -128,11 +69,11 @@ namespace tsd // tonexum software division
     const char* GetErrorInformation(int code);
 
     // Create a new window 
-    short CreateWindow(const char* name, int width, int height, int xPos = 0, int yPos = 0);
+    short CreateWindow(const wchar_t* name, int width, int height, int xPos = 0, int yPos = 0);
 
     // Returns the name of the window which matches the given handle
     // This function can fail if the handle is not valid
-    char* WindowGetName(short id);
+    wchar_t* WindowGetName(short id);
 
     // Returns the state of visibility of the window which matches the given handle
     // This function can fail if the handle is not valid
@@ -167,7 +108,7 @@ namespace tsd // tonexum software division
 
     // Changes the name of the specified window to the given name
     // Can fail if the handle is invalid
-    bool WindowChangeName(short id, const char* name);
+    bool WindowChangeName(short id, const wchar_t* name);
 
     // Returns whether the passed handle is valid or not
     bool IsValidHandle(short handle);
@@ -180,5 +121,23 @@ namespace tsd // tonexum software division
 
     // Creates a message box with the given information
     // Can only have one owner
-    MBR MessageBox(short owner, const char* title, const char* msg, int flags);
+    MBR MessageBox(short owner, const wchar_t* title, const wchar_t* msg, int flags);
+
+    // Check the keystate for the specified key, return true if the the key is pressed
+    bool IsKeyPressed(Key code);
+
+    // Returns true if any key is pressed
+    bool IsAnyKeyPressed();
+
+    // Enables / disables the text input field
+    void SetTextInputState(bool state, bool clear = true);
+
+    // Returns a pointer to the text input field
+    wchar_t* GetTextInput();
+
+    // Clears the text input field out to all 0's
+    void ClearTextInput();
+
+    // Returns whether the text input field is enabled or not
+    bool IsTextInputEnabled();
 }
