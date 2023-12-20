@@ -121,7 +121,7 @@ namespace tsd // tonexum software division
 
     // Creates a message box with the given information
     // Can only have one owner
-    MBR MessageBox(short owner, const char* title, const char* msg, int flags);
+    MBR MessageBox(short owner, const wchar_t* title, const wchar_t* msg, int flags);
 
     // Check the keystate for the specified key, return true if the the key is pressed
     bool IsKeyPressed(Key code);

@@ -30,7 +30,7 @@ void in::CreateWin32DebugError(int line)
     std::ostringstream msg;
     char* eMsg = nullptr;
 
-    FormatMessage(
+    FormatMessageA(
         FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
         nullptr,
         e,
@@ -52,7 +52,7 @@ void in::CreateWin32DebugError(int line)
         msg << "I guess I fucked up..." << std::endl;
     }
 
-    MessageBox(nullptr, msg.str().c_str(), "Internal Error!", MB_ICONERROR | MB_TASKMODAL | MB_OK);
+    MessageBoxA(nullptr, msg.str().c_str(), "Internal Error!", MB_ICONERROR | MB_TASKMODAL | MB_OK);
     LocalFree((LPSTR)eMsg);
 
     std::exception exc;
@@ -74,7 +74,7 @@ void in::CreateWin32ReleaseError(int line)
     msg << "A critical error occoured, the application must quit now!\n\nFor more information check the logfiles in the application";
     msg << " directory" << std::endl; 
 
-    MessageBox(nullptr, msg.str().c_str(), "Critical Error!", MB_TASKMODAL | MB_OK | MB_ICONERROR);
+    MessageBoxA(nullptr, msg.str().c_str(), "Critical Error!", MB_TASKMODAL | MB_OK | MB_ICONERROR);
 
     std::exception exc;
     throw exc;
@@ -180,9 +180,9 @@ LRESULT in::WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
             }
             else
             {
-                in::WindowInfo.textInput[in::WindowInfo.textInputIndex] = 0;
                 if (in::WindowInfo.textInputIndex > 0)
                     in::WindowInfo.textInputIndex--;
+                in::WindowInfo.textInput[in::WindowInfo.textInputIndex] = 0;
             }
         }
         break;
@@ -324,7 +324,7 @@ void tsd::CreateAutoDebugError(int line, bool quit)
     if (quit) { msg << "The application must quit now."; }
     msg << std::endl;
 
-    MessageBox(nullptr, msg.str().c_str(), "Error!", MB_TASKMODAL | MB_OK | MB_ICONERROR);
+    MessageBoxA(nullptr, msg.str().c_str(), "Error!", MB_TASKMODAL | MB_OK | MB_ICONERROR);
 
     if (quit)
     {
@@ -453,7 +453,7 @@ bool tsd::WindowChangeName(short id, const wchar_t* name)
 {
     in::WindowData* wndData = in::GetWindowData(id);
     if (!wndData) { in::SetLastError(4); return false; }
-    SetWindowTextW(wndData->hWnd, name);
+    SetWindowText(wndData->hWnd, name);
     wndData->name = const_cast<wchar_t*>(name);
     return true;
 }
@@ -477,7 +477,7 @@ void tsd::Halt(int ms)
 
 #undef MessageBox
 #undef IGNORE
-tsd::MBR tsd::MessageBox(short owner, const char* title, const char* msg, int flags)
+tsd::MBR tsd::MessageBox(short owner, const wchar_t* title, const wchar_t* msg, int flags)
 {
     // return null if the window is not found so I dont care
     in::WindowData* ownerData = in::GetWindowData(owner);
