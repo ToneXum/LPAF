@@ -9,3 +9,8 @@ For an installation guide as well as information about usage of this framework, 
 At the moment you can find it on the [Wiki](https://github.com/ToneXum/GAFW/wiki) of this Repo
 
 To view progress on updates, features and bug fixes you can check out the [Kanban Board](https://github.com/users/ToneXum/projects/1)
+
+### Contact
+For any inquiries about this repository you can:
+- Message me on Discord: @tonexum (ToneXum#7143)
+- Send me an E-Mail: tonexum@national.shitposting.agency (yes, Im not joking)
