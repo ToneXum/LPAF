@@ -6,9 +6,9 @@ any kind like videogames and tools. It focuses on simplicity and performace whil
 
 ### Documentation and Information
 For an installation guide as well as information about usage of this framework, check the user documentation.
-At the moment you can find it on the [Wiki](https://github.com/ToneXum/GAFW/wiki) of this Repo
+At the moment you can find it on the [Wiki](https://github.com/ToneXum/GAFW/wiki) of this Repo.
 
-To view progress on updates, features and bug fixes you can check out the [Kanban Board](https://github.com/users/ToneXum/projects/1)
+To view progress on updates, features and bug fixes you can check out the [Kanban Board](https://github.com/users/ToneXum/projects/1).
 
 ### Contact
 For any inquiries about this repository you can:
