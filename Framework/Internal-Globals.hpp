@@ -27,6 +27,7 @@
 #pragma once
 #include <unordered_map>
 #include <bitset>
+#include <complex>
 
 namespace in
 {
@@ -40,7 +41,8 @@ namespace in
     { 4, "Invalid window handle."},
     { 5, "Invalid Icon Resource." }, // tsd::Initialise
     { 6, "Invalid Cursor Resource." }, // tsd::Initialise
-    { 7, "32767 windows have been opened, cannot create more." } // I hope no one will have to fetch this...
+    { 7, "32767 windows have been opened, cannot create more." }, // I hope no one will have to fetch this...
+    { 8, "Uninitialisation failed, had to force termination for app to quit." }
     };
 
     struct WindowData // additional data associated to each window
@@ -53,7 +55,7 @@ namespace in
 
         short id;
         wchar_t* name;
-        bool isVisible, isValid, hasFocus;
+        bool isVisible, isValid, hasFocus, hasMouseInClientArea;
         short xPos, yPos, width, height;
     };
 
@@ -77,11 +79,19 @@ namespace in
         bool textInputEnabled = false;
         int textInputIndex = 0; // numbers of written characters in textInput
 
+        // Mouse information
+        struct
+        {
+            bool leftButton, rightButton, middleButton, x1Button, x2Button = false;
+            int xPos, yPos = 0;
+            int wheelDelta = 0;
+        } mouse;
+
         const wchar_t* windowClassName = L"GGFW Window Class";
         int windowCount = 0;  // guess what, its the count of the currently open windows
         int windowsOpened = 0; // ammount of windows this program has opened in the past
         bool isRunning = true; // becomes false when no window is open anymore
         int lastErrorCode = 0;
         bool isInitialised = false; // becomes true when initialise is called
-    } WindowInfo;
+    } AppInfo;
 }
