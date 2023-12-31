@@ -80,37 +80,53 @@ void in::CreateWin32ReleaseError(int line)
     throw exc;
 }
 
+void in::CreateManualError(const char* msg, const char* func)
+{
+    std::ostringstream str;
+
+    str << "An oparation within the framework has cause an error:\n\n";
+    str << msg << "\n";
+    str << "Origin: " << func << "\n\n";
+    str << "This is an internal error likely caused by the framework itself. ";
+    str << "The program is unable to recover, the application must quit now!";
+    str << std::endl;
+
+    MessageBoxA(nullptr, str.str().c_str(), "Internal Error", MB_TASKMODAL | MB_OK | MB_ICONERROR);
+
+    throw std::exception();
+}
+
 void in::SetLastError(int code)
 {
-    WindowInfo.lastErrorCode = code;
+    AppInfo.lastErrorCode = code;
 }
 
 void in::WindowData::MessageHandler()
 {
     WIN32_EC_RET(hWnd, CreateWindowExW(
         0,
-        in::WindowInfo.windowClassName,
+        in::AppInfo.windowClassName,
         name,
         WS_MINIMIZEBOX | WS_CAPTION | WS_SYSMENU,
         !xPos ? CW_USEDEFAULT : xPos, !yPos ? CW_DEFAULT : yPos, // man do I love tenary expression :)
         width, height,
         nullptr,
         nullptr,
-        in::WindowInfo.hInstance,
+        in::AppInfo.hInstance,
         nullptr
     ));
-    in::WindowInfo.windowCount += 1;
-    in::WindowInfo.windowsOpened += 1;
+    in::AppInfo.windowCount += 1;
+    in::AppInfo.windowsOpened += 1;
 
-    id = in::WindowInfo.windowsOpened; 
+    id = in::AppInfo.windowsOpened; 
     
     ShowWindow(hWnd, 1);
     
     // work is done, let the main thread continue
-    std::unique_lock<std::mutex> lock1(in::WindowInfo.mtx);
-    WindowInfo.windowIsFinished = true;
+    std::unique_lock<std::mutex> lock1(in::AppInfo.mtx);
+    AppInfo.windowIsFinished = true;
     lock1.unlock();
-    in::WindowInfo.cv.notify_one();
+    in::AppInfo.cv.notify_one();
 
     // message pump for the window
     MSG msg = { };
@@ -121,7 +137,6 @@ void in::WindowData::MessageHandler()
     }
 
     // Window is closed, update window information
-    WindowInfo.windowCount -= 1;
     isValid = false;
 }
 
@@ -129,6 +144,8 @@ LRESULT in::WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
     switch (uMsg)
     {
+    ///////////////////////////////////
+    // Closing the window
     case WM_CLOSE: // closing of a window has been requested
     {
         DestroyWindow(hWnd);
@@ -136,70 +153,198 @@ LRESULT in::WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
     }
     case WM_DESTROY: // closing a window was ordered and confirmed
     {
-        if (tsd::WindowGetCount() == 1) // quit program if last window remaining is closed
+        if (tsd::GetWindowCount() == 1) // quit program if last window remaining is closed
         {
-            WindowInfo.isRunning = false;
+            AppInfo.isRunning = false;
             return 0;
         }
+        AppInfo.windowCount -= 1;
         break;
     }
+    // Closing the window
+    ///////////////////////////////////
+
+    ///////////////////////////////////
+    // Keboard and text input
     case WM_KEYDOWN:
     {
         if (!(lParam & 0x40000000)) // bitmask, check previous keystate
         {
-            in::WindowInfo.keystates.set(wParam);
+            in::AppInfo.keystates.set(wParam);
         }
         break;
     }
     case WM_KEYUP:
     {
-        in::WindowInfo.keystates.reset(wParam);
+        in::AppInfo.keystates.reset(wParam);
         break;
     }
     case WM_SYSKEYDOWN:
     {
         if (!(lParam & 0x40000000)) // bitmask, check previous keystate
         {
-            in::WindowInfo.keystates.set(wParam);
+            in::AppInfo.keystates.set(wParam);
         }
         break;
     }
     case WM_SYSKEYUP:
     {
-        in::WindowInfo.keystates.reset(wParam);
+        in::AppInfo.keystates.reset(wParam);
         break;
     }
     case WM_CHAR:
     { 
-        if (in::WindowInfo.textInputEnabled)
+        if (in::AppInfo.textInputEnabled)
         {
             if (wParam != 0x0008) // is not backspace
             {
-                in::WindowInfo.textInput[in::WindowInfo.textInputIndex] = wParam;
-                in::WindowInfo.textInputIndex++;
+                in::AppInfo.textInput[in::AppInfo.textInputIndex] = wParam;
+                in::AppInfo.textInputIndex++;
             }
             else
             {
-                if (in::WindowInfo.textInputIndex > 0)
-                    in::WindowInfo.textInputIndex--;
-                in::WindowInfo.textInput[in::WindowInfo.textInputIndex] = 0;
+                if (in::AppInfo.textInputIndex > 0)
+                    in::AppInfo.textInputIndex--;
+                in::AppInfo.textInput[in::AppInfo.textInputIndex] = 0;
             }
         }
         break;
     }
-    case WM_KILLFOCUS:
+    // Keboard and text input
+    ///////////////////////////////////
+
+    ///////////////////////////////////
+    // Mouse input
+    case WM_MOUSEMOVE:
     {
-        // reset keystates when window looses focus
-        in::WindowInfo.keystates.reset();
+        in::AppInfo.mouse.xPos = GET_X_LPARAM(lParam);
+        in::AppInfo.mouse.yPos = GET_Y_LPARAM(lParam);
+        GetWindowData(hWnd)->hasMouseInClientArea = true;
+
+        TRACKMOUSEEVENT msEv = {};
+        msEv.cbSize     = sizeof(TRACKMOUSEEVENT);
+        msEv.dwFlags    = TME_LEAVE;
+        msEv.hwndTrack  = hWnd;
+
+        WIN32_EC(TrackMouseEvent(&msEv));
+
         break;
     }
+    case WM_LBUTTONDOWN:
+    {
+        SetCapture(hWnd);
+        in::AppInfo.mouse.leftButton = true;
+        break;
     }
+    case WM_LBUTTONUP:
+    {
+        ReleaseCapture();
+        in::AppInfo.mouse.leftButton = false;
+        break;
+    }
+    case WM_MBUTTONDOWN:
+    {
+        SetCapture(hWnd);
+        in::AppInfo.mouse.middleButton = true;
+        break;
+    }
+    case WM_MBUTTONUP:
+    {
+        in::AppInfo.mouse.middleButton = false;
+        break;
+    }
+    case WM_RBUTTONDOWN:
+    {
+        in::AppInfo.mouse.rightButton = true;
+        break;
+    }
+    case WM_RBUTTONUP:
+    {
+        in::AppInfo.mouse.rightButton = false;
+        break;
+    }
+    case WM_XBUTTONDOWN:
+    {
+        int button = HIWORD(wParam);
+        switch (button)
+        {
+        case 1:
+        {
+            in::AppInfo.mouse.x1Button = true;
+            break;
+        }
+        case 2:
+        {
+            in::AppInfo.mouse.x2Button = true;
+            break;
+        }
+        }
+    }
+    case WM_XBUTTONUP:
+    {
+        int button = HIWORD(wParam);
+        switch (button)
+        {
+        case 1:
+        {
+            in::AppInfo.mouse.x1Button = false;
+            break;
+        }
+        case 2:
+        {
+            in::AppInfo.mouse.x2Button = false;
+            break;
+        }
+        }
+    }
+    case WM_MOUSEWHEEL:
+    {
+        AppInfo.mouse.wheelDelta += GET_WHEEL_DELTA_WPARAM(wParam);
+        break;
+    }
+    case WM_MOUSELEAVE:
+    {
+        GetWindowData(hWnd)->hasMouseInClientArea = false;
+    }
+    // Mouse input
+    ///////////////////////////////////
+
+    ///////////////////////////////////
+    // Focus gain and loss
+    case WM_SETFOCUS:
+    {
+        if (AppInfo.windows.empty())
+            break;
+        WindowData* wndData = in::GetWindowData(hWnd);
+        if (wndData)
+        {
+            wndData->hasFocus = true;
+        }
+
+        break;
+    }
+    case WM_KILLFOCUS:
+    {
+        if (AppInfo.windows.empty())
+            break;
+        WindowData* wndData = in::GetWindowData(hWnd);
+        if (wndData)
+        {
+            wndData->hasFocus = false;
+        }
+        in::AppInfo.keystates.reset();
+        break;
+    }
+    // Focus gain and loss
+    ///////////////////////////////////
+    }
+    
     return DefWindowProc(hWnd, uMsg, wParam, lParam);
 }
 
 in::WindowData* in::GetWindowData(HWND handle)
 {
-    for (WindowData* i : WindowInfo.windows)
+    for (WindowData* i : AppInfo.windows)
     {
         if ((i->hWnd == handle) && (i->isValid))
         {
@@ -209,9 +354,9 @@ in::WindowData* in::GetWindowData(HWND handle)
     return nullptr;
 }
 
-in::WindowData* in::GetWindowData(int id)
+in::WindowData* in::GetWindowData(short id)
 {
-    for (WindowData* i : WindowInfo.windows)
+    for (WindowData* i : AppInfo.windows)
     {
         if ((i->id == id) && (i->isValid))
         {
@@ -226,18 +371,18 @@ bool tsd::Initialise(int iconId, int cursorId)
     bool success = true;
 
     // Get hInstance since the program does not use the winMain entry point
-    in::WindowInfo.hInstance = GetModuleHandle(0);
+    in::AppInfo.hInstance = GetModuleHandle(0);
 
     if (iconId)
     {
-        in::WindowInfo.hIcon = LoadIcon(in::WindowInfo.hInstance, MAKEINTRESOURCE(iconId));
-        if (in::WindowInfo.hIcon == 0) { in::SetLastError(5); success = false; }
+        in::AppInfo.hIcon = LoadIcon(in::AppInfo.hInstance, MAKEINTRESOURCE(iconId));
+        if (in::AppInfo.hIcon == 0) { in::SetLastError(5); success = false; }
     }
 
     if (cursorId)
     {
-        in::WindowInfo.hCursor = LoadCursor(in::WindowInfo.hInstance, MAKEINTRESOURCE(cursorId));
-        if (!in::WindowInfo.hCursor) { in::SetLastError(6); success = false; }
+        in::AppInfo.hCursor = LoadCursor(in::AppInfo.hInstance, MAKEINTRESOURCE(cursorId));
+        if (!in::AppInfo.hCursor) { in::SetLastError(6); success = false; }
     }
     
     WNDCLASSEXW wc = {};
@@ -246,33 +391,35 @@ bool tsd::Initialise(int iconId, int cursorId)
     wc.cbSize           = sizeof(WNDCLASSEXW);
     wc.cbWndExtra       = 0;
     wc.hbrBackground    = nullptr;
-    wc.hCursor          = in::WindowInfo.hCursor;
-    wc.hIcon            = in::WindowInfo.hIcon;
-    wc.hIconSm          = in::WindowInfo.hIcon;
-    wc.hInstance        = in::WindowInfo.hInstance;
+    wc.hCursor          = in::AppInfo.hCursor;
+    wc.hIcon            = in::AppInfo.hIcon;
+    wc.hIconSm          = in::AppInfo.hIcon;
+    wc.hInstance        = in::AppInfo.hInstance;
     wc.lpfnWndProc      = in::WindowProc;
-    wc.lpszClassName    = in::WindowInfo.windowClassName;
+    wc.lpszClassName    = in::AppInfo.windowClassName;
     wc.lpszMenuName     = nullptr;
     wc.style            = 0;
 
-    WIN32_EC_RET(in::WindowInfo.classAtom, RegisterClassExW(&wc));
+    WIN32_EC_RET(in::AppInfo.classAtom, RegisterClassExW(&wc));
 
     // allocate memory for text input field
-    in::WindowInfo.textInput = new wchar_t[100000]{0}; // thats 200 whole kilobytes of ram right there
+    in::AppInfo.textInput = new wchar_t[100000]{0}; // thats 200 whole kilobytes of ram right there
 
-    in::WindowInfo.isInitialised = true;
+    in::AppInfo.isInitialised = true;
 
     return success;
 }
 
 void tsd::Uninitialise(void)
 {
-    for (in::WindowData* w : in::WindowInfo.windows)
-        w->msgThread->join();
+    for (in::WindowData* w : in::AppInfo.windows)
+        w->msgThread->~thread(); // sometimes the thread gets stuck and wont exit, it is forcefully ended
 
-    WIN32_EC(UnregisterClassW(in::WindowInfo.windowClassName, in::WindowInfo.hInstance));
+    // No update to AppData needed since the program will quit now
 
-    for (in::WindowData* w : in::WindowInfo.windows)
+    WIN32_EC(UnregisterClassW(in::AppInfo.windowClassName, in::AppInfo.hInstance));
+
+    for (in::WindowData* w : in::AppInfo.windows)
     {
         delete w->msgThread;
         delete w;
@@ -284,12 +431,13 @@ void tsd::Uninitialise(void)
 
 short tsd::CreateWindow(const wchar_t* name, int width, int height, int xPos, int yPos)
 {
-    if (!in::WindowInfo.isInitialised) { in::SetLastError(2); return 0; } // init was not called
+    if (!in::AppInfo.isInitialised) { in::SetLastError(2); return 0; } // init was not called
     if (!name) { in::SetLastError(3); return 0; } // name is nullptr
     if ((height <= 0) || (width <= 0)) { in::SetLastError(3); return 0; }
 
     in::WindowData* wndData = new in::WindowData;
     wndData->msgThread = new std::thread(&in::WindowData::MessageHandler, wndData);
+    wndData->msgThread->detach();
 
     wndData->name       = const_cast<wchar_t*>(name);
     wndData->width      = width;
@@ -297,14 +445,16 @@ short tsd::CreateWindow(const wchar_t* name, int width, int height, int xPos, in
     wndData->xPos       = xPos;
     wndData->yPos       = yPos;
     wndData->isValid    = true;
+    wndData->hasFocus   = true;
+    wndData->hasMouseInClientArea = false;
 
     // wait for window creation to finish
-    std::unique_lock<std::mutex> lock(in::WindowInfo.mtx);
-    in::WindowInfo.cv.wait(lock, [] { return in::WindowInfo.windowIsFinished; });
+    std::unique_lock<std::mutex> lock(in::AppInfo.mtx);
+    in::AppInfo.cv.wait(lock, [] { return in::AppInfo.windowIsFinished; });
 
-    in::WindowInfo.windows.push_back(wndData);
+    in::AppInfo.windows.push_back(wndData);
 
-    in::WindowInfo.windowIsFinished = false;
+    in::AppInfo.windowIsFinished = false;
 
     // ran out of range
     if (wndData->id == SHRT_MAX)
@@ -316,7 +466,7 @@ short tsd::CreateWindow(const wchar_t* name, int width, int height, int xPos, in
     return wndData->id;
 }
 
-void tsd::CreateAutoDebugError(int line, bool quit)
+void tsd::CreateAutoError(int line, bool quit)
 {
     std::ostringstream msg;
     msg << "Error " << tsd::GetLastError() << " has occoured at line " << line << ".\n\n";
@@ -328,62 +478,58 @@ void tsd::CreateAutoDebugError(int line, bool quit)
 
     if (quit)
     {
-    std::exception exc;
-    throw exc;
+        std::exception exc;
+        throw exc;
     }
-}
-
-void tsd::CreateAutoReleaseError(int line, bool quit)
-{
-    // todo
 }
 
 int tsd::GetLastError()
 {
-    return in::WindowInfo.lastErrorCode;
+    return in::AppInfo.lastErrorCode;
 }
 
 const char* tsd::GetErrorInformation(int code)
 {
+    // Determine whether the requested error code is in the hashmap, if so, retrieve the error code. If not return direct error message
     return in::errors.find(code) != in::errors.end() ? in::errors[code] : "Invalid error Code!"; // best one-liner so far
 }
 
-wchar_t* tsd::WindowGetName(short id)
+wchar_t* tsd::GetWindowName(short id)
 {
     in::WindowData* wndData = in::GetWindowData(id);
     if (!wndData) { in::SetLastError(4); return nullptr; }
     return wndData->name;
 }
 
-bool tsd::WindowGetVisibility(short id)
+bool tsd::GetWindowVisibility(short id)
 {
     in::WindowData* wndData = in::GetWindowData(id);
     if (!wndData) { in::SetLastError(4); return false; }
     return wndData->isVisible;
 }
 
-int tsd::WindowGetWidth(short id)
+int tsd::GetWindowWidth(short id)
 {
     in::WindowData* wndData = in::GetWindowData(id);
     if (!wndData) { in::SetLastError(4); return false; }
     return wndData->width;
 }
 
-int tsd::WindowGetHeight(short id)
+int tsd::GetWindowHeight(short id)
 {
     in::WindowData* wndData = in::GetWindowData(id);
     if (!wndData) { in::SetLastError(4); return false; }
     return wndData->height;
 }
 
-std::pair<int, int> tsd::WindowGetDimensions(short id)
+std::pair<int, int> tsd::GetWindowDimensions(short id)
 {
     in::WindowData* wndData = in::GetWindowData(id);
     if (!wndData) { in::SetLastError(4); return {0, 0}; }
     return {wndData->width, wndData->height};
 }
 
-int tsd::WindowGetXPos(short id, WPR wpr)
+int tsd::GetWindowXPos(short id, WPR wpr)
 {
     in::WindowData* wndData = in::GetWindowData(id);
     if (!wndData) { in::SetLastError(4); return 0; }
@@ -402,7 +548,7 @@ int tsd::WindowGetXPos(short id, WPR wpr)
     return 0;
 }
 
-int tsd::WindowGetYPos(short id, WPR wpr)
+int tsd::GetWindowYPos(short id, WPR wpr)
 {
     in::WindowData* wndData = in::GetWindowData(id);
     if (!wndData) { in::SetLastError(4); return 0; }
@@ -421,7 +567,7 @@ int tsd::WindowGetYPos(short id, WPR wpr)
     return 0;
 }
 
-std::pair<int, int> tsd::WindowGetPosition(short id, WPR wpr)
+std::pair<int, int> tsd::GetWindowPosition(short id, WPR wpr)
 {
     in::WindowData* wndData = in::GetWindowData(id);
     if (!wndData) { in::SetLastError(4); return {0, 0}; }
@@ -444,18 +590,25 @@ std::pair<int, int> tsd::WindowGetPosition(short id, WPR wpr)
     return {0, 0};
 }
 
-int tsd::WindowGetCount(void)
+int tsd::GetWindowCount(void)
 {
-    return in::WindowInfo.windowCount;
+    return in::AppInfo.windowCount;
 }
 
-bool tsd::WindowChangeName(short id, const wchar_t* name)
+bool tsd::ChangeWindowName(short id, const wchar_t* name)
 {
     in::WindowData* wndData = in::GetWindowData(id);
     if (!wndData) { in::SetLastError(4); return false; }
     SetWindowText(wndData->hWnd, name);
     wndData->name = const_cast<wchar_t*>(name);
     return true;
+}
+
+bool tsd::WindowHasFocus(short id)
+{
+    in::WindowData* wndData = in::GetWindowData(id);
+    if (!wndData) { return false; }
+    return wndData->hasFocus;
 }
 
 bool tsd::IsValidHandle(short handle)
@@ -467,7 +620,7 @@ bool tsd::IsValidHandle(short handle)
 
 bool tsd::Running()
 {
-    return in::WindowInfo.isRunning;
+    return in::AppInfo.isRunning;
 }
 
 void tsd::Halt(int ms)
@@ -541,45 +694,191 @@ tsd::MBR tsd::MessageBox(short owner, const wchar_t* title, const wchar_t* msg, 
 
 bool tsd::IsKeyPressed(Key code)
 {
-    bool state = in::WindowInfo.keystates.test((int)code);
+    return in::AppInfo.keystates.test((int)code);
+}
+
+bool tsd::IsKeyPressedOnce(Key code)
+{
+    bool state = in::AppInfo.keystates.test((int)code);
     if (state)
-        in::WindowInfo.keystates.reset((int)code);
+        in::AppInfo.keystates.reset((int)code);
     return state;
+}
+
+bool tsd::IsKeyReleased(Key code)
+{
+    static bool lastState;
+    if (lastState && !IsKeyPressed(code))
+    {
+        lastState = IsKeyPressed(code);
+        return true;
+    }
+    lastState = IsKeyPressed(code);
+    return false;
 }
 
 bool tsd::IsAnyKeyPressed()
 {
-    return in::WindowInfo.keystates.any();
+    return in::AppInfo.keystates.any();
 }
 
 void tsd::SetTextInputState(bool state, bool clear)
 {
-    in::WindowInfo.textInputEnabled = state;
+    in::AppInfo.textInputEnabled = state;
     if (clear)
     {
         for (int i = 0; i < 100000; i++)
         {
-            in::WindowInfo.textInput[i] = 0;
+            in::AppInfo.textInput[i] = 0;
         }
-        in::WindowInfo.textInputIndex = 0;
+        in::AppInfo.textInputIndex = 0;
     }
 }
 
 wchar_t* tsd::GetTextInput()
 {
-    return in::WindowInfo.textInput;
+    return in::AppInfo.textInput;
 }
 
 void tsd::ClearTextInput()
 {
     for (int i = 0; i < 100000; i++)
     {
-        in::WindowInfo.textInput[i] = 0;
+        in::AppInfo.textInput[i] = 0;
     }
-    in::WindowInfo.textInputIndex = 0;
+    in::AppInfo.textInputIndex = 0;
 }
 
 bool tsd::IsTextInputEnabled()
 {
-    return in::WindowInfo.textInputEnabled;
+    return in::AppInfo.textInputEnabled;
+}
+
+tsd::MouseInfo tsd::GetMouseInfo()
+{
+    MouseInfo msInfo = {};
+
+    msInfo.left     = in::AppInfo.mouse.leftButton;
+    msInfo.right    = in::AppInfo.mouse.rightButton;
+    msInfo.middle   = in::AppInfo.mouse.middleButton;
+    msInfo.x1       = in::AppInfo.mouse.x1Button;
+    msInfo.x2       = in::AppInfo.mouse.x2Button;
+    msInfo.xPos     = in::AppInfo.mouse.xPos;
+    msInfo.yPos     = in::AppInfo.mouse.yPos;
+    msInfo.containingWindow = tsd::GetMouseContainerWindow();
+
+    return msInfo;
+}
+
+int tsd::GetMouseX()
+{
+    return in::AppInfo.mouse.xPos;
+}
+
+int tsd::GetMouseY()
+{
+    return in::AppInfo.mouse.yPos;
+}
+
+bool tsd::GetMouseLeftButton()
+{
+    return in::AppInfo.mouse.leftButton;
+}
+
+bool tsd::GetMouseLeftButtonOnce()
+{
+    bool state = in::AppInfo.mouse.leftButton;
+    if (state)
+        in::AppInfo.mouse.leftButton = false;
+    return state;
+}
+
+bool tsd::GetMouseRightButton()
+{
+    return in::AppInfo.mouse.rightButton;
+}
+
+bool tsd::GetMouseRightButtonOnce()
+{
+    bool state = in::AppInfo.mouse.rightButton;
+    if (state)
+        in::AppInfo.mouse.rightButton = false;
+    return state;
+}
+
+bool tsd::GetMouseMiddleButton()
+{
+    return in::AppInfo.mouse.middleButton;
+}
+
+bool tsd::GetMouseMiddleButtonOnce()
+{
+    bool state = in::AppInfo.mouse.middleButton;
+    if (state)
+        in::AppInfo.mouse.middleButton = false;
+    return state;
+}
+
+bool tsd::GetMouseX1Button()
+{
+    return in::AppInfo.mouse.x1Button;
+}
+
+bool tsd::GetMouseX1ButtonOnce()
+{
+    bool state = in::AppInfo.mouse.x1Button;
+    if (state)
+        in::AppInfo.mouse.x1Button = false;
+    return state;
+}
+
+bool tsd::GetMouseX2Button()
+{
+    return in::AppInfo.mouse.x2Button;
+}
+
+bool tsd::GetMouseX2ButtonOnce()
+{
+    bool state = in::AppInfo.mouse.x2Button;
+    if (state)
+        in::AppInfo.mouse.x2Button = false;
+    return state;
+}
+
+int tsd::GetMouseWheelDelta()
+{
+    static int lastDelta;
+
+    if (lastDelta < in::AppInfo.mouse.wheelDelta)
+    {
+        lastDelta = in::AppInfo.mouse.wheelDelta;
+        return 1;
+    }
+
+    else if (lastDelta > in::AppInfo.mouse.wheelDelta)
+    {
+        lastDelta = in::AppInfo.mouse.wheelDelta;
+        return -1;
+    }
+
+    lastDelta = in::AppInfo.mouse.wheelDelta;
+    return 0;
+}
+
+bool tsd::WindowContainsMouse(short handle)
+{
+    in::WindowData* wndData = in::GetWindowData(handle);
+    if (wndData)
+        return wndData->hasMouseInClientArea;
+    return false;
+}
+
+short tsd::GetMouseContainerWindow()
+{
+    for (in::WindowData* i : in::AppInfo.windows)
+    {
+        if (i->hasMouseInClientArea && i->isValid)
+            return i->id;
+    }
+    return 0;
 }

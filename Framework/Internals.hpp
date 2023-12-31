@@ -69,6 +69,7 @@
 #define STRICT
 
 #include <Windows.h>
+#include <windowsx.h>
 
 #include <vector>
 #include <iostream>
@@ -109,16 +110,18 @@ namespace in
     void CreateWin32DebugError(int line);
     void CreateWin32ReleaseError(int line);
 
+    void CreateManualError(const char* msg, const char* func);
+
     // Error handling for the user
     void SetLastError(int code);
 
     LRESULT WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
-    // Look through WindowInfo.windows and return the instance matching the handle
+    // Look through AppInfo.windows and return the instance matching the handle
     // Time complexity is linear to the ammount of windows open
     WindowData* GetWindowData(HWND handle);
 
-    // Look through WindowInfo.windows and return the instance matching the id of the underlying window
+    // Look through AppInfo.windows and return the instance matching the id of the underlying window
     // Time complexity is linear to the ammount of windows open
-    WindowData* GetWindowData(int id);
+    WindowData* GetWindowData(short id);
 }

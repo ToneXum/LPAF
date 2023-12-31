@@ -1,8 +1,9 @@
 #include "Framework.hpp"
 #include <exception>
 #include <ostream>
+#include <string>
 
-// This is a simple test program
+// This is a simple test program to try out and find bugs in GAFW
 int main()
 {
     try
@@ -12,21 +13,20 @@ int main()
         short windowHandle = 0;
         TSD_CALL_RET(windowHandle, tsd::CreateWindow(L"Boring Box", 500, 500), true);
 
+        short windowHandle2 = 0;
+        TSD_CALL_RET(windowHandle2, tsd::CreateWindow(L"Even more boring box", 1000, 400), true)
+
+        std::wostringstream oss;
         while (tsd::Running())
         {
-            if (!tsd::IsTextInputEnabled())
-            {
-                tsd::WindowChangeName(windowHandle, L"Text input is not enabled");
-                if (tsd::IsKeyPressed(tsd::Key::ENTER))
-                    tsd::SetTextInputState(true);
-            }
-            else
-            {
-                tsd::WindowChangeName(windowHandle, tsd::GetTextInput());
-                if (tsd::IsKeyPressed(tsd::Key::ENTER))
-                    tsd::SetTextInputState(false);
-            }
-            
+            oss.str(L"");
+            tsd::MouseInfo msInfo = tsd::GetMouseInfo();
+            oss << "Position: " << msInfo.xPos << ", " << msInfo.yPos << " Button states: ";
+            oss << msInfo.left << ", " << msInfo.middle << ", " << msInfo.right << ", " << msInfo.x1 << ", " << msInfo.x2;
+            oss << " Mouse: " << msInfo.containingWindow;
+
+            tsd::ChangeWindowName(windowHandle2, oss.str().c_str());
+
             // simulate computation
             tsd::Halt(16);
         }
