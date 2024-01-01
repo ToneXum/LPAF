@@ -288,6 +288,13 @@ namespace tsd // tonexum software division
     // Create a new window 
     short CreateWindow(const wchar_t* name, int width, int height, int xPos = 0, int yPos = 0);
 
+    // Specify a function to be executed when a window is requested to be closed
+    // The function must return a boolean indicating wheather the window should be closed
+    void OnWindowCloseAttempt(short handle, bool(*func)(void));
+
+    // Specify a function to be executed when a window is closed
+    void OnWindowClose(short handle, void(*func)(void));
+
     // Returns the name of the window which matches the given handle
     // This function can fail if the handle is not valid
     wchar_t* GetWindowName(short id);
