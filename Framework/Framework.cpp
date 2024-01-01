@@ -22,7 +22,12 @@
 
 #include "Framework.hpp"
 #include "Internals.hpp"
-#include "Internal-Globals.hpp"
+
+void in::DoNothing_V()
+{}
+
+bool in::DoNothing_B()
+{ return true; }
 
 void in::CreateWin32DebugError(int line)
 {
@@ -135,9 +140,10 @@ void in::WindowData::MessageHandler()
         TranslateMessage(&msg);
         DispatchMessage(&msg);
     }
-
     // Window is closed, update window information
     isValid = false;
+
+    EraseUnusedWindowData();
 }
 
 LRESULT in::WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
@@ -148,18 +154,21 @@ LRESULT in::WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
     // Closing the window
     case WM_CLOSE: // closing of a window has been requested
     {
-        DestroyWindow(hWnd);
-        break;
+        if (GetWindowData(hWnd)->OnCloseAttempt())
+            DestroyWindow(hWnd);
+        return 0;
     }
     case WM_DESTROY: // closing a window was ordered and confirmed
     {
+        GetWindowData(hWnd)->OnClose();
         if (tsd::GetWindowCount() == 1) // quit program if last window remaining is closed
         {
             AppInfo.isRunning = false;
-            return 0;
+            break;
         }
+        
         AppInfo.windowCount -= 1;
-        break;
+        return -1;
     }
     // Closing the window
     ///////////////////////////////////
@@ -346,7 +355,7 @@ in::WindowData* in::GetWindowData(HWND handle)
 {
     for (WindowData* i : AppInfo.windows)
     {
-        if ((i->hWnd == handle) && (i->isValid))
+        if (i->hWnd == handle)
         {
             return i;
         }
@@ -358,12 +367,32 @@ in::WindowData* in::GetWindowData(short id)
 {
     for (WindowData* i : AppInfo.windows)
     {
-        if ((i->id == id) && (i->isValid))
+        if (i->id == id)
         {
             return i;
         }
     }
     return nullptr;
+}
+
+void in::EraseUnusedWindowData()
+{
+    int i = 0;
+    while (i < AppInfo.windows.size())
+    {
+        WindowData* wndDt = AppInfo.windows.at(i);
+        if (!wndDt->isValid)
+        {
+            delete wndDt->msgThread;
+            delete wndDt;
+            std::vector<WindowData*>::iterator it = AppInfo.windows.begin() + i;
+            AppInfo.windows.erase(it);
+        }
+        else
+        {
+            i++;
+        }
+    }
 }
 
 bool tsd::Initialise(int iconId, int cursorId)
@@ -410,20 +439,11 @@ bool tsd::Initialise(int iconId, int cursorId)
     return success;
 }
 
-void tsd::Uninitialise(void)
+void tsd::Uninitialise()
 {
-    for (in::WindowData* w : in::AppInfo.windows)
-        w->msgThread->~thread(); // sometimes the thread gets stuck and wont exit, it is forcefully ended
-
     // No update to AppData needed since the program will quit now
 
     WIN32_EC(UnregisterClassW(in::AppInfo.windowClassName, in::AppInfo.hInstance));
-
-    for (in::WindowData* w : in::AppInfo.windows)
-    {
-        delete w->msgThread;
-        delete w;
-    }
 }
 
 // Whoops
@@ -464,6 +484,16 @@ short tsd::CreateWindow(const wchar_t* name, int width, int height, int xPos, in
     }
 
     return wndData->id;
+}
+
+void tsd::OnWindowCloseAttempt(short handle, bool(*func)(void))
+{
+    in::GetWindowData(handle)->OnCloseAttempt = func;
+}
+
+void tsd::OnWindowClose(short handle, void(*func)(void))
+{
+    in::GetWindowData(handle)->OnClose = func;
 }
 
 void tsd::CreateAutoError(int line, bool quit)
@@ -877,7 +907,7 @@ short tsd::GetMouseContainerWindow()
 {
     for (in::WindowData* i : in::AppInfo.windows)
     {
-        if (i->hasMouseInClientArea && i->isValid)
+        if (i->hasMouseInClientArea)
             return i->id;
     }
     return 0;

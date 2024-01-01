@@ -80,8 +80,10 @@
 #include <cstdlib>
 #include <exception>
 #include <fstream>
+#include <unordered_map>
+#include <bitset>
+#include <complex>
 
-#include "Internal-Globals.hpp"
 #include "Framework.hpp"
 
 #ifdef _DEBUG
@@ -106,6 +108,76 @@
 
 namespace in
 {
+    // Performance is not important here so yes, have a hashmap
+    std::unordered_map<int, const char*> errors =
+    {
+    { 0, "The operation went smoothly." }, // no error
+    { 1, "The framework is already initialised." }, // tsd::Initialise was called more than once
+    { 2, "The framework is not initialised." }, // tsd::Initialise was not called
+    { 3, "Invalid parameter data."}, // general missuse
+    { 4, "Invalid window handle."},
+    { 5, "Invalid Icon Resource." }, // tsd::Initialise
+    { 6, "Invalid Cursor Resource." }, // tsd::Initialise
+    { 7, "32767 windows have been opened, cannot create more." }, // I hope no one will have to fetch this...
+    { 8, "Uninitialisation failed, had to force termination for app to quit." }
+    };
+
+    void DoNothing_V();
+    bool DoNothing_B();
+
+    struct WindowData // additional data associated to each window
+    {
+        // Window creator and message pump
+        void MessageHandler();
+
+        _Notnull_ HWND hWnd = {}; // Yes I know Win32 now shut up
+        std::thread* msgThread = {};
+
+        short id = 0;
+        wchar_t* name = nullptr;
+        bool isVisible, isValid, hasFocus, hasMouseInClientArea = 0;
+        short xPos, yPos, width, height = 0;
+
+        void (*OnClose)() = DoNothing_V;
+        bool (*OnCloseAttempt)() = DoNothing_B;
+    };
+
+    struct // general information about the state of the application
+    {
+        std::vector<WindowData*> windows{}; // window specific information container
+        HINSTANCE hInstance = 0; // handle to window class
+        ATOM classAtom = 0; // idk what this is even supposed to do
+        HICON hIcon{};
+        HCURSOR hCursor{};
+
+        std::mutex mtx; // mutex used halt execution to prevent usage of initialised memory
+        std::condition_variable cv; // goes along side mtx
+        bool windowIsFinished = false; // creation of a window is finished
+
+        // Bitset for keyboard key states
+        std::bitset<256> keystates = 0;
+
+        // Charfield for text input
+        wchar_t* textInput = nullptr; // pointer to the character field
+        bool textInputEnabled = false;
+        int textInputIndex = 0; // numbers of written characters in textInput
+
+        // Mouse information
+        struct
+        {
+            bool leftButton, rightButton, middleButton, x1Button, x2Button = false;
+            int xPos, yPos = 0;
+            int wheelDelta = 0;
+        } mouse;
+
+        const wchar_t* windowClassName = L"GGFW Window Class";
+        int windowCount = 0;  // guess what, its the count of the currently open windows
+        int windowsOpened = 0; // ammount of windows this program has opened in the past
+        bool isRunning = true; // becomes false when no window is open anymore
+        int lastErrorCode = 0;
+        bool isInitialised = false; // becomes true when initialise is called
+    } AppInfo;
+
     // Win32 Error creation
     void CreateWin32DebugError(int line);
     void CreateWin32ReleaseError(int line);
@@ -124,4 +196,7 @@ namespace in
     // Look through AppInfo.windows and return the instance matching the id of the underlying window
     // Time complexity is linear to the ammount of windows open
     WindowData* GetWindowData(short id);
+
+    // Loops through AppData.windows and erases all WindowData that is invalid
+    void EraseUnusedWindowData();
 }
