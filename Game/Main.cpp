@@ -33,33 +33,18 @@ void DoSomething()
 // This is a simple test program to try out and find bugs in GAFW
 int main()
 {
-    try
+    TSD_CALL(tsd::Initialise(0, 105), true);
+
+    short windowHandle = 0;
+    TSD_CALL_RET(windowHandle, tsd::CreateWindow(L"Boring Box", 500, 500), true);
+
+    while (tsd::Running())
     {
-        TSD_CALL(tsd::Initialise(0, 105), true);
-
-        short windowHandle = 0;
-        TSD_CALL_RET(windowHandle, tsd::CreateWindow(L"Boring Box", 500, 500), true);
-
-        short windowHandle2 = 0;
-        TSD_CALL_RET(windowHandle2, tsd::CreateWindow(L"Even more boring box", 1000, 400), true);
-
-        tsd::OnWindowCloseAttempt(windowHandle2, OpenAnotherWindow);
-        tsd::OnWindowClose(windowHandle2, DoSomething);
-
-        while (tsd::Running())
-        {
-            if (tsd::IsKeyPressedOnce(tsd::Key::ENTER))
-                TSD_CALL(tsd::CreateWindow(L"Yank", 1000, 100), true);
-            // simulate computation
-            tsd::Halt(16);
-        }
-
-        tsd::Uninitialise();
-        return 0;
+        //TSD_CALL(tsd::CreateWindow(L"Heheheha", 500, 500), true);
+        // simulate computation
+        tsd::Halt(16);
     }
-    catch (const std::exception&)
-    {
-        tsd::Uninitialise();
-        return -1;
-    }
+
+    tsd::Uninitialise();
+    return 0;
 }

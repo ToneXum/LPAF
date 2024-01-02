@@ -87,24 +87,17 @@
 #include "Framework.hpp"
 
 #ifdef _DEBUG
-
 // Error check for Win32 API calls
 #define WIN32_EC(x) { if (!x) { in::CreateWin32DebugError(__LINE__); } }
-
 // Error check for Win32 API calls but the return value is saved
 #define WIN32_EC_RET(var, func) { var = func; if (!var) { in::CreateWin32DebugError(__LINE__); } }
-
 #endif // DEBUG
 #ifdef NDEBUG
-
 // Error check for Win32 API calls
 #define WIN32_EC(x) { if (!x) {in::CreateWin32ReleaseError(__LINE__); } }
-
 // Error check for Win32 API calls but the return value is saved
 #define WIN32_EC_RET(var, func) { var = func; if (!var) { in::CreateWin32ReleaseError(__LINE__); } }
-
 #endif // NDEBUG
-
 
 namespace in
 {
@@ -130,8 +123,9 @@ namespace in
         // Window creator and message pump
         void MessageHandler();
 
-        _Notnull_ HWND hWnd = {}; // Yes I know Win32 now shut up
+        HWND hWnd = {};
         std::thread* msgThread = {};
+
 
         short id = 0;
         wchar_t* name = nullptr;
@@ -150,9 +144,13 @@ namespace in
         HICON hIcon{};
         HCURSOR hCursor{};
 
-        std::mutex mtx; // mutex used halt execution to prevent usage of initialised memory
-        std::condition_variable cv; // goes along side mtx
-        bool windowIsFinished = false; // creation of a window is finished
+        std::mutex windowCreationMtx;
+        std::condition_variable windowCreationCv;
+        bool windowCreationIsFinished = false; // creation of a window is finished, prevent usage of unitialised mem
+        
+        std::mutex threadsDoneMtx;
+        std::condition_variable threadsDoneCv;
+        bool threadsDone = false; // all window threads have closed, prevent the class being deleted while windows are open
 
         // Bitset for keyboard key states
         std::bitset<256> keystates = 0;
@@ -182,6 +180,7 @@ namespace in
     void CreateWin32DebugError(int line);
     void CreateWin32ReleaseError(int line);
 
+    // Manual and instant error creation
     void CreateManualError(const char* msg, const char* func);
 
     // Error handling for the user
@@ -199,4 +198,8 @@ namespace in
 
     // Loops through AppData.windows and erases all WindowData that is invalid
     void EraseUnusedWindowData();
+
+    // Deallocates everything, closes handles and cleans up
+    // Call when the program needs to end abruptly
+    void DeAlloc();
 }

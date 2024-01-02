@@ -60,8 +60,8 @@ void in::CreateWin32DebugError(int line)
     MessageBoxA(nullptr, msg.str().c_str(), "Internal Error!", MB_ICONERROR | MB_TASKMODAL | MB_OK);
     LocalFree((LPSTR)eMsg);
 
-    std::exception exc;
-    throw exc;
+    DeAlloc();
+    std::exit(-1); // kill that fu- okay, okay ... calm down
 }
 
 void in::CreateWin32ReleaseError(int line)
@@ -81,15 +81,15 @@ void in::CreateWin32ReleaseError(int line)
 
     MessageBoxA(nullptr, msg.str().c_str(), "Critical Error!", MB_TASKMODAL | MB_OK | MB_ICONERROR);
 
-    std::exception exc;
-    throw exc;
+    DeAlloc();
+    std::exit(-1);
 }
 
 void in::CreateManualError(const char* msg, const char* func)
 {
     std::ostringstream str;
 
-    str << "An oparation within the framework has cause an error:\n\n";
+    str << "An oparation within the framework has caused an error:\n\n";
     str << msg << "\n";
     str << "Origin: " << func << "\n\n";
     str << "This is an internal error likely caused by the framework itself. ";
@@ -98,7 +98,8 @@ void in::CreateManualError(const char* msg, const char* func)
 
     MessageBoxA(nullptr, str.str().c_str(), "Internal Error", MB_TASKMODAL | MB_OK | MB_ICONERROR);
 
-    throw std::exception();
+    DeAlloc();
+    std::exit(-1);
 }
 
 void in::SetLastError(int code)
@@ -128,10 +129,10 @@ void in::WindowData::MessageHandler()
     ShowWindow(hWnd, 1);
     
     // work is done, let the main thread continue
-    std::unique_lock<std::mutex> lock1(in::AppInfo.mtx);
-    AppInfo.windowIsFinished = true;
-    lock1.unlock();
-    in::AppInfo.cv.notify_one();
+    std::unique_lock<std::mutex> lock(in::AppInfo.windowCreationMtx);
+    AppInfo.windowCreationIsFinished = true;
+    lock.unlock();
+    in::AppInfo.windowCreationCv.notify_one();
 
     // message pump for the window
     MSG msg = { };
@@ -144,6 +145,14 @@ void in::WindowData::MessageHandler()
     isValid = false;
 
     EraseUnusedWindowData();
+
+    if (AppInfo.windowCount == 0)
+    {
+        std::unique_lock<std::mutex> lock(AppInfo.threadsDoneMtx);
+        AppInfo.threadsDone = true;
+        lock.unlock();
+        AppInfo.threadsDoneCv.notify_one();
+    }
 }
 
 LRESULT in::WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
@@ -164,7 +173,6 @@ LRESULT in::WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
         if (tsd::GetWindowCount() == 1) // quit program if last window remaining is closed
         {
             AppInfo.isRunning = false;
-            break;
         }
         
         AppInfo.windowCount -= 1;
@@ -395,6 +403,16 @@ void in::EraseUnusedWindowData()
     }
 }
 
+void in::DeAlloc()
+{
+    for (WindowData* i : AppInfo.windows)
+    {
+        delete i->msgThread;
+        delete i;
+    }
+    delete AppInfo.textInput;
+}
+
 bool tsd::Initialise(int iconId, int cursorId)
 {
     bool success = true;
@@ -441,8 +459,11 @@ bool tsd::Initialise(int iconId, int cursorId)
 
 void tsd::Uninitialise()
 {
-    // No update to AppData needed since the program will quit now
+    std::unique_lock<std::mutex> lock(in::AppInfo.threadsDoneMtx);
+    in::AppInfo.threadsDoneCv.wait(lock, []{ return in::AppInfo.threadsDone; }); // wait for the last thread to end
 
+    // not neccecary to delete the window data, it was deleted by EraseUnusedWindowData()
+    delete in::AppInfo.textInput;
     WIN32_EC(UnregisterClassW(in::AppInfo.windowClassName, in::AppInfo.hInstance));
 }
 
@@ -469,12 +490,12 @@ short tsd::CreateWindow(const wchar_t* name, int width, int height, int xPos, in
     wndData->hasMouseInClientArea = false;
 
     // wait for window creation to finish
-    std::unique_lock<std::mutex> lock(in::AppInfo.mtx);
-    in::AppInfo.cv.wait(lock, [] { return in::AppInfo.windowIsFinished; });
+    std::unique_lock<std::mutex> lock(in::AppInfo.windowCreationMtx);
+    in::AppInfo.windowCreationCv.wait(lock, [] { return in::AppInfo.windowCreationIsFinished; });
 
     in::AppInfo.windows.push_back(wndData);
 
-    in::AppInfo.windowIsFinished = false;
+    in::AppInfo.windowCreationIsFinished = false;
 
     // ran out of range
     if (wndData->id == SHRT_MAX)
