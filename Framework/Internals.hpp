@@ -71,6 +71,8 @@
 #include <Windows.h>
 #include <windowsx.h>
 
+#undef ERROR
+
 #include <vector>
 #include <iostream>
 #include <thread>
@@ -83,21 +85,18 @@
 #include <unordered_map>
 #include <bitset>
 #include <complex>
+#include <chrono>
+#include <time.h>
 
 #include "Framework.hpp"
 
-#ifdef _DEBUG
 // Error check for Win32 API calls
-#define WIN32_EC(x) { if (!x) { in::CreateWin32DebugError(__LINE__); } }
+#define WIN32_EC(x) { if (!x) { in::CreateWin32Error(__LINE__, GetLastError(), __FUNCDNAME__); } }
 // Error check for Win32 API calls but the return value is saved
-#define WIN32_EC_RET(var, func) { var = func; if (!var) { in::CreateWin32DebugError(__LINE__); } }
-#endif // DEBUG
-#ifdef NDEBUG
-// Error check for Win32 API calls
-#define WIN32_EC(x) { if (!x) {in::CreateWin32ReleaseError(__LINE__); } }
-// Error check for Win32 API calls but the return value is saved
-#define WIN32_EC_RET(var, func) { var = func; if (!var) { in::CreateWin32ReleaseError(__LINE__); } }
-#endif // NDEBUG
+#define WIN32_EC_RET(var, func) { var = func; if (!var) { in::CreateWin32Error(__LINE__, GetLastError(), __FUNCDNAME__); } }
+
+// Manual error creation with automatic additional information
+#define FRMWRK_ERR(msg) { in::CreateManualError(__LINE__, __FUNCDNAME__, msg); }
 
 namespace in
 {
@@ -112,7 +111,7 @@ namespace in
     { 5, "Invalid Icon Resource." }, // tsd::Initialise
     { 6, "Invalid Cursor Resource." }, // tsd::Initialise
     { 7, "32767 windows have been opened, cannot create more." }, // I hope no one will have to fetch this...
-    { 8, "Uninitialisation failed, had to force termination for app to quit." }
+    { 8, "Flagset invalid or incorectly formatted" }
     };
 
     void DoNothing_V();
@@ -155,6 +154,9 @@ namespace in
         // Bitset for keyboard key states
         std::bitset<256> keystates = 0;
 
+        // stream to a log file for runtime information about the framework
+        std::wofstream logFile;
+
         // Charfield for text input
         wchar_t* textInput = nullptr; // pointer to the character field
         bool textInputEnabled = false;
@@ -176,12 +178,19 @@ namespace in
         bool isInitialised = false; // becomes true when initialise is called
     } AppInfo;
 
+    enum class LL
+    {
+        INFO,
+        DEBUG,
+        WARNING,
+        ERROR
+    };
+
     // Win32 Error creation
-    void CreateWin32DebugError(int line);
-    void CreateWin32ReleaseError(int line);
+    void CreateWin32Error(int line, int c, const char* func);
 
     // Manual and instant error creation
-    void CreateManualError(const char* msg, const char* func);
+    void CreateManualError(int line, const char* func, const char* msg);
 
     // Error handling for the user
     void SetLastError(int code);
@@ -202,4 +211,7 @@ namespace in
     // Deallocates everything, closes handles and cleans up
     // Call when the program needs to end abruptly
     void DeAlloc();
+
+    // Writes to the log file handle
+    void Log(const wchar_t* msg, LL ll);
 }

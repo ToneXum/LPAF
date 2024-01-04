@@ -1,2 +1,1 @@
-[ Mon Jan  1 21:27:01 2024 ]: Unhandled Win32 error! 183 at 122
-[ Mon Jan  1 21:27:01 2024 ]: Fatal Error, application must abort!
+[ Thu Jan  4 20:38:07 2024 ] [ DEBUG ]: hello fuck head, a window was created

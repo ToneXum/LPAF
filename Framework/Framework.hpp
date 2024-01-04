@@ -280,10 +280,14 @@ namespace tsd // tonexum software division
 
     // If an error occours, the callee returns null. Read the error code with this function
     // Beware only check the return value of functions that actually set errors
-    int GetLastError();
+    int GetLastFrameworkError();
 
     // Translates the error by code into a readable message
     const char* GetErrorInformation(int code);
+
+    // Write a message to the log file
+    // Every entry is being timestamped at runtime
+    void Log(const wchar_t* msg, bool noPrefix);
 
     // Create a new window 
     short CreateWindow(const wchar_t* name, int width, int height, int xPos = 0, int yPos = 0);
