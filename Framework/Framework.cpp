@@ -29,16 +29,17 @@ void in::DoNothing_V()
 bool in::DoNothing_B()
 { return true; }
 
-void in::CreateWin32DebugError(int line)
+#ifdef _DEBUG
+void in::CreateWin32Error(int line, int c, const char* func)
 {
-    int e = GetLastError();
+    //int e = GetLastError();
     std::ostringstream msg;
     char* eMsg = nullptr;
 
     FormatMessageA(
         FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
         nullptr,
-        e,
+        c,
         MAKELANGID(LANG_ENGLISH, SUBLANG_ENGLISH_US),
         reinterpret_cast<LPSTR>(&eMsg),
         0,
@@ -47,7 +48,7 @@ void in::CreateWin32DebugError(int line)
 
     if (eMsg)
     {
-        msg << "A Win32 API call resulted in a fatal error " << e << " at line " << line << " in the source of the framework.\n\n" << eMsg;
+        msg << "A Win32 API call resulted in fatal error " << c << " at line " << line << " in " << func << ".\n\n" << eMsg;
         msg << "\n" << "This is an internal error likely caused by the framework itself, the application must quit now." << std::endl;
     }
     else
@@ -60,45 +61,43 @@ void in::CreateWin32DebugError(int line)
     MessageBoxA(nullptr, msg.str().c_str(), "Internal Error!", MB_ICONERROR | MB_TASKMODAL | MB_OK);
     LocalFree((LPSTR)eMsg);
 
-    std::exception exc;
-    throw exc;
+    DeAlloc();
+    std::exit(-1); // kill that fu- okay, okay ... calm down
 }
-
-void in::CreateWin32ReleaseError(int line)
+#endif // _DEBUG
+#ifdef NDEBUG
+void in::CreateWin32Error(int line, int c, const char* func)
 {
-    std::ofstream file("Last_Log.txt");
-    
-    int e = GetLastError();
-
-    file << "[ " << __TIMESTAMP__ << " ]: " << "Unhandled Win32 error! " << e << " at " << line << "\n";
-    file << "[ " << __TIMESTAMP__ << " ]: " << "Fatal Error, application must abort!" << std::endl;
-
-    file.close();
+    std::wostringstream emsg;
+    emsg << "Win32 error: " << c << " at " << line << " in " << func << std::flush;
+    in::Log(emsg.str().c_str(), in::LL::ERROR);
 
     std::ostringstream msg;
-    msg << "A critical error occoured, the application must quit now!\n\nFor more information check the logfiles in the application";
-    msg << " directory" << std::endl; 
+    msg << "A fatal error occoured, the application must quit now!\n\nFor more information check 'Last_Log.txt' in the application";
+    msg << " directory" << std::flush; 
 
-    MessageBoxA(nullptr, msg.str().c_str(), "Critical Error!", MB_TASKMODAL | MB_OK | MB_ICONERROR);
+    MessageBoxA(nullptr, msg.str().c_str(), "Fatal Error!", MB_TASKMODAL | MB_OK | MB_ICONERROR);
 
-    std::exception exc;
-    throw exc;
+    DeAlloc();
+    std::exit(-1);
 }
+#endif // DEBUG
 
-void in::CreateManualError(const char* msg, const char* func)
+void in::CreateManualError(int line, const char* func, const char* msg)
 {
     std::ostringstream str;
 
-    str << "An oparation within the framework has cause an error:\n\n";
-    str << msg << "\n";
-    str << "Origin: " << func << "\n\n";
+    str << "An oparation within the framework has caused an error:\n\n";
+    str << msg << "\n\n";
+    str << "Origin: " << func << " at " << line << "\n\n";
     str << "This is an internal error likely caused by the framework itself. ";
     str << "The program is unable to recover, the application must quit now!";
-    str << std::endl;
+    str << std::flush;
 
     MessageBoxA(nullptr, str.str().c_str(), "Internal Error", MB_TASKMODAL | MB_OK | MB_ICONERROR);
 
-    throw std::exception();
+    DeAlloc();
+    std::exit(-1);
 }
 
 void in::SetLastError(int code)
@@ -128,11 +127,13 @@ void in::WindowData::MessageHandler()
     ShowWindow(hWnd, 1);
     
     // work is done, let the main thread continue
-    std::unique_lock<std::mutex> lock1(in::AppInfo.mtx);
-    AppInfo.windowIsFinished = true;
-    lock1.unlock();
-    in::AppInfo.cv.notify_one();
+    std::unique_lock<std::mutex> lock(in::AppInfo.windowCreationMtx);
+    AppInfo.windowCreationIsFinished = true;
+    lock.unlock();
+    in::AppInfo.windowCreationCv.notify_one();
 
+    in::Log(L"A message handler was started", in::LL::INFO);
+    
     // message pump for the window
     MSG msg = { };
     while (GetMessage(&msg, hWnd, 0, 0) > 0)
@@ -143,7 +144,20 @@ void in::WindowData::MessageHandler()
     // Window is closed, update window information
     isValid = false;
 
+    std::wostringstream oss;
+    oss << L"Message handler for the window with the Id of: " << id << " has stopped and is going to delete its data";
+    in::Log(oss.str().c_str(), in::LL::INFO);
+
     EraseUnusedWindowData();
+
+    if (AppInfo.windowCount == 0)
+    {
+        std::unique_lock<std::mutex> lock(AppInfo.threadsDoneMtx);
+        AppInfo.threadsDone = true;
+        lock.unlock();
+        AppInfo.threadsDoneCv.notify_one();
+        in::Log(L"Thread mutex was unlocked", in::LL::INFO);
+    }
 }
 
 LRESULT in::WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
@@ -164,7 +178,6 @@ LRESULT in::WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
         if (tsd::GetWindowCount() == 1) // quit program if last window remaining is closed
         {
             AppInfo.isRunning = false;
-            break;
         }
         
         AppInfo.windowCount -= 1;
@@ -348,7 +361,7 @@ LRESULT in::WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
     ///////////////////////////////////
     }
     
-    return DefWindowProc(hWnd, uMsg, wParam, lParam);
+    return DefWindowProcW(hWnd, uMsg, wParam, lParam);
 }
 
 in::WindowData* in::GetWindowData(HWND handle)
@@ -383,6 +396,10 @@ void in::EraseUnusedWindowData()
         WindowData* wndDt = AppInfo.windows.at(i);
         if (!wndDt->isValid)
         {
+            std::wostringstream oss;
+            oss << L"Window data for the window with the Id of: " << wndDt->id << L" was deleted" << std::flush;
+            in::Log(oss.str().c_str(), in::LL::INFO);
+
             delete wndDt->msgThread;
             delete wndDt;
             std::vector<WindowData*>::iterator it = AppInfo.windows.begin() + i;
@@ -395,23 +412,47 @@ void in::EraseUnusedWindowData()
     }
 }
 
+void in::DeAlloc()
+{
+    in::AppInfo.logFile.close();
+    for (WindowData* i : AppInfo.windows)
+    {
+        delete i->msgThread;
+        delete i;
+    }
+    delete AppInfo.textInput;
+}
+
 bool tsd::Initialise(int iconId, int cursorId)
 {
     bool success = true;
 
+    in::AppInfo.logFile.open("Last_Log.txt");
+
     // Get hInstance since the program does not use the winMain entry point
     in::AppInfo.hInstance = GetModuleHandle(0);
 
+    // Check the recourses, if invalid continue anyways
     if (iconId)
     {
         in::AppInfo.hIcon = LoadIcon(in::AppInfo.hInstance, MAKEINTRESOURCE(iconId));
-        if (in::AppInfo.hIcon == 0) { in::SetLastError(5); success = false; }
+        if (in::AppInfo.hIcon == 0) 
+        { 
+            in::SetLastError(5); 
+            success = false;
+            in::Log(L"Specified recourse Id for an icon was invalid", in::LL::ERROR);
+        }
     }
 
     if (cursorId)
     {
         in::AppInfo.hCursor = LoadCursor(in::AppInfo.hInstance, MAKEINTRESOURCE(cursorId));
-        if (!in::AppInfo.hCursor) { in::SetLastError(6); success = false; }
+        if (!in::AppInfo.hCursor) 
+        { 
+            in::SetLastError(6); 
+            success = false; 
+            in::Log(L"Specified recourse Id for a mouse was invalid", in::LL::ERROR);
+        }
     }
     
     WNDCLASSEXW wc = {};
@@ -435,20 +476,93 @@ bool tsd::Initialise(int iconId, int cursorId)
     in::AppInfo.textInput = new wchar_t[100000]{0}; // thats 200 whole kilobytes of ram right there
 
     in::AppInfo.isInitialised = true;
-
+    in::Log(L"Framework was successfully initialised", in::LL::INFO);
     return success;
 }
 
 void tsd::Uninitialise()
 {
-    // No update to AppData needed since the program will quit now
+    std::unique_lock<std::mutex> lock(in::AppInfo.threadsDoneMtx);
+    in::AppInfo.threadsDoneCv.wait(lock, []{ return in::AppInfo.threadsDone; }); // wait for the last thread to end
+
+    // not neccecary to delete the window data, it was deleted by EraseUnusedWindowData()
+    delete in::AppInfo.textInput;
 
     WIN32_EC(UnregisterClassW(in::AppInfo.windowClassName, in::AppInfo.hInstance));
+
+    in::Log(L"Framework was successfully uninitialised", in::LL::INFO);
+    in::AppInfo.logFile.close();
+}
+
+void in::Log(const wchar_t* msg, LL ll)
+{
+#ifdef NDEBUG
+    bool debugIsDefinded = false;
+#endif // !NDEBUG
+#ifdef _DEBUG
+    debugIsDefinded = true;
+#endif // _DEBUG
+
+    if ((ll == in::LL::DEBUG) && (!debugIsDefinded)) return; // attempted debug write but macro is not definded -> do nothing
+
+    std::chrono::system_clock::time_point now = std::chrono::system_clock::now();
+    std::time_t currentDate = std::chrono::system_clock::to_time_t(now);
+
+    char timeBuf[30] = { 0 }; // minimum required size for this is 26. Who knows if this is going to run in 9997976 years?
+    ctime_s(timeBuf, sizeof(timeBuf), &currentDate);
+    *std::strchr(timeBuf, '\n') = 0; // replace that pesky newline with the null-char
+
+    // extra buffer, prevents asychrony from messing with the output when this func is called from different threads at the same time
+    std::wostringstream oss; 
+    oss << "[ " << timeBuf << " ]";
+
+    switch (ll)
+    {
+    case in::LL::INFO:
+    {
+        oss << " [ INFO ]: ";
+        break;
+    }
+    case in::LL::DEBUG:
+    {
+        oss << " [ DEBUG ]: ";
+        break;
+    }
+    case in::LL::WARNING:
+    {
+        oss << " [ WARNING ]: ";
+        break;
+    }
+    case in::LL::ERROR:
+    {
+        oss << " [ ERROR ]: ";
+        break;
+    }
+    }
+
+    AppInfo.logMtx.lock();
+    in::AppInfo.logFile << oss.str().c_str() << msg << "\n" << std::flush;
+    AppInfo.logMtx.unlock();
+}
+
+void tsd::Log(const wchar_t* msg, bool noPrefix)
+{
+    std::chrono::system_clock::time_point now = std::chrono::system_clock::now();
+    std::time_t currentDate = std::chrono::system_clock::to_time_t(now);
+
+    char timeBuf[30] = { 0 };
+    ctime_s(timeBuf, sizeof(timeBuf), &currentDate);
+    *std::strchr(timeBuf, '\n') = 0; // replace that pesky newline with the null-char
+
+    in::AppInfo.logFile << "[ " << timeBuf << " ]"; // where is my double-coullon?
+
+    if (!noPrefix)
+        in::AppInfo.logFile << " [ USER ]";
+    in::AppInfo.logFile << ": " << msg << std::endl; // here it is!
 }
 
 // Whoops
 #undef CreateWindow
-
 short tsd::CreateWindow(const wchar_t* name, int width, int height, int xPos, int yPos)
 {
     if (!in::AppInfo.isInitialised) { in::SetLastError(2); return 0; } // init was not called
@@ -469,12 +583,12 @@ short tsd::CreateWindow(const wchar_t* name, int width, int height, int xPos, in
     wndData->hasMouseInClientArea = false;
 
     // wait for window creation to finish
-    std::unique_lock<std::mutex> lock(in::AppInfo.mtx);
-    in::AppInfo.cv.wait(lock, [] { return in::AppInfo.windowIsFinished; });
+    std::unique_lock<std::mutex> lock(in::AppInfo.windowCreationMtx);
+    in::AppInfo.windowCreationCv.wait(lock, [] { return in::AppInfo.windowCreationIsFinished; });
 
     in::AppInfo.windows.push_back(wndData);
 
-    in::AppInfo.windowIsFinished = false;
+    in::AppInfo.windowCreationIsFinished = false;
 
     // ran out of range
     if (wndData->id == SHRT_MAX)
@@ -483,6 +597,9 @@ short tsd::CreateWindow(const wchar_t* name, int width, int height, int xPos, in
         return 0;
     }
 
+    std::wostringstream oss;
+    oss << L"Window was successfully created and recieved the handle " << wndData->id;
+    in::Log(oss.str().c_str(), in::LL::INFO);
     return wndData->id;
 }
 
@@ -499,8 +616,8 @@ void tsd::OnWindowClose(short handle, void(*func)(void))
 void tsd::CreateAutoError(int line, bool quit)
 {
     std::ostringstream msg;
-    msg << "Error " << tsd::GetLastError() << " has occoured at line " << line << ".\n\n";
-    msg << tsd::GetErrorInformation(tsd::GetLastError()) << "\n\n";
+    msg << "Error " << tsd::GetLastFrameworkError() << " has occoured at line " << line << ".\n\n";
+    msg << tsd::GetErrorInformation(tsd::GetLastFrameworkError()) << "\n\n";
     if (quit) { msg << "The application must quit now."; }
     msg << std::endl;
 
@@ -508,12 +625,12 @@ void tsd::CreateAutoError(int line, bool quit)
 
     if (quit)
     {
-        std::exception exc;
-        throw exc;
+        in::DeAlloc();
+        std::exit(-1);
     }
 }
 
-int tsd::GetLastError()
+int tsd::GetLastFrameworkError()
 {
     return in::AppInfo.lastErrorCode;
 }
@@ -559,7 +676,7 @@ std::pair<int, int> tsd::GetWindowDimensions(short id)
     return {wndData->width, wndData->height};
 }
 
-int tsd::GetWindowXPos(short id, WPR wpr)
+int tsd::GetWindowXPos(short id, WP wpr)
 {
     in::WindowData* wndData = in::GetWindowData(id);
     if (!wndData) { in::SetLastError(4); return 0; }
@@ -568,9 +685,9 @@ int tsd::GetWindowXPos(short id, WPR wpr)
 
     switch (wpr)
     {
-    case WPR::LEFT:
+    case WP_LEFT:
         return rect.left;
-    case WPR::RIGHT:
+    case WP_RIGHT:
         return rect.right;
     }
 
@@ -578,7 +695,7 @@ int tsd::GetWindowXPos(short id, WPR wpr)
     return 0;
 }
 
-int tsd::GetWindowYPos(short id, WPR wpr)
+int tsd::GetWindowYPos(short id, WP wpr)
 {
     in::WindowData* wndData = in::GetWindowData(id);
     if (!wndData) { in::SetLastError(4); return 0; }
@@ -587,9 +704,9 @@ int tsd::GetWindowYPos(short id, WPR wpr)
 
     switch (wpr)
     {
-    case WPR::TOP:
+    case WP_TOP:
         return rect.top;
-    case WPR::BOTTOM:
+    case WP_BOTTOM:
         return rect.bottom;
     }
 
@@ -597,7 +714,7 @@ int tsd::GetWindowYPos(short id, WPR wpr)
     return 0;
 }
 
-std::pair<int, int> tsd::GetWindowPosition(short id, WPR wpr)
+std::pair<int, int> tsd::GetWindowPosition(short id, WP wpr)
 {
     in::WindowData* wndData = in::GetWindowData(id);
     if (!wndData) { in::SetLastError(4); return {0, 0}; }
@@ -606,13 +723,13 @@ std::pair<int, int> tsd::GetWindowPosition(short id, WPR wpr)
     
     switch (wpr)
     {
-    case WPR::TOP_LEFT:
+    case WP_TOP_LEFT:
         return { rect.left, rect.top };
-    case WPR::TOP_RIGHT:
+    case WP_TOP_RIGHT:
         return { rect.right, rect.top };
-    case WPR::BOTTOM_LEFT:
+    case WP_BOTTOM_LEFT:
         return { rect.left, rect.bottom };
-    case WPR::BOTTOM_RIGHT:
+    case WP_BOTTOM_RIGHT:
         return { rect.right, rect.bottom };
     }
 
@@ -629,7 +746,7 @@ bool tsd::ChangeWindowName(short id, const wchar_t* name)
 {
     in::WindowData* wndData = in::GetWindowData(id);
     if (!wndData) { in::SetLastError(4); return false; }
-    SetWindowText(wndData->hWnd, name);
+    SetWindowTextW(wndData->hWnd, name);
     wndData->name = const_cast<wchar_t*>(name);
     return true;
 }
@@ -660,7 +777,13 @@ void tsd::Halt(int ms)
 
 #undef MessageBox
 #undef IGNORE
-tsd::MBR tsd::MessageBox(short owner, const wchar_t* title, const wchar_t* msg, int flags)
+int tsd::MessageBox(short owner, const wchar_t* title, const wchar_t* msg, int flags)
+// by now win32 is just getting anoying
+#ifdef UNICODE
+#define MessageBox  MessageBoxW
+#else
+#define MessageBox  MessageBoxA
+#endif
 {
     // return null if the window is not found so I dont care
     in::WindowData* ownerData = in::GetWindowData(owner);
@@ -669,56 +792,51 @@ tsd::MBR tsd::MessageBox(short owner, const wchar_t* title, const wchar_t* msg, 
 
     // Where switch statement?
     // Cant put (non-constant) expressions into switch cases
-    if (flags & (int)MBF::TASKMODAL)
+    if (flags & MF_TASKMODAL)
         rawFlags = rawFlags | MB_TASKMODAL;
 
-    if (flags & (int)MBF::ICON_WARNING)
+    if (flags & MF_ICON_WARNING)
         rawFlags = rawFlags | MB_ICONWARNING;
-    if (flags & (int)MBF::ICON_ERROR)
+    if (flags & MF_ICON_ERROR)
         rawFlags = rawFlags | MB_ICONERROR;
-    if (flags & (int)MBF::ICON_INFO)
+    if (flags & MF_ICON_INFO)
         rawFlags = rawFlags | MB_ICONINFORMATION;
-    if (flags & (int)MBF::ICON_QUESTION)
+    if (flags & MF_ICON_QUESTION)
         rawFlags = rawFlags | MB_ICONQUESTION;
     
-    if (flags & (int)MBF::BUTTON_OK)
+    if (flags & MF_BUTTON_OK)
         rawFlags = rawFlags | MB_OK;
-    if (flags & (int)MBF::BUTTON_OK_CANCEL)
+    if (flags & MF_BUTTON_OK_CANCEL)
         rawFlags = rawFlags | MB_OKCANCEL;
-    if (flags & (int)MBF::BUTTON_YES_NO)
+    if (flags & MF_BUTTON_YES_NO)
         rawFlags = rawFlags | MB_YESNO;
-    if (flags & (int)MBF::BUTTON_RETRY_CANEL)
+    if (flags & MF_BUTTON_RETRY_CANEL)
         rawFlags = rawFlags | MB_RETRYCANCEL;
 
-    if (flags & (int)MBF::BUTTON_YES_NO_CANCEL)
+    if (flags & MF_BUTTON_YES_NO_CANCEL)
         rawFlags = rawFlags | MB_YESNOCANCEL;
-    if (flags & (int)MBF::BUTTON_ABORT_RETRY_IGNORE)
+    if (flags & MF_BUTTON_ABORT_RETRY_IGNORE)
         rawFlags = rawFlags | MB_ABORTRETRYIGNORE;
-    if (flags & (int)MBF::BUTTON_CANCEL_RETRY_CONTINUE)
+    if (flags & MF_BUTTON_CANCEL_RETRY_CONTINUE)
         rawFlags = rawFlags | MB_CANCELTRYCONTINUE;
 
-// by now win32 is just getting anoying
-#ifdef UNICODE
-#define MessageBox  MessageBoxW
-#else
-#define MessageBox  MessageBoxA
-#endif
-
-    int result = MessageBox(ownerData ? ownerData->hWnd : 0, msg, title, rawFlags);
+    int result = MessageBoxW(ownerData ? ownerData->hWnd : 0, msg, title, rawFlags);
+    if (result == 0)
+        in::SetLastError(8); // flagset invalid
 
     switch (result)
     {
-    case IDABORT: return MBR::ABORT;
-    case IDCANCEL: return MBR::CANCEL;
-    case IDCONTINUE: return MBR::CONTINUE;
-    case IDIGNORE: return MBR::IGNORE;
-    case IDNO: return MBR::NO;
-    case IDOK: return MBR::OK;
-    case IDRETRY: return MBR::RETRY;
-    case IDTRYAGAIN: return MBR::TRYAGAIN;
-    case IDYES: return MBR::YES;
+    case IDABORT:       return MF_ABORT;
+    case IDCANCEL:      return MF_CANCEL;
+    case IDCONTINUE:    return MF_CONTINUE;
+    case IDIGNORE:      return MF_IGNORE;
+    case IDNO:          return MF_NO;
+    case IDOK:          return MF_OK;
+    case IDRETRY:       return MF_RETRY;
+    case IDTRYAGAIN:    return MF_TRYAGAIN;
+    case IDYES:         return MF_YES;
     }
-    return MBR::CANCEL; // should never reach this
+    return MF_CANCEL; // should never reach this
 }
 #define IGNORE 0
 

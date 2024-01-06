@@ -71,6 +71,8 @@
 #include <Windows.h>
 #include <windowsx.h>
 
+#undef ERROR
+
 #include <vector>
 #include <iostream>
 #include <thread>
@@ -83,28 +85,18 @@
 #include <unordered_map>
 #include <bitset>
 #include <complex>
+#include <chrono>
+#include <time.h>
 
 #include "Framework.hpp"
 
-#ifdef _DEBUG
-
 // Error check for Win32 API calls
-#define WIN32_EC(x) { if (!x) { in::CreateWin32DebugError(__LINE__); } }
-
+#define WIN32_EC(x) { if (!x) { in::CreateWin32Error(__LINE__, GetLastError(), __FUNCDNAME__); } }
 // Error check for Win32 API calls but the return value is saved
-#define WIN32_EC_RET(var, func) { var = func; if (!var) { in::CreateWin32DebugError(__LINE__); } }
+#define WIN32_EC_RET(var, func) { var = func; if (!var) { in::CreateWin32Error(__LINE__, GetLastError(), __FUNCDNAME__); } }
 
-#endif // DEBUG
-#ifdef NDEBUG
-
-// Error check for Win32 API calls
-#define WIN32_EC(x) { if (!x) {in::CreateWin32ReleaseError(__LINE__); } }
-
-// Error check for Win32 API calls but the return value is saved
-#define WIN32_EC_RET(var, func) { var = func; if (!var) { in::CreateWin32ReleaseError(__LINE__); } }
-
-#endif // NDEBUG
-
+// Manual error creation with automatic additional information
+#define FRMWRK_ERR(msg) { in::CreateManualError(__LINE__, __FUNCDNAME__, msg); }
 
 namespace in
 {
@@ -119,7 +111,7 @@ namespace in
     { 5, "Invalid Icon Resource." }, // tsd::Initialise
     { 6, "Invalid Cursor Resource." }, // tsd::Initialise
     { 7, "32767 windows have been opened, cannot create more." }, // I hope no one will have to fetch this...
-    { 8, "Uninitialisation failed, had to force termination for app to quit." }
+    { 8, "Flagset invalid or incorectly formatted" }
     };
 
     void DoNothing_V();
@@ -130,8 +122,9 @@ namespace in
         // Window creator and message pump
         void MessageHandler();
 
-        _Notnull_ HWND hWnd = {}; // Yes I know Win32 now shut up
+        HWND hWnd = {};
         std::thread* msgThread = {};
+
 
         short id = 0;
         wchar_t* name = nullptr;
@@ -150,12 +143,21 @@ namespace in
         HICON hIcon{};
         HCURSOR hCursor{};
 
-        std::mutex mtx; // mutex used halt execution to prevent usage of initialised memory
-        std::condition_variable cv; // goes along side mtx
-        bool windowIsFinished = false; // creation of a window is finished
+        std::mutex windowCreationMtx;
+        std::condition_variable windowCreationCv;
+        bool windowCreationIsFinished = false; // creation of a window is finished, prevent usage of unitialised mem
+        
+        std::mutex threadsDoneMtx;
+        std::condition_variable threadsDoneCv;
+        bool threadsDone = false; // all window threads have closed, prevent the class being deleted while windows are open
+
+        std::mutex logMtx; // this probably as close as this gets when it comes to how a mutex is supposed to be used
 
         // Bitset for keyboard key states
         std::bitset<256> keystates = 0;
+
+        // stream to a log file for runtime information about the framework
+        std::wofstream logFile;
 
         // Charfield for text input
         wchar_t* textInput = nullptr; // pointer to the character field
@@ -178,11 +180,20 @@ namespace in
         bool isInitialised = false; // becomes true when initialise is called
     } AppInfo;
 
-    // Win32 Error creation
-    void CreateWin32DebugError(int line);
-    void CreateWin32ReleaseError(int line);
+    // Log level for in::Log, this will determine the prefix of the message
+    enum class LL
+    {
+        INFO,
+        DEBUG,
+        WARNING,
+        ERROR
+    };
 
-    void CreateManualError(const char* msg, const char* func);
+    // Win32 Error creation
+    void CreateWin32Error(int line, int c, const char* func);
+
+    // Manual and instant error creation
+    void CreateManualError(int line, const char* func, const char* msg);
 
     // Error handling for the user
     void SetLastError(int code);
@@ -199,4 +210,11 @@ namespace in
 
     // Loops through AppData.windows and erases all WindowData that is invalid
     void EraseUnusedWindowData();
+
+    // Deallocates everything, closes handles and cleans up
+    // Call when the program needs to end abruptly
+    void DeAlloc();
+
+    // Writes to the log file using the handle stored in in::AppInfo
+    void Log(const wchar_t* msg, LL ll);
 }

@@ -1,2 +1,3 @@
-[ Fri Dec 15 18:54:16 2023 ]: Unhandled Win32 error! 183 at 100
-[ Fri Dec 15 18:54:16 2023 ]: Fatal Error, application must abort!
+[ Sat Jan  6 14:48:52 2024 ] [ INFO ]: Framework was successfully initialised
+[ Sat Jan  6 14:48:52 2024 ] [ INFO ]: A message handler was started
+[ Sat Jan  6 14:48:52 2024 ] [ INFO ]: Window was successfully created and recieved the handle 1
