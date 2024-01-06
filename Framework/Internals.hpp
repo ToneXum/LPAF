@@ -111,7 +111,8 @@ namespace in
     { 5, "Invalid Icon Resource." }, // tsd::Initialise
     { 6, "Invalid Cursor Resource." }, // tsd::Initialise
     { 7, "32767 windows have been opened, cannot create more." }, // I hope no one will have to fetch this...
-    { 8, "Flagset invalid or incorectly formatted" }
+    { 8, "Flagset invalid or incorectly formatted." },
+    { 9, "Invalid set of window dependants." }
     };
 
     void DoNothing_V();
@@ -133,6 +134,8 @@ namespace in
 
         void (*OnClose)() = DoNothing_V;
         bool (*OnCloseAttempt)() = DoNothing_B;
+
+        std::vector<HWND> dependers; // handles to windows that depend on this one
     };
 
     struct // general information about the state of the application

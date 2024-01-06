@@ -291,7 +291,7 @@ namespace tsd // tonexum software division
     void Log(const wchar_t* msg, bool noPrefix);
 
     // Create a new window 
-    short CreateWindow(const wchar_t* name, int width, int height, int xPos = 0, int yPos = 0);
+    short CreateWindow(const wchar_t* name, int width, int height, int xPos, int yPos, short* dependants, unsigned depCount);
 
     // Specify a function to be executed when a window is requested to be closed
     // The function must return a boolean indicating wheather the window should be closed
