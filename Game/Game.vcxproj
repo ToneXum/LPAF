@@ -170,12 +170,10 @@
     <ResourceCompile Include="Resource.rc" />
   </ItemGroup>
   <ItemGroup>
-    <Image Include="res\icon1.ico" />
-    <Image Include="res\terminal.ico" />
-    <Image Include="res\terminal.png" />
+    <Image Include="res\icon.ico" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="res\cursor1.cur" />
+    <None Include="res\cursor.cur" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

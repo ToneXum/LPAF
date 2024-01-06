@@ -148,6 +148,11 @@ void in::WindowData::MessageHandler()
     oss << L"Message handler for the window with the Id of: " << id << " has stopped and is going to delete its data";
     in::Log(oss.str().c_str(), in::LL::INFO);
 
+    for (HWND i : dependers)
+    {
+        SendMessageA(i, WM_CLOSE, 0, 0); // destroy all dependers
+    }
+
     EraseUnusedWindowData();
 
     if (AppInfo.windowCount == 0)
@@ -435,8 +440,8 @@ bool tsd::Initialise(int iconId, int cursorId)
     // Check the recourses, if invalid continue anyways
     if (iconId)
     {
-        in::AppInfo.hIcon = LoadIcon(in::AppInfo.hInstance, MAKEINTRESOURCE(iconId));
-        if (in::AppInfo.hIcon == 0) 
+        in::AppInfo.hIcon = (HICON)LoadImageA(in::AppInfo.hInstance, MAKEINTRESOURCE(iconId), IMAGE_ICON, 0, 0, LR_DEFAULTCOLOR);
+        if (!in::AppInfo.hIcon) 
         { 
             in::SetLastError(5); 
             success = false;
@@ -446,7 +451,7 @@ bool tsd::Initialise(int iconId, int cursorId)
 
     if (cursorId)
     {
-        in::AppInfo.hCursor = LoadCursor(in::AppInfo.hInstance, MAKEINTRESOURCE(cursorId));
+        in::AppInfo.hCursor = (HCURSOR)LoadImageA(in::AppInfo.hInstance, MAKEINTRESOURCE(cursorId), IMAGE_CURSOR, 0, 0, LR_DEFAULTCOLOR);
         if (!in::AppInfo.hCursor) 
         { 
             in::SetLastError(6); 
@@ -500,7 +505,7 @@ void in::Log(const wchar_t* msg, LL ll)
     bool debugIsDefinded = false;
 #endif // !NDEBUG
 #ifdef _DEBUG
-    debugIsDefinded = true;
+    bool debugIsDefinded = true;
 #endif // _DEBUG
 
     if ((ll == in::LL::DEBUG) && (!debugIsDefinded)) return; // attempted debug write but macro is not definded -> do nothing
@@ -563,7 +568,7 @@ void tsd::Log(const wchar_t* msg, bool noPrefix)
 
 // Whoops
 #undef CreateWindow
-short tsd::CreateWindow(const wchar_t* name, int width, int height, int xPos, int yPos)
+short tsd::CreateWindow(const wchar_t* name, int width, int height, int xPos, int yPos, short* dependants, unsigned depCount)
 {
     if (!in::AppInfo.isInitialised) { in::SetLastError(2); return 0; } // init was not called
     if (!name) { in::SetLastError(3); return 0; } // name is nullptr
@@ -585,6 +590,22 @@ short tsd::CreateWindow(const wchar_t* name, int width, int height, int xPos, in
     // wait for window creation to finish
     std::unique_lock<std::mutex> lock(in::AppInfo.windowCreationMtx);
     in::AppInfo.windowCreationCv.wait(lock, [] { return in::AppInfo.windowCreationIsFinished; });
+
+    try
+    {
+        if (dependants && depCount)
+        {
+            for (unsigned i = 0; i < depCount; i++)
+            {
+                // this is unsafe like shit
+                wndData->dependers.push_back(in::GetWindowData(dependants[i])->hWnd);
+            }
+        }
+    }
+    catch (const std::exception&)
+    {
+        in::SetLastError(9);
+    }
 
     in::AppInfo.windows.push_back(wndData);
 

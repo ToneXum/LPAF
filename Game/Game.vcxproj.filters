@@ -30,18 +30,12 @@
     </ResourceCompile>
   </ItemGroup>
   <ItemGroup>
-    <Image Include="res\terminal.ico">
-      <Filter>Resource Files</Filter>
-    </Image>
-    <Image Include="res\icon1.ico">
-      <Filter>Resource Files</Filter>
-    </Image>
-    <Image Include="res\terminal.png">
+    <Image Include="res\icon.ico">
       <Filter>Resource Files</Filter>
     </Image>
   </ItemGroup>
   <ItemGroup>
-    <None Include="res\cursor1.cur">
+    <None Include="res\cursor.cur">
       <Filter>Resource Files</Filter>
     </None>
   </ItemGroup>
