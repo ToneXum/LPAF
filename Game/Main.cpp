@@ -15,7 +15,7 @@ int main()
     TSD_CALL_RET(handle2, tsd::CreateWindow(L"Dependant2", 500, 500, 0, 0, nullptr, 0), true);
 
     short windowHandle; short dep[] = {handle1, handle2};
-    TSD_CALL_RET(windowHandle, tsd::CreateWindow(L"Boring Box", 500, 500, 0, 0, dep, 2), true);
+    TSD_CALL_RET(windowHandle, tsd::CreateWindow(L"Boring Box", 500, 500, 0, 0, dep, sizeof(dep) / sizeof(short)), true);
 
     while (tsd::Running())
     {
