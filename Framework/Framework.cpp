@@ -69,12 +69,12 @@ void in::CreateWin32Error(int line, int c, const char* func)
 void in::CreateWin32Error(int line, int c, const char* func)
 {
     std::wostringstream emsg;
-    emsg << "Win32 error: " << c << " at " << line << " in " << func;
+    emsg << "Win32 error: " << c << " at " << line << " in " << func << std::flush;
     in::Log(emsg.str().c_str(), in::LL::ERROR);
 
     std::ostringstream msg;
     msg << "A fatal error occoured, the application must quit now!\n\nFor more information check 'Last_Log.txt' in the application";
-    msg << " directory" << std::endl; 
+    msg << " directory" << std::flush; 
 
     MessageBoxA(nullptr, msg.str().c_str(), "Fatal Error!", MB_TASKMODAL | MB_OK | MB_ICONERROR);
 
@@ -92,7 +92,7 @@ void in::CreateManualError(int line, const char* func, const char* msg)
     str << "Origin: " << func << " at " << line << "\n\n";
     str << "This is an internal error likely caused by the framework itself. ";
     str << "The program is unable to recover, the application must quit now!";
-    str << std::endl;
+    str << std::flush;
 
     MessageBoxA(nullptr, str.str().c_str(), "Internal Error", MB_TASKMODAL | MB_OK | MB_ICONERROR);
 
@@ -132,7 +132,7 @@ void in::WindowData::MessageHandler()
     lock.unlock();
     in::AppInfo.windowCreationCv.notify_one();
 
-    in::Log(L"MessageHandler has sucessfully stared.", in::LL::DEBUG);
+    in::Log(L"A message handler was started", in::LL::INFO);
     
     // message pump for the window
     MSG msg = { };
@@ -144,6 +144,10 @@ void in::WindowData::MessageHandler()
     // Window is closed, update window information
     isValid = false;
 
+    std::wostringstream oss;
+    oss << L"Message handler for the window with the Id of: " << id << " has stopped and is going to delete its data";
+    in::Log(oss.str().c_str(), in::LL::INFO);
+
     EraseUnusedWindowData();
 
     if (AppInfo.windowCount == 0)
@@ -152,6 +156,7 @@ void in::WindowData::MessageHandler()
         AppInfo.threadsDone = true;
         lock.unlock();
         AppInfo.threadsDoneCv.notify_one();
+        in::Log(L"Thread mutex was unlocked", in::LL::INFO);
     }
 }
 
@@ -356,7 +361,7 @@ LRESULT in::WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
     ///////////////////////////////////
     }
     
-    return DefWindowProc(hWnd, uMsg, wParam, lParam);
+    return DefWindowProcW(hWnd, uMsg, wParam, lParam);
 }
 
 in::WindowData* in::GetWindowData(HWND handle)
@@ -391,6 +396,10 @@ void in::EraseUnusedWindowData()
         WindowData* wndDt = AppInfo.windows.at(i);
         if (!wndDt->isValid)
         {
+            std::wostringstream oss;
+            oss << L"Window data for the window with the Id of: " << wndDt->id << L" was deleted" << std::flush;
+            in::Log(oss.str().c_str(), in::LL::INFO);
+
             delete wndDt->msgThread;
             delete wndDt;
             std::vector<WindowData*>::iterator it = AppInfo.windows.begin() + i;
@@ -405,6 +414,7 @@ void in::EraseUnusedWindowData()
 
 void in::DeAlloc()
 {
+    in::AppInfo.logFile.close();
     for (WindowData* i : AppInfo.windows)
     {
         delete i->msgThread;
@@ -430,7 +440,7 @@ bool tsd::Initialise(int iconId, int cursorId)
         { 
             in::SetLastError(5); 
             success = false;
-            in::Log(L"Specified recourse Id for an icon was invalid.", in::LL::DEBUG);
+            in::Log(L"Specified recourse Id for an icon was invalid", in::LL::ERROR);
         }
     }
 
@@ -441,7 +451,7 @@ bool tsd::Initialise(int iconId, int cursorId)
         { 
             in::SetLastError(6); 
             success = false; 
-            in::Log(L"Specified recourse Id for a mouse was invalid.", in::LL::DEBUG);
+            in::Log(L"Specified recourse Id for a mouse was invalid", in::LL::ERROR);
         }
     }
     
@@ -466,7 +476,7 @@ bool tsd::Initialise(int iconId, int cursorId)
     in::AppInfo.textInput = new wchar_t[100000]{0}; // thats 200 whole kilobytes of ram right there
 
     in::AppInfo.isInitialised = true;
-    in::Log(L"Framework was successfully initialised.", in::LL::DEBUG);
+    in::Log(L"Framework was successfully initialised", in::LL::INFO);
     return success;
 }
 
@@ -480,13 +490,15 @@ void tsd::Uninitialise()
 
     WIN32_EC(UnregisterClassW(in::AppInfo.windowClassName, in::AppInfo.hInstance));
 
-    in::Log(L"Framework was successfully uninitialised.", in::LL::DEBUG);
+    in::Log(L"Framework was successfully uninitialised", in::LL::INFO);
     in::AppInfo.logFile.close();
 }
 
 void in::Log(const wchar_t* msg, LL ll)
 {
+#ifdef NDEBUG
     bool debugIsDefinded = false;
+#endif // !NDEBUG
 #ifdef _DEBUG
     debugIsDefinded = true;
 #endif // _DEBUG
@@ -496,32 +508,41 @@ void in::Log(const wchar_t* msg, LL ll)
     std::chrono::system_clock::time_point now = std::chrono::system_clock::now();
     std::time_t currentDate = std::chrono::system_clock::to_time_t(now);
 
-    char timeBuf[30] = { 0 };
+    char timeBuf[30] = { 0 }; // minimum required size for this is 26. Who knows if this is going to run in 9997976 years?
     ctime_s(timeBuf, sizeof(timeBuf), &currentDate);
     *std::strchr(timeBuf, '\n') = 0; // replace that pesky newline with the null-char
 
-    in::AppInfo.logFile << "[ " << timeBuf << " ]";
-    
-    if (ll == in::LL::INFO)
+    // extra buffer, prevents asychrony from messing with the output when this func is called from different threads at the same time
+    std::wostringstream oss; 
+    oss << "[ " << timeBuf << " ]";
+
+    switch (ll)
     {
-        in::AppInfo.logFile << " [ INFO ]: ";
-        in::AppInfo.logFile << msg << std::flush;
-    }
-    else if ((ll == in::LL::DEBUG))
+    case in::LL::INFO:
     {
-        in::AppInfo.logFile << " [ DEBUG ]: ";
-        in::AppInfo.logFile << msg << std::flush;
+        oss << " [ INFO ]: ";
+        break;
     }
-    else if ((ll == in::LL::ERROR))
+    case in::LL::DEBUG:
     {
-        in::AppInfo.logFile << " [ ERROR ]: ";
-        in::AppInfo.logFile << msg << std::flush;
+        oss << " [ DEBUG ]: ";
+        break;
     }
-    else if ((ll == in::LL::WARNING))
+    case in::LL::WARNING:
     {
-        in::AppInfo.logFile << " [ WARNING ]: ";
-        in::AppInfo.logFile << msg << std::flush;
+        oss << " [ WARNING ]: ";
+        break;
     }
+    case in::LL::ERROR:
+    {
+        oss << " [ ERROR ]: ";
+        break;
+    }
+    }
+
+    AppInfo.logMtx.lock();
+    in::AppInfo.logFile << oss.str().c_str() << msg << "\n" << std::flush;
+    AppInfo.logMtx.unlock();
 }
 
 void tsd::Log(const wchar_t* msg, bool noPrefix)
@@ -537,7 +558,7 @@ void tsd::Log(const wchar_t* msg, bool noPrefix)
 
     if (!noPrefix)
         in::AppInfo.logFile << " [ USER ]";
-    in::AppInfo.logFile << ": " << msg; // here it is!
+    in::AppInfo.logFile << ": " << msg << std::endl; // here it is!
 }
 
 // Whoops
@@ -569,8 +590,6 @@ short tsd::CreateWindow(const wchar_t* name, int width, int height, int xPos, in
 
     in::AppInfo.windowCreationIsFinished = false;
 
-    in::Log(L"Window was successfully created.", in::LL::DEBUG);
-
     // ran out of range
     if (wndData->id == SHRT_MAX)
     {
@@ -578,6 +597,9 @@ short tsd::CreateWindow(const wchar_t* name, int width, int height, int xPos, in
         return 0;
     }
 
+    std::wostringstream oss;
+    oss << L"Window was successfully created and recieved the handle " << wndData->id;
+    in::Log(oss.str().c_str(), in::LL::INFO);
     return wndData->id;
 }
 
@@ -603,8 +625,8 @@ void tsd::CreateAutoError(int line, bool quit)
 
     if (quit)
     {
-        std::exception exc;
-        throw exc;
+        in::DeAlloc();
+        std::exit(-1);
     }
 }
 
@@ -654,7 +676,7 @@ std::pair<int, int> tsd::GetWindowDimensions(short id)
     return {wndData->width, wndData->height};
 }
 
-int tsd::GetWindowXPos(short id, WPR wpr)
+int tsd::GetWindowXPos(short id, WP wpr)
 {
     in::WindowData* wndData = in::GetWindowData(id);
     if (!wndData) { in::SetLastError(4); return 0; }
@@ -663,9 +685,9 @@ int tsd::GetWindowXPos(short id, WPR wpr)
 
     switch (wpr)
     {
-    case WPR::LEFT:
+    case WP_LEFT:
         return rect.left;
-    case WPR::RIGHT:
+    case WP_RIGHT:
         return rect.right;
     }
 
@@ -673,7 +695,7 @@ int tsd::GetWindowXPos(short id, WPR wpr)
     return 0;
 }
 
-int tsd::GetWindowYPos(short id, WPR wpr)
+int tsd::GetWindowYPos(short id, WP wpr)
 {
     in::WindowData* wndData = in::GetWindowData(id);
     if (!wndData) { in::SetLastError(4); return 0; }
@@ -682,9 +704,9 @@ int tsd::GetWindowYPos(short id, WPR wpr)
 
     switch (wpr)
     {
-    case WPR::TOP:
+    case WP_TOP:
         return rect.top;
-    case WPR::BOTTOM:
+    case WP_BOTTOM:
         return rect.bottom;
     }
 
@@ -692,7 +714,7 @@ int tsd::GetWindowYPos(short id, WPR wpr)
     return 0;
 }
 
-std::pair<int, int> tsd::GetWindowPosition(short id, WPR wpr)
+std::pair<int, int> tsd::GetWindowPosition(short id, WP wpr)
 {
     in::WindowData* wndData = in::GetWindowData(id);
     if (!wndData) { in::SetLastError(4); return {0, 0}; }
@@ -701,13 +723,13 @@ std::pair<int, int> tsd::GetWindowPosition(short id, WPR wpr)
     
     switch (wpr)
     {
-    case WPR::TOP_LEFT:
+    case WP_TOP_LEFT:
         return { rect.left, rect.top };
-    case WPR::TOP_RIGHT:
+    case WP_TOP_RIGHT:
         return { rect.right, rect.top };
-    case WPR::BOTTOM_LEFT:
+    case WP_BOTTOM_LEFT:
         return { rect.left, rect.bottom };
-    case WPR::BOTTOM_RIGHT:
+    case WP_BOTTOM_RIGHT:
         return { rect.right, rect.bottom };
     }
 
@@ -755,7 +777,7 @@ void tsd::Halt(int ms)
 
 #undef MessageBox
 #undef IGNORE
-tsd::MBR tsd::MessageBox(short owner, const wchar_t* title, const wchar_t* msg, int flags)
+int tsd::MessageBox(short owner, const wchar_t* title, const wchar_t* msg, int flags)
 // by now win32 is just getting anoying
 #ifdef UNICODE
 #define MessageBox  MessageBoxW
@@ -770,34 +792,33 @@ tsd::MBR tsd::MessageBox(short owner, const wchar_t* title, const wchar_t* msg, 
 
     // Where switch statement?
     // Cant put (non-constant) expressions into switch cases
-    if (flags & (int)MBF::TASKMODAL)
+    if (flags & MF_TASKMODAL)
         rawFlags = rawFlags | MB_TASKMODAL;
 
-    if (flags & (int)MBF::ICON_WARNING)
+    if (flags & MF_ICON_WARNING)
         rawFlags = rawFlags | MB_ICONWARNING;
-    if (flags & (int)MBF::ICON_ERROR)
+    if (flags & MF_ICON_ERROR)
         rawFlags = rawFlags | MB_ICONERROR;
-    if (flags & (int)MBF::ICON_INFO)
+    if (flags & MF_ICON_INFO)
         rawFlags = rawFlags | MB_ICONINFORMATION;
-    if (flags & (int)MBF::ICON_QUESTION)
+    if (flags & MF_ICON_QUESTION)
         rawFlags = rawFlags | MB_ICONQUESTION;
     
-    if (flags & (int)MBF::BUTTON_OK)
+    if (flags & MF_BUTTON_OK)
         rawFlags = rawFlags | MB_OK;
-    if (flags & (int)MBF::BUTTON_OK_CANCEL)
+    if (flags & MF_BUTTON_OK_CANCEL)
         rawFlags = rawFlags | MB_OKCANCEL;
-    if (flags & (int)MBF::BUTTON_YES_NO)
+    if (flags & MF_BUTTON_YES_NO)
         rawFlags = rawFlags | MB_YESNO;
-    if (flags & (int)MBF::BUTTON_RETRY_CANEL)
+    if (flags & MF_BUTTON_RETRY_CANEL)
         rawFlags = rawFlags | MB_RETRYCANCEL;
 
-    if (flags & (int)MBF::BUTTON_YES_NO_CANCEL)
+    if (flags & MF_BUTTON_YES_NO_CANCEL)
         rawFlags = rawFlags | MB_YESNOCANCEL;
-    if (flags & (int)MBF::BUTTON_ABORT_RETRY_IGNORE)
+    if (flags & MF_BUTTON_ABORT_RETRY_IGNORE)
         rawFlags = rawFlags | MB_ABORTRETRYIGNORE;
-    if (flags & (int)MBF::BUTTON_CANCEL_RETRY_CONTINUE)
+    if (flags & MF_BUTTON_CANCEL_RETRY_CONTINUE)
         rawFlags = rawFlags | MB_CANCELTRYCONTINUE;
-
 
     int result = MessageBoxW(ownerData ? ownerData->hWnd : 0, msg, title, rawFlags);
     if (result == 0)
@@ -805,17 +826,17 @@ tsd::MBR tsd::MessageBox(short owner, const wchar_t* title, const wchar_t* msg, 
 
     switch (result)
     {
-    case IDABORT: return MBR::ABORT;
-    case IDCANCEL: return MBR::CANCEL;
-    case IDCONTINUE: return MBR::CONTINUE;
-    case IDIGNORE: return MBR::IGNORE;
-    case IDNO: return MBR::NO;
-    case IDOK: return MBR::OK;
-    case IDRETRY: return MBR::RETRY;
-    case IDTRYAGAIN: return MBR::TRYAGAIN;
-    case IDYES: return MBR::YES;
+    case IDABORT:       return MF_ABORT;
+    case IDCANCEL:      return MF_CANCEL;
+    case IDCONTINUE:    return MF_CONTINUE;
+    case IDIGNORE:      return MF_IGNORE;
+    case IDNO:          return MF_NO;
+    case IDOK:          return MF_OK;
+    case IDRETRY:       return MF_RETRY;
+    case IDTRYAGAIN:    return MF_TRYAGAIN;
+    case IDYES:         return MF_YES;
     }
-    return MBR::CANCEL; // should never reach this
+    return MF_CANCEL; // should never reach this
 }
 #define IGNORE 0
 

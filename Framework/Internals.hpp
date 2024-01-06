@@ -151,6 +151,8 @@ namespace in
         std::condition_variable threadsDoneCv;
         bool threadsDone = false; // all window threads have closed, prevent the class being deleted while windows are open
 
+        std::mutex logMtx; // this probably as close as this gets when it comes to how a mutex is supposed to be used
+
         // Bitset for keyboard key states
         std::bitset<256> keystates = 0;
 
@@ -178,6 +180,7 @@ namespace in
         bool isInitialised = false; // becomes true when initialise is called
     } AppInfo;
 
+    // Log level for in::Log, this will determine the prefix of the message
     enum class LL
     {
         INFO,
@@ -212,6 +215,6 @@ namespace in
     // Call when the program needs to end abruptly
     void DeAlloc();
 
-    // Writes to the log file handle
+    // Writes to the log file using the handle stored in in::AppInfo
     void Log(const wchar_t* msg, LL ll);
 }

@@ -1,1 +1,3 @@
-[ Thu Jan  4 20:38:07 2024 ] [ DEBUG ]: hello fuck head, a window was created
+[ Sat Jan  6 14:48:52 2024 ] [ INFO ]: Framework was successfully initialised
+[ Sat Jan  6 14:48:52 2024 ] [ INFO ]: A message handler was started
+[ Sat Jan  6 14:48:52 2024 ] [ INFO ]: Window was successfully created and recieved the handle 1
