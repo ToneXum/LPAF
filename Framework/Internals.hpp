@@ -88,8 +88,6 @@
 #include <chrono>
 #include <time.h>
 
-#include "Framework.hpp"
-
 // Error check for Win32 API calls
 #define WIN32_EC(x) { if (!x) { in::CreateWin32Error(__LINE__, GetLastError(), __FUNCDNAME__); } }
 // Error check for Win32 API calls but the return value is saved
@@ -101,7 +99,7 @@
 namespace in
 {
     // Performance is not important here so yes, have a hashmap
-    std::unordered_map<int, const char*> errors =
+    extern std::unordered_map<int, const char*> errors =
     {
     { 0, "The operation went smoothly." }, // no error
     { 1, "The framework is already initialised." }, // tsd::Initialise was called more than once
