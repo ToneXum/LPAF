@@ -1,7 +1,5 @@
-[ Fri Jan 12 19:00:36 2024 ] [ INFO ]: Framework was successfully initialised
-[ Fri Jan 12 19:00:36 2024 ] [ INFO ]: A message handler was started
-[ Fri Jan 12 19:00:36 2024 ] [ INFO ]: Window was successfully created and recieved the handle 1
-[ Fri Jan 12 19:25:03 2024 ] [ INFO ]: Message handler for the window with the Id of: 1 has stopped and is going to delete its data
-[ Fri Jan 12 19:25:03 2024 ] [ INFO ]: Window data for the window with the Id of: 1 was deleted
-[ Fri Jan 12 19:25:03 2024 ] [ INFO ]: Thread mutex was unlocked
-[ Fri Jan 12 19:25:03 2024 ] [ INFO ]: Framework was successfully uninitialised
+[ Sun Jan 14 14:10:41 2024 ] [ INFO ]: A Vulkan instance was created
+[ Sun Jan 14 14:10:41 2024 ] [ INFO ]: Framework was successfully initialised
+[ Sun Jan 14 14:10:41 2024 ] [ INFO ]: A message handler was started
+[ Sun Jan 14 14:10:41 2024 ] [ INFO ]: A message handler was started
+[ Sun Jan 14 14:10:42 2024 ] [ INFO ]: Framework was successfully uninitialised

@@ -87,11 +87,16 @@
 #include <complex>
 #include <chrono>
 #include <time.h>
+#include <array>
+
+#include "vulkan/vulkan.h"
 
 // Error check for Win32 API calls
 #define WIN32_EC(x) { if (!x) { in::CreateWin32Error(__LINE__, GetLastError(), __FUNCDNAME__); } }
 // Error check for Win32 API calls but the return value is saved
 #define WIN32_EC_RET(var, func) { var = func; if (!var) { in::CreateWin32Error(__LINE__, GetLastError(), __FUNCDNAME__); } }
+
+#define VUL_EC(x) { VkResult r = x; if (r) { in::CreateVulkanError(__LINE__, r, __FUNCDNAME__); } }
 
 // Manual error creation with automatic additional information
 #define FRMWRK_ERR(msg) { in::CreateManualError(__LINE__, __FUNCDNAME__, msg); }
@@ -181,20 +186,75 @@ namespace in
         bool isInitialised = false; // becomes true when initialise is called
     } AppInfo;
 
-    // Log level for in::Log, this will determine the prefix of the message
+    struct
+    {
+        VkInstance vkInstance{};
+
+#ifdef _DEBUG
+        VkDebugUtilsMessengerEXT debugMessenger;
+        std::array<const char*, 1> validationLayers
+        { 
+            "VK_LAYER_KHRONOS_validation" 
+        };
+#endif // _DEBUG
+
+        // manual vulkan extensions, normally glfw would do this but oh well
+        // pre-build: there is no way this works!
+        // post-build: It fucking works!
+        const std::vector<const char*> extension
+        { 
+            "VK_KHR_surface",
+            "VK_KHR_win32_surface",
+#ifdef _DEBUG
+            "VK_EXT_debug_utils"
+#endif // _DEBUG
+        };
+    } RenderInfo;
+
+    // Log level for in::Log(), this will determine the prefix of the message
     enum class LL
     {
         INFO,
         DEBUG,
         WARNING,
-        ERROR
+        ERROR,
+        VALIDATION
     };
+
+    void InitialiseVulkan();
+
+    void UninitialiseVulkan();
+
+    VkResult CreateDebugUtilsMessengerEXT_prx(
+        VkInstance instance, 
+        const VkDebugUtilsMessengerCreateInfoEXT* pCreateInfo, 
+        const VkAllocationCallbacks* pAllocator, 
+        VkDebugUtilsMessengerEXT* pDebugMessenger
+    );
+
+    void DestroyDebugUtilsMessengerEXT_prx(
+        VkInstance instance,
+        VkDebugUtilsMessengerEXT debugMessenger,
+        const VkAllocationCallbacks* pAllocator
+    );
+
+#ifdef _DEBUG
+    VkBool32 VKAPI_CALL ValidationDegubCallback(
+        VkDebugUtilsMessageSeverityFlagBitsEXT msgSeverity,
+        VkDebugUtilsMessageTypeFlagsEXT msgType,
+        const VkDebugUtilsMessengerCallbackDataEXT* callbackData,
+        void* userData
+    );
+#endif // _DEBUG
 
     // Win32 Error creation
     void CreateWin32Error(int line, int c, const char* func);
 
     // Manual and instant error creation
     void CreateManualError(int line, const char* func, const char* msg);
+
+    // Vulkan error creation
+    void CreateVulkanError(int line, int c, const char* func);
 
     // Error handling for the user
     void SetLastError(int code);

@@ -100,6 +100,23 @@ void in::CreateManualError(int line, const char* func, const char* msg)
     std::exit(-1);
 }
 
+void in::CreateVulkanError(int line, int c, const char* func)
+{
+    std::ostringstream str;
+
+    str << "A Vulkan API oparation resulted in a fatal error:\n\n";
+    str << "Error: " << c << "\n";
+    str << "Origin: " << func << " at " << line << "\n\n";
+    str << "This is an internal error likely caused by the framework itself. ";
+    str << "The program is unable to recover and must quit now!";
+    str << std::flush;
+
+    MessageBoxA(nullptr, str.str().c_str(), "Internal Error", MB_TASKMODAL | MB_OK | MB_ICONERROR);
+
+    DeAlloc();
+    std::exit(-1);
+}
+
 void in::SetLastError(int code)
 {
     AppInfo.lastErrorCode = code;
@@ -145,8 +162,8 @@ void in::WindowData::MessageHandler()
     isValid = false;
 
     std::wostringstream oss;
-    oss << L"Message handler for the window with the Id of: " << id << " has stopped and is going to delete its data";
-    in::Log(oss.str().c_str(), in::LL::INFO);
+    oss << L"Message handler for " << hWnd << " has stopped";
+    in::Log(oss.str().c_str(), in::LL::DEBUG);
 
     for (HWND i : dependers)
     {
@@ -161,7 +178,7 @@ void in::WindowData::MessageHandler()
         AppInfo.threadsDone = true;
         lock.unlock();
         AppInfo.threadsDoneCv.notify_one();
-        in::Log(L"Thread mutex was unlocked", in::LL::INFO);
+        in::Log(L"Thread mutex was unlocked", in::LL::DEBUG);
     }
 }
 
@@ -225,7 +242,7 @@ LRESULT in::WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
         {
             if (wParam != 0x0008) // is not backspace
             {
-                in::AppInfo.textInput[in::AppInfo.textInputIndex] = wParam;
+                in::AppInfo.textInput[in::AppInfo.textInputIndex] = (wchar_t)wParam;
                 in::AppInfo.textInputIndex++;
             }
             else
@@ -332,6 +349,7 @@ LRESULT in::WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
     case WM_MOUSELEAVE:
     {
         GetWindowData(hWnd)->hasMouseInClientArea = false;
+        break;
     }
     // Mouse input
     ///////////////////////////////////
@@ -402,8 +420,8 @@ void in::EraseUnusedWindowData()
         if (!wndDt->isValid)
         {
             std::wostringstream oss;
-            oss << L"Window data for the window with the Id of: " << wndDt->id << L" was deleted" << std::flush;
-            in::Log(oss.str().c_str(), in::LL::INFO);
+            oss << L"Window data for " << wndDt->hWnd << " with the handle " << wndDt->id << " was deleted" << std::flush;
+            in::Log(oss.str().c_str(), in::LL::DEBUG);
 
             delete wndDt->msgThread;
             delete wndDt;
@@ -427,6 +445,140 @@ void in::DeAlloc()
     }
     delete AppInfo.textInput;
 }
+
+void in::InitialiseVulkan()
+{
+    // do setup for validation layers
+#ifdef _DEBUG
+    // make sure that all layers requested are present and enabled
+    unsigned int layerCount = 0;
+    vkEnumerateInstanceLayerProperties(&layerCount, nullptr);
+
+    std::vector<VkLayerProperties> availableLayers(layerCount);
+    vkEnumerateInstanceLayerProperties(&layerCount, availableLayers.data());
+
+    bool allLayersFound = true;
+    for (const char* layerName : RenderInfo.validationLayers) // loops through the layers we want
+    {
+        bool found = false;
+        for (const VkLayerProperties& layerProperties : availableLayers) // loop throught the layer we have
+        {
+            if (strcmp(layerName, layerProperties.layerName) == 0) // strcmp does a bitmask, 0 means strings are equal
+            {
+                found = true;
+                break;
+            }
+        }
+        if (!found) allLayersFound = false;
+    }
+
+    if (!allLayersFound) FRMWRK_ERR("Not all validation layers requested where found.");
+
+    // oh vulkan ...
+    VkDebugUtilsMessengerCreateInfoEXT preMssngrInf{};
+    preMssngrInf.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
+    preMssngrInf.messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT |
+        VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT |
+        VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
+    preMssngrInf.messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT |
+        VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT |
+        VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
+    preMssngrInf.pfnUserCallback = in::ValidationDegubCallback;
+    preMssngrInf.pUserData = nullptr;
+#endif // _DEBUG
+
+    VkApplicationInfo appInf{};
+    appInf.sType            = VK_STRUCTURE_TYPE_APPLICATION_INFO;
+    appInf.pApplicationName = "GAFW Renderer";
+    appInf.apiVersion       = VK_MAKE_API_VERSION(1, 1, 0, 0);
+    appInf.pEngineName      = "No Engine";
+    appInf.engineVersion    = VK_MAKE_API_VERSION(1, 1, 0, 0);
+    appInf.apiVersion       = VK_API_VERSION_1_3;
+#ifdef _DEBUG
+    appInf.pNext            = (VkDebugUtilsMessengerCreateInfoEXT*) &preMssngrInf;
+#endif // _DEBUG
+
+    VkInstanceCreateInfo createInf{};
+    createInf.sType                 = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
+    createInf.pApplicationInfo      = &appInf;
+#ifdef _DEBUG
+    createInf.enabledLayerCount     = (unsigned int)in::RenderInfo.validationLayers.size();
+    createInf.ppEnabledLayerNames   = in::RenderInfo.validationLayers.data();
+#endif // _DEBUG
+    createInf.enabledExtensionCount = (unsigned int)in::RenderInfo.extension.size();
+    createInf.ppEnabledExtensionNames = in::RenderInfo.extension.data();
+
+    VUL_EC(vkCreateInstance(&createInf, nullptr, &RenderInfo.vkInstance));
+    in::Log(L"A Vulkan instance was created", in::LL::INFO);
+
+#ifdef _DEBUG
+    VkDebugUtilsMessengerCreateInfoEXT mssngrInf{};
+    mssngrInf.sType             = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
+    mssngrInf.messageSeverity   = VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT | 
+        VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT | 
+        VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
+    mssngrInf.messageType       = VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT | 
+        VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT | 
+        VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
+    mssngrInf.pfnUserCallback   = in::ValidationDegubCallback;
+    mssngrInf.pUserData         = nullptr;
+
+    VUL_EC(in::CreateDebugUtilsMessengerEXT_prx(in::RenderInfo.vkInstance, &mssngrInf, nullptr, &in::RenderInfo.debugMessenger));
+#endif // _DEBUG
+}
+
+void in::UninitialiseVulkan()
+{
+#ifdef _DEBUG
+    in::DestroyDebugUtilsMessengerEXT_prx(in::RenderInfo.vkInstance, in::RenderInfo.debugMessenger, nullptr);
+#endif // _DEBUG
+
+    vkDestroyInstance(in::RenderInfo.vkInstance, nullptr);
+}
+
+#ifdef _DEBUG
+VkBool32 VKAPI_CALL in::ValidationDegubCallback(
+    VkDebugUtilsMessageSeverityFlagBitsEXT msgSeverity, 
+    VkDebugUtilsMessageTypeFlagsEXT msgType, 
+    const VkDebugUtilsMessengerCallbackDataEXT* callbackData, 
+    void* userData)
+{
+    if (msgSeverity >= VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT)
+    {
+        size_t msgLen = strlen(callbackData->pMessage);
+        wchar_t* wMsg = new wchar_t[msgLen + 1]{0};
+        size_t wMsgLen = 0;
+        mbstowcs_s(&wMsgLen, wMsg, msgLen + 1, callbackData->pMessage, msgLen);
+        in::Log(wMsg, in::LL::VALIDATION);
+        delete[] wMsg;
+    }
+    return 0u;
+}
+
+VkResult in::CreateDebugUtilsMessengerEXT_prx(VkInstance instance,
+    const VkDebugUtilsMessengerCreateInfoEXT* pCreateInfo,
+    const VkAllocationCallbacks* pAllocator,
+    VkDebugUtilsMessengerEXT* pDebugMessenger)
+{
+    auto func = (PFN_vkCreateDebugUtilsMessengerEXT)vkGetInstanceProcAddr(instance, "vkCreateDebugUtilsMessengerEXT");
+    if (func != nullptr) {
+        return func(instance, pCreateInfo, pAllocator, pDebugMessenger);
+    }
+    else {
+        return VK_ERROR_EXTENSION_NOT_PRESENT;
+    }
+}
+
+void in::DestroyDebugUtilsMessengerEXT_prx(VkInstance instance,
+    VkDebugUtilsMessengerEXT debugMessenger,
+    const VkAllocationCallbacks* pAllocator)
+{
+    auto func = (PFN_vkDestroyDebugUtilsMessengerEXT)vkGetInstanceProcAddr(instance, "vkDestroyDebugUtilsMessengerEXT");
+    if (func != nullptr) {
+        func(instance, debugMessenger, pAllocator);
+    }
+}
+#endif // _DEBUG
 
 bool tsd::Initialise(int iconId, int cursorId)
 {
@@ -481,6 +633,9 @@ bool tsd::Initialise(int iconId, int cursorId)
     in::AppInfo.textInput = new wchar_t[100000]{0}; // thats 200 whole kilobytes of ram right there
 
     in::AppInfo.isInitialised = true;
+
+    in::InitialiseVulkan();
+    
     in::Log(L"Framework was successfully initialised", in::LL::INFO);
     return success;
 }
@@ -494,6 +649,8 @@ void tsd::Uninitialise()
     delete in::AppInfo.textInput;
 
     WIN32_EC(UnregisterClassW(in::AppInfo.windowClassName, in::AppInfo.hInstance));
+
+    in::UninitialiseVulkan();
 
     in::Log(L"Framework was successfully uninitialised", in::LL::INFO);
     in::AppInfo.logFile.close();
@@ -543,10 +700,19 @@ void in::Log(const wchar_t* msg, LL ll)
         oss << " [ ERROR ]: ";
         break;
     }
+    case in::LL::VALIDATION:
+    {
+        oss << " [ VALID ]: ";
+    }
     }
 
     AppInfo.logMtx.lock();
+#ifdef _DEBUG
+    std::wcout << oss.str().c_str() << msg << "\n" << std::flush;
+#endif // _DEBUG
+#ifdef NDEBUG
     in::AppInfo.logFile << oss.str().c_str() << msg << "\n" << std::flush;
+#endif // NDEBUG
     AppInfo.logMtx.unlock();
 }
 
@@ -568,7 +734,7 @@ void tsd::Log(const wchar_t* msg, bool noPrefix)
 
 // Whoops
 #undef CreateWindow
-short tsd::CreateWindow(const wchar_t* name, int width, int height, int xPos, int yPos, short* dependants, unsigned depCount)
+short tsd::CreateWindow(const wchar_t* name, int width, int height, int xPos, int yPos, const short* dependants, unsigned depCount)
 {
     if (!in::AppInfo.isInitialised) { in::SetLastError(2); return 0; } // init was not called
     if (!name) { in::SetLastError(3); return 0; } // name is nullptr
@@ -590,7 +756,7 @@ short tsd::CreateWindow(const wchar_t* name, int width, int height, int xPos, in
     // wait for window creation to finish
     std::unique_lock<std::mutex> lock(in::AppInfo.windowCreationMtx);
     in::AppInfo.windowCreationCv.wait(lock, [] { return in::AppInfo.windowCreationIsFinished; });
-
+    
     try
     {
         if (dependants && depCount)
@@ -602,7 +768,7 @@ short tsd::CreateWindow(const wchar_t* name, int width, int height, int xPos, in
             }
         }
     }
-    catch (const std::exception&)
+    catch (...)
     {
         in::SetLastError(9);
     }
@@ -619,8 +785,8 @@ short tsd::CreateWindow(const wchar_t* name, int width, int height, int xPos, in
     }
 
     std::wostringstream oss;
-    oss << L"Window was successfully created and recieved the handle " << wndData->id;
-    in::Log(oss.str().c_str(), in::LL::INFO);
+    oss << L"Window " << wndData->hWnd << " was created and recieved a handle of " << wndData->id;
+    in::Log(oss.str().c_str(), in::LL::DEBUG);
     return wndData->id;
 }
 
