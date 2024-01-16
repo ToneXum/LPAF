@@ -1,5 +1,0 @@
-[ Sun Jan 14 14:10:41 2024 ] [ INFO ]: A Vulkan instance was created
-[ Sun Jan 14 14:10:41 2024 ] [ INFO ]: Framework was successfully initialised
-[ Sun Jan 14 14:10:41 2024 ] [ INFO ]: A message handler was started
-[ Sun Jan 14 14:10:41 2024 ] [ INFO ]: A message handler was started
-[ Sun Jan 14 14:10:42 2024 ] [ INFO ]: Framework was successfully uninitialised

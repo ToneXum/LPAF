@@ -11,17 +11,16 @@
 // This is a simple test program to try out and find bugs in GAFW
 int main()
 {
-    TSD_CALL(tsd::Initialise(IDI_ICON1, IDC_CURSOR1), true); // Intellisense? Are you good?
+    tsd::Initialise(IDI_ICON1, IDC_CURSOR1); // Intellisense? Are you good?
 
-    short dependant;
-    TSD_CALL_RET(dependant, tsd::CreateWindow(L"Dependant", 500, 500, 0, 0, nullptr, 0), true);
+    short dependant = tsd::CreateWindow(L"Dependant", 500, 500, 0, 0, nullptr, 0);
 
-    short windowHandle; short dep[] = { dependant };
-    TSD_CALL_RET(windowHandle, tsd::CreateWindow(L"Boring Box", 500, 500, 0, 0, dep, 1), true);
+    short windowHandle = tsd::CreateWindow(L"Boring Box", 500, 500, 0, 0, nullptr, 0);
 
     while (tsd::Running())
     {
-        tsd::ChangeWindowName(windowHandle, tsd::IsKeyPressed(tsd::K_E) ? L"E is pressed" : L"E is not pressed");
+        if (tsd::IsValidHandle(windowHandle))
+            tsd::ChangeWindowName(windowHandle, tsd::IsKeyPressed(tsd::K_E) ? L"E is pressed" : L"E is not pressed");
         // simulate computation
         tsd::Halt(16);
     }

@@ -117,11 +117,6 @@ void in::CreateVulkanError(int line, int c, const char* func)
     std::exit(-1);
 }
 
-void in::SetLastError(int code)
-{
-    AppInfo.lastErrorCode = code;
-}
-
 void in::WindowData::MessageHandler()
 {
     WIN32_EC_RET(hWnd, CreateWindowExW(
@@ -149,7 +144,9 @@ void in::WindowData::MessageHandler()
     lock.unlock();
     in::AppInfo.windowCreationCv.notify_one();
 
-    in::Log(L"A message handler was started", in::LL::INFO);
+    std::wostringstream msg2;
+    msg2 << L"A message handler was started for " << hWnd << " for handle " << id;
+    in::Log(msg2.str().c_str(), in::LL::DEBUG);
     
     // message pump for the window
     MSG msg = { };
@@ -162,7 +159,7 @@ void in::WindowData::MessageHandler()
     isValid = false;
 
     std::wostringstream oss;
-    oss << L"Message handler for " << hWnd << " has stopped";
+    oss << L"Message handler for " << hWnd << " for handle" << id << " has stopped";
     in::Log(oss.str().c_str(), in::LL::DEBUG);
 
     for (HWND i : dependers)
@@ -172,7 +169,7 @@ void in::WindowData::MessageHandler()
 
     EraseUnusedWindowData();
 
-    if (AppInfo.windowCount == 0)
+    if (!AppInfo.windowCount)
     {
         std::unique_lock<std::mutex> lock(AppInfo.threadsDoneMtx);
         AppInfo.threadsDone = true;
@@ -323,6 +320,7 @@ LRESULT in::WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
             break;
         }
         }
+        break;
     }
     case WM_XBUTTONUP:
     {
@@ -340,6 +338,7 @@ LRESULT in::WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
             break;
         }
         }
+        break;
     }
     case WM_MOUSEWHEEL:
     {
@@ -437,7 +436,6 @@ void in::EraseUnusedWindowData()
 
 void in::DeAlloc()
 {
-    in::AppInfo.logFile.close();
     for (WindowData* i : AppInfo.windows)
     {
         delete i->msgThread;
@@ -474,17 +472,16 @@ void in::InitialiseVulkan()
 
     if (!allLayersFound) FRMWRK_ERR("Not all validation layers requested where found.");
 
-    // oh vulkan ...
-    VkDebugUtilsMessengerCreateInfoEXT preMssngrInf{};
-    preMssngrInf.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
-    preMssngrInf.messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT |
+    VkDebugUtilsMessengerCreateInfoEXT mssngrInf{};
+    mssngrInf.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
+    mssngrInf.messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT |
         VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT |
         VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
-    preMssngrInf.messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT |
+    mssngrInf.messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT |
         VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT |
         VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
-    preMssngrInf.pfnUserCallback = in::ValidationDegubCallback;
-    preMssngrInf.pUserData = nullptr;
+    mssngrInf.pfnUserCallback = in::ValidationDegubCallback;
+    mssngrInf.pUserData = nullptr;
 #endif // _DEBUG
 
     VkApplicationInfo appInf{};
@@ -494,9 +491,6 @@ void in::InitialiseVulkan()
     appInf.pEngineName      = "No Engine";
     appInf.engineVersion    = VK_MAKE_API_VERSION(1, 1, 0, 0);
     appInf.apiVersion       = VK_API_VERSION_1_3;
-#ifdef _DEBUG
-    appInf.pNext            = (VkDebugUtilsMessengerCreateInfoEXT*) &preMssngrInf;
-#endif // _DEBUG
 
     VkInstanceCreateInfo createInf{};
     createInf.sType                 = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
@@ -504,6 +498,7 @@ void in::InitialiseVulkan()
 #ifdef _DEBUG
     createInf.enabledLayerCount     = (unsigned int)in::RenderInfo.validationLayers.size();
     createInf.ppEnabledLayerNames   = in::RenderInfo.validationLayers.data();
+    createInf.pNext                 = &mssngrInf;
 #endif // _DEBUG
     createInf.enabledExtensionCount = (unsigned int)in::RenderInfo.extension.size();
     createInf.ppEnabledExtensionNames = in::RenderInfo.extension.data();
@@ -512,19 +507,20 @@ void in::InitialiseVulkan()
     in::Log(L"A Vulkan instance was created", in::LL::INFO);
 
 #ifdef _DEBUG
-    VkDebugUtilsMessengerCreateInfoEXT mssngrInf{};
-    mssngrInf.sType             = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
-    mssngrInf.messageSeverity   = VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT | 
-        VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT | 
-        VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
-    mssngrInf.messageType       = VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT | 
-        VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT | 
-        VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
-    mssngrInf.pfnUserCallback   = in::ValidationDegubCallback;
-    mssngrInf.pUserData         = nullptr;
-
     VUL_EC(in::CreateDebugUtilsMessengerEXT_prx(in::RenderInfo.vkInstance, &mssngrInf, nullptr, &in::RenderInfo.debugMessenger));
 #endif // _DEBUG
+
+    unsigned deviceCount = 0;
+    vkEnumeratePhysicalDevices(in::RenderInfo.vkInstance, &deviceCount, nullptr);
+
+    if (!deviceCount) FRMWRK_ERR("There is no GPU that supports Vulkan installed in this machine.");
+    
+    std::vector<VkPhysicalDevice> devices(deviceCount);
+    vkEnumeratePhysicalDevices(in::RenderInfo.vkInstance, &deviceCount, devices.data());
+
+    in::RenderInfo.physicalDevice = in::ChooseBestPhysicalDevice(devices); // choose first device, dont care about anything else
+    if (in::RenderInfo.physicalDevice == nullptr) 
+        FRMWRK_ERR("There is no GPU installed in this machine that matches the requirements.");
 }
 
 void in::UninitialiseVulkan()
@@ -534,6 +530,55 @@ void in::UninitialiseVulkan()
 #endif // _DEBUG
 
     vkDestroyInstance(in::RenderInfo.vkInstance, nullptr);
+}
+
+VkPhysicalDevice in::ChooseBestPhysicalDevice(const std::vector<VkPhysicalDevice>& dev)
+{
+    struct GPUScore
+    {
+        unsigned score;
+        VkPhysicalDevice dev;
+    };
+    std::vector<GPUScore> rankedDevices;
+
+    for (const VkPhysicalDevice& devi : dev)
+    {
+        unsigned score = 0, queueFamCount = 0;
+        vkGetPhysicalDeviceQueueFamilyProperties(devi, &queueFamCount, nullptr);
+
+        std::vector<VkQueueFamilyProperties> queueFamilies(queueFamCount);
+        vkGetPhysicalDeviceQueueFamilyProperties(devi, &queueFamCount, queueFamilies.data());
+        
+        VkPhysicalDeviceProperties devProp{};
+        vkGetPhysicalDeviceProperties(devi, &devProp);
+
+        VkPhysicalDeviceFeatures devFeat{};
+        vkGetPhysicalDeviceFeatures(devi, &devFeat);
+
+        if (devProp.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU)
+            score += 300;
+        if (devProp.deviceType == VK_PHYSICAL_DEVICE_TYPE_VIRTUAL_GPU)
+            score += 200;
+        if (devProp.deviceType == VK_PHYSICAL_DEVICE_TYPE_INTEGRATED_GPU)
+            score += 100;
+        if (devFeat.geometryShader)
+            score += 4;
+        if (devFeat.tessellationShader)
+            score += 4;
+        if (devFeat.multiViewport)
+            score += 2;
+
+        GPUScore gpuScore = { score, devi };
+        rankedDevices.push_back(gpuScore);
+    }
+    
+    GPUScore currentHigh{};
+    for (GPUScore s : rankedDevices)
+    {
+        if (s.score > currentHigh.score) { currentHigh.score = s.score; currentHigh.dev = s.dev; }
+    }
+
+    return currentHigh.dev;
 }
 
 #ifdef _DEBUG
@@ -579,13 +624,8 @@ void in::DestroyDebugUtilsMessengerEXT_prx(VkInstance instance,
     }
 }
 #endif // _DEBUG
-
-bool tsd::Initialise(int iconId, int cursorId)
+void tsd::Initialise(int iconId, int cursorId)
 {
-    bool success = true;
-
-    in::AppInfo.logFile.open("Last_Log.txt");
-
     // Get hInstance since the program does not use the winMain entry point
     in::AppInfo.hInstance = GetModuleHandle(0);
 
@@ -595,8 +635,6 @@ bool tsd::Initialise(int iconId, int cursorId)
         in::AppInfo.hIcon = (HICON)LoadImageA(in::AppInfo.hInstance, MAKEINTRESOURCE(iconId), IMAGE_ICON, 0, 0, LR_DEFAULTCOLOR);
         if (!in::AppInfo.hIcon) 
         { 
-            in::SetLastError(5); 
-            success = false;
             in::Log(L"Specified recourse Id for an icon was invalid", in::LL::ERROR);
         }
     }
@@ -606,8 +644,6 @@ bool tsd::Initialise(int iconId, int cursorId)
         in::AppInfo.hCursor = (HCURSOR)LoadImageA(in::AppInfo.hInstance, MAKEINTRESOURCE(cursorId), IMAGE_CURSOR, 0, 0, LR_DEFAULTCOLOR);
         if (!in::AppInfo.hCursor) 
         { 
-            in::SetLastError(6); 
-            success = false; 
             in::Log(L"Specified recourse Id for a mouse was invalid", in::LL::ERROR);
         }
     }
@@ -635,9 +671,7 @@ bool tsd::Initialise(int iconId, int cursorId)
     in::AppInfo.isInitialised = true;
 
     in::InitialiseVulkan();
-    
     in::Log(L"Framework was successfully initialised", in::LL::INFO);
-    return success;
 }
 
 void tsd::Uninitialise()
@@ -653,20 +687,11 @@ void tsd::Uninitialise()
     in::UninitialiseVulkan();
 
     in::Log(L"Framework was successfully uninitialised", in::LL::INFO);
-    in::AppInfo.logFile.close();
 }
 
 void in::Log(const wchar_t* msg, LL ll)
 {
-#ifdef NDEBUG
-    bool debugIsDefinded = false;
-#endif // !NDEBUG
 #ifdef _DEBUG
-    bool debugIsDefinded = true;
-#endif // _DEBUG
-
-    if ((ll == in::LL::DEBUG) && (!debugIsDefinded)) return; // attempted debug write but macro is not definded -> do nothing
-
     std::chrono::system_clock::time_point now = std::chrono::system_clock::now();
     std::time_t currentDate = std::chrono::system_clock::to_time_t(now);
 
@@ -707,38 +732,18 @@ void in::Log(const wchar_t* msg, LL ll)
     }
 
     AppInfo.logMtx.lock();
-#ifdef _DEBUG
     std::wcout << oss.str().c_str() << msg << "\n" << std::flush;
-#endif // _DEBUG
-#ifdef NDEBUG
-    in::AppInfo.logFile << oss.str().c_str() << msg << "\n" << std::flush;
-#endif // NDEBUG
     AppInfo.logMtx.unlock();
-}
-
-void tsd::Log(const wchar_t* msg, bool noPrefix)
-{
-    std::chrono::system_clock::time_point now = std::chrono::system_clock::now();
-    std::time_t currentDate = std::chrono::system_clock::to_time_t(now);
-
-    char timeBuf[30] = { 0 };
-    ctime_s(timeBuf, sizeof(timeBuf), &currentDate);
-    *std::strchr(timeBuf, '\n') = 0; // replace that pesky newline with the null-char
-
-    in::AppInfo.logFile << "[ " << timeBuf << " ]"; // where is my double-coullon?
-
-    if (!noPrefix)
-        in::AppInfo.logFile << " [ USER ]";
-    in::AppInfo.logFile << ": " << msg << std::endl; // here it is!
+#endif // _DEBUG
 }
 
 // Whoops
 #undef CreateWindow
 short tsd::CreateWindow(const wchar_t* name, int width, int height, int xPos, int yPos, const short* dependants, unsigned depCount)
 {
-    if (!in::AppInfo.isInitialised) { in::SetLastError(2); return 0; } // init was not called
-    if (!name) { in::SetLastError(3); return 0; } // name is nullptr
-    if ((height <= 0) || (width <= 0)) { in::SetLastError(3); return 0; }
+    if (!in::AppInfo.isInitialised) { in::Log(L"CreateWindow() was called before initialisation", in::LL::ERROR); return 0; } // init was not called
+    if (!name) { in::Log(L"Nullptr was passed to a required parameter at CreateWindow()", in::LL::ERROR); return 0; } // name is nullptr
+    if ((height <= 0) || (width <= 0)) { in::Log(L"Invalid heigt or width ammount for window creation", in::LL::ERROR); return 0; }
 
     in::WindowData* wndData = new in::WindowData;
     wndData->msgThread = new std::thread(&in::WindowData::MessageHandler, wndData);
@@ -757,20 +762,13 @@ short tsd::CreateWindow(const wchar_t* name, int width, int height, int xPos, in
     std::unique_lock<std::mutex> lock(in::AppInfo.windowCreationMtx);
     in::AppInfo.windowCreationCv.wait(lock, [] { return in::AppInfo.windowCreationIsFinished; });
     
-    try
+    if (dependants && depCount)
     {
-        if (dependants && depCount)
+        for (unsigned i = 0; i < depCount; i++)
         {
-            for (unsigned i = 0; i < depCount; i++)
-            {
-                // this is unsafe like shit
-                wndData->dependers.push_back(in::GetWindowData(dependants[i])->hWnd);
-            }
+            // this is unsafe like shit
+            wndData->dependers.push_back(in::GetWindowData(dependants[i])->hWnd);
         }
-    }
-    catch (...)
-    {
-        in::SetLastError(9);
     }
 
     in::AppInfo.windows.push_back(wndData);
@@ -780,7 +778,7 @@ short tsd::CreateWindow(const wchar_t* name, int width, int height, int xPos, in
     // ran out of range
     if (wndData->id == SHRT_MAX)
     {
-        in::SetLastError(7); 
+        in::Log(L"Handle out of range, window was opened but no handle could be created. You now have a stray window on you desktop", in::LL::ERROR);
         return 0;
     }
 
@@ -800,73 +798,45 @@ void tsd::OnWindowClose(short handle, void(*func)(void))
     in::GetWindowData(handle)->OnClose = func;
 }
 
-void tsd::CreateAutoError(int line, bool quit)
-{
-    std::ostringstream msg;
-    msg << "Error " << tsd::GetLastFrameworkError() << " has occoured at line " << line << ".\n\n";
-    msg << tsd::GetErrorInformation(tsd::GetLastFrameworkError()) << "\n\n";
-    if (quit) { msg << "The application must quit now."; }
-    msg << std::endl;
-
-    MessageBoxA(nullptr, msg.str().c_str(), "Error!", MB_TASKMODAL | MB_OK | MB_ICONERROR);
-
-    if (quit)
-    {
-        in::DeAlloc();
-        std::exit(-1);
-    }
-}
-
-int tsd::GetLastFrameworkError()
-{
-    return in::AppInfo.lastErrorCode;
-}
-
-const char* tsd::GetErrorInformation(int code)
-{
-    // Determine whether the requested error code is in the hashmap, if so, retrieve the error code. If not return direct error message
-    return in::errors.find(code) != in::errors.end() ? in::errors[code] : "Invalid error Code!"; // best one-liner so far
-}
-
 wchar_t* tsd::GetWindowName(short id)
 {
     in::WindowData* wndData = in::GetWindowData(id);
-    if (!wndData) { in::SetLastError(4); return nullptr; }
+    if (!wndData) { in::Log(L"Invalid handle was passed to GetWindowName()", in::LL::WARNING); return nullptr; }
     return wndData->name;
 }
 
 bool tsd::GetWindowVisibility(short id)
 {
     in::WindowData* wndData = in::GetWindowData(id);
-    if (!wndData) { in::SetLastError(4); return false; }
+    if (!wndData) [[unlikely]] { in::Log(L"Invalid handle was passed to GetWindowVisibility()", in::LL::WARNING); return false; }
     return wndData->isVisible;
 }
 
 int tsd::GetWindowWidth(short id)
 {
     in::WindowData* wndData = in::GetWindowData(id);
-    if (!wndData) { in::SetLastError(4); return false; }
+    if (!wndData) [[unlikely]] { in::Log(L"Invalid handle was passed to GetWindowWidth()", in::LL::WARNING); return false; }
     return wndData->width;
 }
 
 int tsd::GetWindowHeight(short id)
 {
     in::WindowData* wndData = in::GetWindowData(id);
-    if (!wndData) { in::SetLastError(4); return false; }
+    if (!wndData) [[unlikely]] { in::Log(L"Invalid handle was passed to GetWindowHeight()", in::LL::WARNING); return false; }
     return wndData->height;
 }
 
 std::pair<int, int> tsd::GetWindowDimensions(short id)
 {
     in::WindowData* wndData = in::GetWindowData(id);
-    if (!wndData) { in::SetLastError(4); return {0, 0}; }
+    if (!wndData) [[unlikely]] { in::Log(L"Invalid handle was passed to GetWindowDimensions()", in::LL::WARNING); return {0, 0}; }
     return {wndData->width, wndData->height};
 }
 
 int tsd::GetWindowXPos(short id, WP wpr)
 {
     in::WindowData* wndData = in::GetWindowData(id);
-    if (!wndData) { in::SetLastError(4); return 0; }
+    if (!wndData) [[unlikely]] { in::Log(L"Invalid handle was passed to GetWindowXPos()", in::LL::WARNING); return 0; }
     RECT rect{};
     GetWindowRect(wndData->hWnd, &rect);
 
@@ -878,14 +848,14 @@ int tsd::GetWindowXPos(short id, WP wpr)
         return rect.right;
     }
 
-    in::SetLastError(3);
+    in::Log(L"Invalid positional identifier was passed to GetWindowXPos()", in::LL::WARNING);
     return 0;
 }
 
 int tsd::GetWindowYPos(short id, WP wpr)
 {
     in::WindowData* wndData = in::GetWindowData(id);
-    if (!wndData) { in::SetLastError(4); return 0; }
+    if (!wndData) [[unlikely]] { in::Log(L"Invalid handle was passed to GetWindowYPos()", in::LL::WARNING); return 0; }
     RECT rect{};
     GetWindowRect(wndData->hWnd, &rect);
 
@@ -897,14 +867,14 @@ int tsd::GetWindowYPos(short id, WP wpr)
         return rect.bottom;
     }
 
-    in::SetLastError(3);
+    in::Log(L"Invalid positional identifier was passed to GetWindowYPos()", in::LL::WARNING);
     return 0;
 }
 
 std::pair<int, int> tsd::GetWindowPosition(short id, WP wpr)
 {
     in::WindowData* wndData = in::GetWindowData(id);
-    if (!wndData) { in::SetLastError(4); return {0, 0}; }
+    if (!wndData) [[unlikely]] { in::Log(L"Invalid handle was passed to GetWindowPosition()", in::LL::WARNING); return {0, 0}; }
     RECT rect{};
     GetWindowRect(wndData->hWnd, &rect);
     
@@ -920,7 +890,7 @@ std::pair<int, int> tsd::GetWindowPosition(short id, WP wpr)
         return { rect.right, rect.bottom };
     }
 
-    in::SetLastError(3);
+    in::Log(L"Invalid positional identifier was passed to GetWindowPosition()", in::LL::WARNING);
     return {0, 0};
 }
 
@@ -932,16 +902,16 @@ int tsd::GetWindowCount(void)
 bool tsd::ChangeWindowName(short id, const wchar_t* name)
 {
     in::WindowData* wndData = in::GetWindowData(id);
-    if (!wndData) { in::SetLastError(4); return false; }
+    if (!wndData) [[unlikely]] { in::Log(L"Invalid handle was passed to ChangeWindowName()", in::LL::ERROR); return false; }
     SetWindowTextW(wndData->hWnd, name);
-    wndData->name = const_cast<wchar_t*>(name);
+    wndData->name = (wchar_t*)name;
     return true;
 }
 
 bool tsd::WindowHasFocus(short id)
 {
     in::WindowData* wndData = in::GetWindowData(id);
-    if (!wndData) { return false; }
+    if (!wndData) [[unlikely]] { return false; }
     return wndData->hasFocus;
 }
 
@@ -1009,7 +979,7 @@ int tsd::MessageBox(short owner, const wchar_t* title, const wchar_t* msg, int f
 
     int result = MessageBoxW(ownerData ? ownerData->hWnd : 0, msg, title, rawFlags);
     if (result == 0)
-        in::SetLastError(8); // flagset invalid
+        in::Log(L"Invalid set of flags where passed to MessageBox()", in::LL::ERROR);
 
     switch (result)
     {
@@ -1203,7 +1173,7 @@ int tsd::GetMouseWheelDelta()
 bool tsd::WindowContainsMouse(short handle)
 {
     in::WindowData* wndData = in::GetWindowData(handle);
-    if (wndData)
+    if (wndData) [[likely]]
         return wndData->hasMouseInClientArea;
     return false;
 }

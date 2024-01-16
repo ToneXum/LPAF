@@ -103,21 +103,6 @@
 
 namespace in
 {
-    // Performance is not important here so yes, have a hashmap
-    extern std::unordered_map<int, const char*> errors =
-    {
-    { 0, "The operation went smoothly." }, // no error
-    { 1, "The framework is already initialised." }, // tsd::Initialise was called more than once
-    { 2, "The framework is not initialised." }, // tsd::Initialise was not called
-    { 3, "Invalid parameter data."}, // general missuse
-    { 4, "Invalid window handle."},
-    { 5, "Invalid Icon Resource." }, // tsd::Initialise
-    { 6, "Invalid Cursor Resource." }, // tsd::Initialise
-    { 7, "32767 windows have been opened, cannot create more." }, // I hope no one will have to fetch this...
-    { 8, "Flagset invalid or incorectly formatted." },
-    { 9, "Invalid set of window dependants." }
-    };
-
     void DoNothing_V();
     bool DoNothing_B();
 
@@ -126,14 +111,14 @@ namespace in
         // Window creator and message pump
         void MessageHandler();
 
-        HWND hWnd = {};
+        _Notnull_ HWND hWnd = {};
         std::thread* msgThread = {};
 
 
         short id = 0;
         wchar_t* name = nullptr;
-        bool isVisible, isValid, hasFocus, hasMouseInClientArea = 0;
-        short xPos, yPos, width, height = 0;
+        bool isVisible = true, isValid = true, hasFocus = true, hasMouseInClientArea = 0;
+        short xPos = 0, yPos = 0, width = 0, height = 0;
 
         void (*OnClose)() = DoNothing_V;
         bool (*OnCloseAttempt)() = DoNothing_B;
@@ -162,9 +147,6 @@ namespace in
         // Bitset for keyboard key states
         std::bitset<256> keystates = 0;
 
-        // stream to a log file for runtime information about the framework
-        std::wofstream logFile;
-
         // Charfield for text input
         wchar_t* textInput = nullptr; // pointer to the character field
         bool textInputEnabled = false;
@@ -173,8 +155,8 @@ namespace in
         // Mouse information
         struct
         {
-            bool leftButton, rightButton, middleButton, x1Button, x2Button = false;
-            int xPos, yPos = 0;
+            bool leftButton = false, rightButton = false, middleButton = false, x1Button = false, x2Button = false;
+            int xPos = 0, yPos = 0;
             int wheelDelta = 0;
         } mouse;
 
@@ -182,16 +164,16 @@ namespace in
         int windowCount = 0;  // guess what, its the count of the currently open windows
         int windowsOpened = 0; // ammount of windows this program has opened in the past
         bool isRunning = true; // becomes false when no window is open anymore
-        int lastErrorCode = 0;
         bool isInitialised = false; // becomes true when initialise is called
     } AppInfo;
 
     struct
     {
         VkInstance vkInstance{};
+        VkPhysicalDevice physicalDevice{};
 
 #ifdef _DEBUG
-        VkDebugUtilsMessengerEXT debugMessenger;
+        VkDebugUtilsMessengerEXT debugMessenger{};
         std::array<const char*, 1> validationLayers
         { 
             "VK_LAYER_KHRONOS_validation" 
@@ -216,14 +198,16 @@ namespace in
     {
         INFO,
         DEBUG,
+        VALIDATION,
         WARNING,
-        ERROR,
-        VALIDATION
+        ERROR
     };
 
     void InitialiseVulkan();
 
     void UninitialiseVulkan();
+
+    VkPhysicalDevice ChooseBestPhysicalDevice(const std::vector<VkPhysicalDevice> &dev);
 
     VkResult CreateDebugUtilsMessengerEXT_prx(
         VkInstance instance, 
@@ -255,9 +239,6 @@ namespace in
 
     // Vulkan error creation
     void CreateVulkanError(int line, int c, const char* func);
-
-    // Error handling for the user
-    void SetLastError(int code);
 
     LRESULT WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
