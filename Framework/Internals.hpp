@@ -68,11 +68,13 @@
 
 #define STRICT
 
+// Windows
 #include <Windows.h>
 #include <windowsx.h>
 
 #undef ERROR
 
+// STL
 #include <vector>
 #include <iostream>
 #include <thread>
@@ -89,6 +91,7 @@
 #include <time.h>
 #include <array>
 
+// Vulkan SKD
 #include "vulkan/vulkan.h"
 
 // Error check for Win32 API calls
@@ -171,6 +174,7 @@ namespace in
     {
         VkInstance vkInstance{};
         VkPhysicalDevice physicalDevice{};
+        VkDevice device{};
 
 #ifdef _DEBUG
         VkDebugUtilsMessengerEXT debugMessenger{};
@@ -209,19 +213,6 @@ namespace in
 
     VkPhysicalDevice ChooseBestPhysicalDevice(const std::vector<VkPhysicalDevice> &dev);
 
-    VkResult CreateDebugUtilsMessengerEXT_prx(
-        VkInstance instance, 
-        const VkDebugUtilsMessengerCreateInfoEXT* pCreateInfo, 
-        const VkAllocationCallbacks* pAllocator, 
-        VkDebugUtilsMessengerEXT* pDebugMessenger
-    );
-
-    void DestroyDebugUtilsMessengerEXT_prx(
-        VkInstance instance,
-        VkDebugUtilsMessengerEXT debugMessenger,
-        const VkAllocationCallbacks* pAllocator
-    );
-
 #ifdef _DEBUG
     VkBool32 VKAPI_CALL ValidationDegubCallback(
         VkDebugUtilsMessageSeverityFlagBitsEXT msgSeverity,
@@ -259,4 +250,22 @@ namespace in
 
     // Writes to the log file using the handle stored in in::AppInfo
     void Log(const wchar_t* msg, LL ll);
+    void Log(const char* msg, LL ll);
+}
+
+// declarations for proxy functions
+namespace prx
+{
+    VkResult vkCreateDebugUtilsMessengerEXT(
+        VkInstance instance,
+        const VkDebugUtilsMessengerCreateInfoEXT* pCreateInfo,
+        const VkAllocationCallbacks* pAllocator,
+        VkDebugUtilsMessengerEXT* pDebugMessenger
+    );
+
+    void vkDestroyDebugUtilsMessengerEXT(
+        VkInstance instance,
+        VkDebugUtilsMessengerEXT debugMessenger,
+        const VkAllocationCallbacks* pAllocator
+    );
 }

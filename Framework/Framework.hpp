@@ -22,16 +22,22 @@
 
 #pragma once
 
+// STL
 #include <complex>
-
-// Automatic error handling, the return value is thrown away
-#define TSD_CALL(callee, q) { if (!callee) { tsd::CreateAutoError(__LINE__, q); } }
-
-// Automatic errror handling, the return value is saved
-#define TSD_CALL_RET(ret, callee, q) { ret = callee; if (!ret) { tsd::CreateAutoError(__LINE__, q); } }
 
 namespace tsd // tonexum software division
 {
+    struct InitialisationData
+    {
+        bool doVulkanSetup;
+
+    };
+
+    struct WindowCreateData
+    {
+        unsigned short width, height;
+    };
+
     // Messagebox flags
     // biggest possible size is 3 bytes + 1 bit, passed as 4 byte int
     enum MF

@@ -507,7 +507,7 @@ void in::InitialiseVulkan()
     in::Log(L"A Vulkan instance was created", in::LL::INFO);
 
 #ifdef _DEBUG
-    VUL_EC(in::CreateDebugUtilsMessengerEXT_prx(in::RenderInfo.vkInstance, &mssngrInf, nullptr, &in::RenderInfo.debugMessenger));
+    VUL_EC(prx::vkCreateDebugUtilsMessengerEXT(in::RenderInfo.vkInstance, &mssngrInf, nullptr, &in::RenderInfo.debugMessenger));
 #endif // _DEBUG
 
     unsigned deviceCount = 0;
@@ -526,7 +526,7 @@ void in::InitialiseVulkan()
 void in::UninitialiseVulkan()
 {
 #ifdef _DEBUG
-    in::DestroyDebugUtilsMessengerEXT_prx(in::RenderInfo.vkInstance, in::RenderInfo.debugMessenger, nullptr);
+    prx::vkDestroyDebugUtilsMessengerEXT(in::RenderInfo.vkInstance, in::RenderInfo.debugMessenger, nullptr);
 #endif // _DEBUG
 
     vkDestroyInstance(in::RenderInfo.vkInstance, nullptr);
@@ -543,11 +543,17 @@ VkPhysicalDevice in::ChooseBestPhysicalDevice(const std::vector<VkPhysicalDevice
 
     for (const VkPhysicalDevice& devi : dev)
     {
-        unsigned score = 0, queueFamCount = 0;
+        unsigned score = 0, queueFamCount = 0; bool isQualified = true;
         vkGetPhysicalDeviceQueueFamilyProperties(devi, &queueFamCount, nullptr);
 
         std::vector<VkQueueFamilyProperties> queueFamilies(queueFamCount);
         vkGetPhysicalDeviceQueueFamilyProperties(devi, &queueFamCount, queueFamilies.data());
+
+        for (const VkQueueFamilyProperties& fam : queueFamilies)
+        {
+            if (!fam.queueFlags & VK_QUEUE_GRAPHICS_BIT)
+                break;
+        }
         
         VkPhysicalDeviceProperties devProp{};
         vkGetPhysicalDeviceProperties(devi, &devProp);
@@ -566,7 +572,7 @@ VkPhysicalDevice in::ChooseBestPhysicalDevice(const std::vector<VkPhysicalDevice
         if (devFeat.tessellationShader)
             score += 4;
         if (devFeat.multiViewport)
-            score += 2;
+            score += 1;
 
         GPUScore gpuScore = { score, devi };
         rankedDevices.push_back(gpuScore);
@@ -590,36 +596,34 @@ VkBool32 VKAPI_CALL in::ValidationDegubCallback(
 {
     if (msgSeverity >= VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT)
     {
-        size_t msgLen = strlen(callbackData->pMessage);
-        wchar_t* wMsg = new wchar_t[msgLen + 1]{0};
-        size_t wMsgLen = 0;
-        mbstowcs_s(&wMsgLen, wMsg, msgLen + 1, callbackData->pMessage, msgLen);
-        in::Log(wMsg, in::LL::VALIDATION);
-        delete[] wMsg;
+        in::Log(callbackData->pMessage, in::LL::VALIDATION);
     }
     return 0u;
 }
 
-VkResult in::CreateDebugUtilsMessengerEXT_prx(VkInstance instance,
+VkResult prx::vkCreateDebugUtilsMessengerEXT(VkInstance instance,
     const VkDebugUtilsMessengerCreateInfoEXT* pCreateInfo,
     const VkAllocationCallbacks* pAllocator,
     VkDebugUtilsMessengerEXT* pDebugMessenger)
 {
     auto func = (PFN_vkCreateDebugUtilsMessengerEXT)vkGetInstanceProcAddr(instance, "vkCreateDebugUtilsMessengerEXT");
-    if (func != nullptr) {
+    if (func != nullptr) 
+    {
         return func(instance, pCreateInfo, pAllocator, pDebugMessenger);
     }
-    else {
+    else 
+    {
         return VK_ERROR_EXTENSION_NOT_PRESENT;
     }
 }
 
-void in::DestroyDebugUtilsMessengerEXT_prx(VkInstance instance,
+void prx::vkDestroyDebugUtilsMessengerEXT(VkInstance instance,
     VkDebugUtilsMessengerEXT debugMessenger,
     const VkAllocationCallbacks* pAllocator)
 {
     auto func = (PFN_vkDestroyDebugUtilsMessengerEXT)vkGetInstanceProcAddr(instance, "vkDestroyDebugUtilsMessengerEXT");
-    if (func != nullptr) {
+    if (func != nullptr) 
+    {
         func(instance, debugMessenger, pAllocator);
     }
 }
@@ -733,6 +737,54 @@ void in::Log(const wchar_t* msg, LL ll)
 
     AppInfo.logMtx.lock();
     std::wcout << oss.str().c_str() << msg << "\n" << std::flush;
+    AppInfo.logMtx.unlock();
+#endif // _DEBUG
+}
+
+void in::Log(const char* msg, LL ll)
+{
+#ifdef _DEBUG
+    std::chrono::system_clock::time_point now = std::chrono::system_clock::now();
+    std::time_t currentDate = std::chrono::system_clock::to_time_t(now);
+
+    char timeBuf[30] = { 0 }; // minimum required size for this is 26. Who knows if this is going to run in 9997976 years?
+    ctime_s(timeBuf, sizeof(timeBuf), &currentDate);
+    *std::strchr(timeBuf, '\n') = 0; // replace that pesky newline with the null-char
+
+    // extra buffer, prevents asychrony from messing with the output when this func is called from different threads at the same time
+    std::ostringstream oss;
+    oss << "[ " << timeBuf << " ]";
+
+    switch (ll)
+    {
+    case in::LL::INFO:
+    {
+        oss << " [ INFO ]: ";
+        break;
+    }
+    case in::LL::DEBUG:
+    {
+        oss << " [ DEBUG ]: ";
+        break;
+    }
+    case in::LL::WARNING:
+    {
+        oss << " [ WARNING ]: ";
+        break;
+    }
+    case in::LL::ERROR:
+    {
+        oss << " [ ERROR ]: ";
+        break;
+    }
+    case in::LL::VALIDATION:
+    {
+        oss << " [ VALID ]: ";
+    }
+    }
+
+    AppInfo.logMtx.lock();
+    std::cout << oss.str().c_str() << msg << "\n" << std::flush;
     AppInfo.logMtx.unlock();
 #endif // _DEBUG
 }
