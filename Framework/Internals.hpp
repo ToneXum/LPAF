@@ -109,14 +109,17 @@ namespace in
     void DoNothing_V();
     bool DoNothing_B();
 
+    enum WindowThreadAction
+    {
+        WTA_NONE,
+        WTA_OPEN,
+        WTA_CLOSE
+    };
+
     struct WindowData // additional data associated to each window
     {
-        // Window creator and message pump
-        void MessageHandler();
-
-        _Notnull_ HWND hWnd = {};
-        std::thread* msgThread = {};
-
+        HWND hWnd{};
+        std::vector<HWND> dependers; // handles to windows that depend on this one
 
         short id = 0;
         wchar_t* name = nullptr;
@@ -125,26 +128,21 @@ namespace in
 
         void (*OnClose)() = DoNothing_V;
         bool (*OnCloseAttempt)() = DoNothing_B;
+    };
 
-        std::vector<HWND> dependers; // handles to windows that depend on this one
+    struct WindowThreadActionInfo
+    {
+        in::WindowThreadAction action;
+        in::WindowData* usrData;
     };
 
     struct // general information about the state of the application
     {
         std::vector<WindowData*> windows{}; // window specific information container
         HINSTANCE hInstance = 0; // handle to window class
-        ATOM classAtom = 0; // idk what this is even supposed to do
         HICON hIcon{};
         HCURSOR hCursor{};
-
-        std::mutex windowCreationMtx;
-        std::condition_variable windowCreationCv;
-        bool windowCreationIsFinished = false; // creation of a window is finished, prevent usage of unitialised mem
-        
-        std::mutex threadsDoneMtx;
-        std::condition_variable threadsDoneCv;
-        bool threadsDone = false; // all window threads have closed, prevent the class being deleted while windows are open
-
+        std::thread* windowThread{};
         std::mutex logMtx; // this probably as close as this gets when it comes to how a mutex is supposed to be used
 
         // Bitset for keyboard key states
@@ -168,6 +166,8 @@ namespace in
         int windowsOpened = 0; // ammount of windows this program has opened in the past
         bool isRunning = true; // becomes false when no window is open anymore
         bool isInitialised = false; // becomes true when initialise is called
+        
+        in::WindowThreadActionInfo windowThreadAction[3]{}; // make the window thread do something
     } AppInfo;
 
     struct
@@ -221,6 +221,12 @@ namespace in
         void* userData
     );
 #endif // _DEBUG
+
+    void WindowsThread();
+    void SetWindowThreadAction(WindowThreadActionInfo wndThrdAct);
+
+    void CreateNativeWindow(WindowData* wndDt);
+    void CloseNativeWindow(WindowData* wndDt);
 
     // Win32 Error creation
     void CreateWin32Error(int line, int c, const char* func);

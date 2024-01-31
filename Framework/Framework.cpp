@@ -29,6 +29,100 @@ void in::DoNothing_V()
 bool in::DoNothing_B()
 { return true; }
 
+void in::WindowsThread()
+{
+    std::wostringstream startMsg;
+    startMsg << L"The window manager thread was started";
+    in::Log(startMsg.str().c_str(), in::LL::DEBUG);
+
+    // message pump for the window
+    MSG msg{};
+    while (true)
+    {
+        while (PeekMessageA(&msg, nullptr, 0, 0, PM_REMOVE))
+        {
+            TranslateMessage(&msg);
+            DispatchMessage(&msg);
+        }
+
+        for (char i = 0; i < 3; i++)
+        {
+            switch (AppInfo.windowThreadAction[i].action)
+            {
+            case in::WTA_CLOSE:
+            {
+                in::CloseNativeWindow(AppInfo.windowThreadAction[i].usrData);
+                AppInfo.windowThreadAction[i] = in::WindowThreadActionInfo(WTA_NONE, nullptr);
+                break;
+            }
+            case in::WTA_OPEN:
+            {
+                in::CreateNativeWindow(AppInfo.windowThreadAction[i].usrData);
+                AppInfo.windowThreadAction[i] = in::WindowThreadActionInfo(WTA_NONE, nullptr);
+                break;
+            }
+            }
+        }
+        Sleep(10);
+    }
+}
+
+void in::SetWindowThreadAction(in::WindowThreadActionInfo wndThrdAct)
+{
+    for (char i = 0; i < 3; i++)
+    {
+        if (!in::AppInfo.windowThreadAction[i].action)
+        {
+            in::AppInfo.windowThreadAction[i] = wndThrdAct;
+            return;
+        }
+    }
+    in::Log(L"Too many window thread actions, buffer ran out", in::LL::ERROR);
+}
+
+void in::CreateNativeWindow(in::WindowData* wndDt)
+{
+    WIN32_EC_RET(wndDt->hWnd, CreateWindowExW(
+        0,
+        in::AppInfo.windowClassName,
+        wndDt->name,
+        WS_MINIMIZEBOX | WS_CAPTION | WS_SYSMENU,
+        !wndDt->xPos ? CW_USEDEFAULT : wndDt->xPos, !wndDt->yPos ? CW_DEFAULT : wndDt->yPos, // man do I love tenary expression :)
+        wndDt->width, wndDt->height,
+        nullptr,
+        nullptr,
+        in::AppInfo.hInstance,
+        nullptr
+    ));
+    in::AppInfo.windowCount += 1;
+    in::AppInfo.windowsOpened += 1;
+
+    wndDt->id = in::AppInfo.windowsOpened;
+
+    ShowWindow(wndDt->hWnd, 1);
+
+    // ran out of range
+    if (wndDt->id == SHRT_MAX)
+    {
+        in::Log(L"Handle out of range, window was opened but no handle could be created. You somehow opened 32767 windows...", in::LL::ERROR);
+        return;
+    }
+
+    std::wostringstream oss;
+    oss << L"Window " << wndDt->hWnd << " was created and recieved a handle of " << wndDt->id;
+    in::Log(oss.str().c_str(), in::LL::DEBUG);
+
+    AppInfo.windows.push_back(wndDt);
+}
+
+void in::CloseNativeWindow(WindowData* wndDt)
+{
+    AppInfo.windowCount -= 1;
+    wndDt->OnClose();
+    wndDt->isValid = false;
+    in::EraseUnusedWindowData();
+}
+
 #ifdef _DEBUG
 void in::CreateWin32Error(int line, int c, const char* func)
 {
@@ -117,68 +211,6 @@ void in::CreateVulkanError(int line, int c, const char* func)
     std::exit(-1);
 }
 
-void in::WindowData::MessageHandler()
-{
-    WIN32_EC_RET(hWnd, CreateWindowExW(
-        0,
-        in::AppInfo.windowClassName,
-        name,
-        WS_MINIMIZEBOX | WS_CAPTION | WS_SYSMENU,
-        !xPos ? CW_USEDEFAULT : xPos, !yPos ? CW_DEFAULT : yPos, // man do I love tenary expression :)
-        width, height,
-        nullptr,
-        nullptr,
-        in::AppInfo.hInstance,
-        nullptr
-    ));
-    in::AppInfo.windowCount += 1;
-    in::AppInfo.windowsOpened += 1;
-
-    id = in::AppInfo.windowsOpened; 
-    
-    ShowWindow(hWnd, 1);
-    
-    // work is done, let the main thread continue
-    std::unique_lock<std::mutex> lock(in::AppInfo.windowCreationMtx);
-    AppInfo.windowCreationIsFinished = true;
-    lock.unlock();
-    in::AppInfo.windowCreationCv.notify_one();
-
-    std::wostringstream msg2;
-    msg2 << L"A message handler was started for " << hWnd << " for handle " << id;
-    in::Log(msg2.str().c_str(), in::LL::DEBUG);
-    
-    // message pump for the window
-    MSG msg = { };
-    while (GetMessage(&msg, hWnd, 0, 0) > 0)
-    {
-        TranslateMessage(&msg);
-        DispatchMessage(&msg);
-    }
-    // Window is closed, update window information
-    isValid = false;
-
-    std::wostringstream oss;
-    oss << L"Message handler for " << hWnd << " for handle" << id << " has stopped";
-    in::Log(oss.str().c_str(), in::LL::DEBUG);
-
-    for (HWND i : dependers)
-    {
-        SendMessageA(i, WM_CLOSE, 0, 0); // destroy all dependers
-    }
-
-    EraseUnusedWindowData();
-
-    if (!AppInfo.windowCount)
-    {
-        std::unique_lock<std::mutex> lock(AppInfo.threadsDoneMtx);
-        AppInfo.threadsDone = true;
-        lock.unlock();
-        AppInfo.threadsDoneCv.notify_one();
-        in::Log(L"Thread mutex was unlocked", in::LL::DEBUG);
-    }
-}
-
 LRESULT in::WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
     switch (uMsg)
@@ -193,14 +225,13 @@ LRESULT in::WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
     }
     case WM_DESTROY: // closing a window was ordered and confirmed
     {
-        GetWindowData(hWnd)->OnClose();
+        in::SetWindowThreadAction(in::WindowThreadActionInfo(in::WTA_CLOSE, GetWindowData(hWnd)));
         if (tsd::GetWindowCount() == 1) // quit program if last window remaining is closed
         {
             AppInfo.isRunning = false;
         }
         
-        AppInfo.windowCount -= 1;
-        return -1;
+        return 0;
     }
     // Closing the window
     ///////////////////////////////////
@@ -422,7 +453,6 @@ void in::EraseUnusedWindowData()
             oss << L"Window data for " << wndDt->hWnd << " with the handle " << wndDt->id << " was deleted" << std::flush;
             in::Log(oss.str().c_str(), in::LL::DEBUG);
 
-            delete wndDt->msgThread;
             delete wndDt;
             std::vector<WindowData*>::iterator it = AppInfo.windows.begin() + i;
             AppInfo.windows.erase(it);
@@ -438,7 +468,6 @@ void in::DeAlloc()
 {
     for (WindowData* i : AppInfo.windows)
     {
-        delete i->msgThread;
         delete i;
     }
     delete AppInfo.textInput;
@@ -667,7 +696,7 @@ void tsd::Initialise(int iconId, int cursorId)
     wc.lpszMenuName     = nullptr;
     wc.style            = 0;
 
-    WIN32_EC_RET(in::AppInfo.classAtom, RegisterClassExW(&wc));
+    WIN32_EC(RegisterClassExW(&wc));
 
     // allocate memory for text input field
     in::AppInfo.textInput = new wchar_t[100000]{0}; // thats 200 whole kilobytes of ram right there
@@ -676,13 +705,11 @@ void tsd::Initialise(int iconId, int cursorId)
 
     in::InitialiseVulkan();
     in::Log(L"Framework was successfully initialised", in::LL::INFO);
+    in::AppInfo.windowThread = new std::thread(in::WindowsThread);
 }
 
 void tsd::Uninitialise()
 {
-    std::unique_lock<std::mutex> lock(in::AppInfo.threadsDoneMtx);
-    in::AppInfo.threadsDoneCv.wait(lock, []{ return in::AppInfo.threadsDone; }); // wait for the last thread to end
-
     // not neccecary to delete the window data, it was deleted by EraseUnusedWindowData()
     delete in::AppInfo.textInput;
 
@@ -798,8 +825,6 @@ short tsd::CreateWindow(const wchar_t* name, int width, int height, int xPos, in
     if ((height <= 0) || (width <= 0)) { in::Log(L"Invalid heigt or width ammount for window creation", in::LL::ERROR); return 0; }
 
     in::WindowData* wndData = new in::WindowData;
-    wndData->msgThread = new std::thread(&in::WindowData::MessageHandler, wndData);
-    wndData->msgThread->detach();
 
     wndData->name       = const_cast<wchar_t*>(name);
     wndData->width      = width;
@@ -809,10 +834,6 @@ short tsd::CreateWindow(const wchar_t* name, int width, int height, int xPos, in
     wndData->isValid    = true;
     wndData->hasFocus   = true;
     wndData->hasMouseInClientArea = false;
-
-    // wait for window creation to finish
-    std::unique_lock<std::mutex> lock(in::AppInfo.windowCreationMtx);
-    in::AppInfo.windowCreationCv.wait(lock, [] { return in::AppInfo.windowCreationIsFinished; });
     
     if (dependants && depCount)
     {
@@ -823,20 +844,8 @@ short tsd::CreateWindow(const wchar_t* name, int width, int height, int xPos, in
         }
     }
 
-    in::AppInfo.windows.push_back(wndData);
+    in::SetWindowThreadAction(in::WindowThreadActionInfo(in::WTA_OPEN, wndData));
 
-    in::AppInfo.windowCreationIsFinished = false;
-
-    // ran out of range
-    if (wndData->id == SHRT_MAX)
-    {
-        in::Log(L"Handle out of range, window was opened but no handle could be created. You now have a stray window on you desktop", in::LL::ERROR);
-        return 0;
-    }
-
-    std::wostringstream oss;
-    oss << L"Window " << wndData->hWnd << " was created and recieved a handle of " << wndData->id;
-    in::Log(oss.str().c_str(), in::LL::DEBUG);
     return wndData->id;
 }
 
