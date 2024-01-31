@@ -68,11 +68,13 @@
 
 #define STRICT
 
+// Windows
 #include <Windows.h>
 #include <windowsx.h>
 
 #undef ERROR
 
+// STL
 #include <vector>
 #include <iostream>
 #include <thread>
@@ -87,34 +89,23 @@
 #include <complex>
 #include <chrono>
 #include <time.h>
+#include <array>
 
-#include "Framework.hpp"
+// Vulkan SKD
+#include "vulkan/vulkan.h"
 
 // Error check for Win32 API calls
 #define WIN32_EC(x) { if (!x) { in::CreateWin32Error(__LINE__, GetLastError(), __FUNCDNAME__); } }
 // Error check for Win32 API calls but the return value is saved
 #define WIN32_EC_RET(var, func) { var = func; if (!var) { in::CreateWin32Error(__LINE__, GetLastError(), __FUNCDNAME__); } }
 
+#define VUL_EC(x) { VkResult r = x; if (r) { in::CreateVulkanError(__LINE__, r, __FUNCDNAME__); } }
+
 // Manual error creation with automatic additional information
 #define FRMWRK_ERR(msg) { in::CreateManualError(__LINE__, __FUNCDNAME__, msg); }
 
 namespace in
 {
-    // Performance is not important here so yes, have a hashmap
-    std::unordered_map<int, const char*> errors =
-    {
-    { 0, "The operation went smoothly." }, // no error
-    { 1, "The framework is already initialised." }, // tsd::Initialise was called more than once
-    { 2, "The framework is not initialised." }, // tsd::Initialise was not called
-    { 3, "Invalid parameter data."}, // general missuse
-    { 4, "Invalid window handle."},
-    { 5, "Invalid Icon Resource." }, // tsd::Initialise
-    { 6, "Invalid Cursor Resource." }, // tsd::Initialise
-    { 7, "32767 windows have been opened, cannot create more." }, // I hope no one will have to fetch this...
-    { 8, "Flagset invalid or incorectly formatted." },
-    { 9, "Invalid set of window dependants." }
-    };
-
     void DoNothing_V();
     bool DoNothing_B();
 
@@ -123,14 +114,14 @@ namespace in
         // Window creator and message pump
         void MessageHandler();
 
-        HWND hWnd = {};
+        _Notnull_ HWND hWnd = {};
         std::thread* msgThread = {};
 
 
         short id = 0;
         wchar_t* name = nullptr;
-        bool isVisible, isValid, hasFocus, hasMouseInClientArea = 0;
-        short xPos, yPos, width, height = 0;
+        bool isVisible = true, isValid = true, hasFocus = true, hasMouseInClientArea = 0;
+        short xPos = 0, yPos = 0, width = 0, height = 0;
 
         void (*OnClose)() = DoNothing_V;
         bool (*OnCloseAttempt)() = DoNothing_B;
@@ -159,9 +150,6 @@ namespace in
         // Bitset for keyboard key states
         std::bitset<256> keystates = 0;
 
-        // stream to a log file for runtime information about the framework
-        std::wofstream logFile;
-
         // Charfield for text input
         wchar_t* textInput = nullptr; // pointer to the character field
         bool textInputEnabled = false;
@@ -170,8 +158,8 @@ namespace in
         // Mouse information
         struct
         {
-            bool leftButton, rightButton, middleButton, x1Button, x2Button = false;
-            int xPos, yPos = 0;
+            bool leftButton = false, rightButton = false, middleButton = false, x1Button = false, x2Button = false;
+            int xPos = 0, yPos = 0;
             int wheelDelta = 0;
         } mouse;
 
@@ -179,18 +167,60 @@ namespace in
         int windowCount = 0;  // guess what, its the count of the currently open windows
         int windowsOpened = 0; // ammount of windows this program has opened in the past
         bool isRunning = true; // becomes false when no window is open anymore
-        int lastErrorCode = 0;
         bool isInitialised = false; // becomes true when initialise is called
     } AppInfo;
 
-    // Log level for in::Log, this will determine the prefix of the message
+    struct
+    {
+        VkInstance vkInstance{};
+        VkPhysicalDevice physicalDevice{};
+        VkDevice device{};
+
+#ifdef _DEBUG
+        VkDebugUtilsMessengerEXT debugMessenger{};
+        std::array<const char*, 1> validationLayers
+        { 
+            "VK_LAYER_KHRONOS_validation" 
+        };
+#endif // _DEBUG
+
+        // manual vulkan extensions, normally glfw would do this but oh well
+        // pre-build: there is no way this works!
+        // post-build: It fucking works!
+        const std::vector<const char*> extension
+        { 
+            "VK_KHR_surface",
+            "VK_KHR_win32_surface",
+#ifdef _DEBUG
+            "VK_EXT_debug_utils"
+#endif // _DEBUG
+        };
+    } RenderInfo;
+
+    // Log level for in::Log(), this will determine the prefix of the message
     enum class LL
     {
         INFO,
         DEBUG,
+        VALIDATION,
         WARNING,
         ERROR
     };
+
+    void InitialiseVulkan();
+
+    void UninitialiseVulkan();
+
+    VkPhysicalDevice ChooseBestPhysicalDevice(const std::vector<VkPhysicalDevice> &dev);
+
+#ifdef _DEBUG
+    VkBool32 VKAPI_CALL ValidationDegubCallback(
+        VkDebugUtilsMessageSeverityFlagBitsEXT msgSeverity,
+        VkDebugUtilsMessageTypeFlagsEXT msgType,
+        const VkDebugUtilsMessengerCallbackDataEXT* callbackData,
+        void* userData
+    );
+#endif // _DEBUG
 
     // Win32 Error creation
     void CreateWin32Error(int line, int c, const char* func);
@@ -198,8 +228,8 @@ namespace in
     // Manual and instant error creation
     void CreateManualError(int line, const char* func, const char* msg);
 
-    // Error handling for the user
-    void SetLastError(int code);
+    // Vulkan error creation
+    void CreateVulkanError(int line, int c, const char* func);
 
     LRESULT WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
@@ -220,4 +250,22 @@ namespace in
 
     // Writes to the log file using the handle stored in in::AppInfo
     void Log(const wchar_t* msg, LL ll);
+    void Log(const char* msg, LL ll);
+}
+
+// declarations for proxy functions
+namespace prx
+{
+    VkResult vkCreateDebugUtilsMessengerEXT(
+        VkInstance instance,
+        const VkDebugUtilsMessengerCreateInfoEXT* pCreateInfo,
+        const VkAllocationCallbacks* pAllocator,
+        VkDebugUtilsMessengerEXT* pDebugMessenger
+    );
+
+    void vkDestroyDebugUtilsMessengerEXT(
+        VkInstance instance,
+        VkDebugUtilsMessengerEXT debugMessenger,
+        const VkAllocationCallbacks* pAllocator
+    );
 }

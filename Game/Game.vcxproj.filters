@@ -38,5 +38,10 @@
     <None Include="res\cursor.cur">
       <Filter>Resource Files</Filter>
     </None>
+    <None Include="shader\basic.vert" />
+    <None Include="shader\basic.frag" />
+    <None Include="shader\compile.bat">
+      <Filter>Source Files</Filter>
+    </None>
   </ItemGroup>
 </Project>

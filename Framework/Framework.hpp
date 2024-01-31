@@ -22,16 +22,22 @@
 
 #pragma once
 
+// STL
 #include <complex>
-
-// Automatic error handling, the return value is thrown away
-#define TSD_CALL(callee, q) { if (!callee) { tsd::CreateAutoError(__LINE__, q); } }
-
-// Automatic errror handling, the return value is saved
-#define TSD_CALL_RET(ret, callee, q) { ret = callee; if (!ret) { tsd::CreateAutoError(__LINE__, q); } }
 
 namespace tsd // tonexum software division
 {
+    struct InitialisationData
+    {
+        bool doVulkanSetup;
+
+    };
+
+    struct WindowCreateData
+    {
+        unsigned short width, height;
+    };
+
     // Messagebox flags
     // biggest possible size is 3 bytes + 1 bit, passed as 4 byte int
     enum MF
@@ -268,30 +274,15 @@ namespace tsd // tonexum software division
 
     // Start the entirety of this framework up so it can be used.
     // Can fail if a resource id is invalid
-    bool Initialise(int icon, int cursor);
+    void Initialise(int icon, int cursor);
 
     // Shutdown, cleanup.
     // Only call when it is garanteed that all windows are closed. Otherwise it will get the execution of the
     // Caller stuck
     void Uninitialise();
 
-    // Automatic user error handling
-    // Use this if you are lazy
-    void CreateAutoError(int line, bool quit);
-
-    // If an error occours, the callee returns null. Read the error code with this function
-    // Beware only check the return value of functions that actually set errors
-    int GetLastFrameworkError();
-
-    // Translates the error by code into a readable message
-    const char* GetErrorInformation(int code);
-
-    // Write a message to the log file
-    // Every entry is being timestamped at runtime
-    void Log(const wchar_t* msg, bool noPrefix);
-
     // Create a new window 
-    short CreateWindow(const wchar_t* name, int width, int height, int xPos, int yPos, short* dependants, unsigned depCount);
+    short CreateWindow(const wchar_t* name, int width, int height, int xPos, int yPos, const short* dependants, unsigned depCount);
 
     // Specify a function to be executed when a window is requested to be closed
     // The function must return a boolean indicating wheather the window should be closed
@@ -342,7 +333,7 @@ namespace tsd // tonexum software division
     // Return whether the specified window has keyboard focus or not
     bool WindowHasFocus(short id);
 
-    // Returns whether the passed handle is valid or not
+    // Returns whether the passed handle corresponds to an existing window or not
     bool IsValidHandle(short handle);
 
     // Returns true as long as any window is open
