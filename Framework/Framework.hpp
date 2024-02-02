@@ -24,9 +24,12 @@
 
 // STL
 #include <complex>
+#include <vector>
 
 namespace tsd // tonexum software division
 {
+    typedef short WND_H;
+
     struct InitialisationData
     {
         bool doVulkanSetup;
@@ -35,7 +38,9 @@ namespace tsd // tonexum software division
 
     struct WindowCreateData
     {
-        unsigned short width, height;
+        unsigned int width, height, xPos, yPos;
+        const wchar_t* name;
+        std::vector<WND_H> dependants;
     };
 
     // Messagebox flags
@@ -282,59 +287,59 @@ namespace tsd // tonexum software division
     void Uninitialise();
 
     // Create a new window 
-    short CreateWindow(const wchar_t* name, int width, int height, int xPos, int yPos, const short* dependants, unsigned depCount);
+    WND_H CreateWindow(const tsd::WindowCreateData& wndCrtData);
 
     // Specify a function to be executed when a window is requested to be closed
     // The function must return a boolean indicating wheather the window should be closed
-    void OnWindowCloseAttempt(short handle, bool(*func)(void));
+    void OnWindowCloseAttempt(WND_H handle, bool(*func)(void));
 
     // Specify a function to be executed when a window is closed
-    void OnWindowClose(short handle, void(*func)(void));
+    void OnWindowClose(WND_H handle, void(*func)(void));
 
     // Returns the name of the window which matches the given handle
     // This function can fail if the handle is not valid
-    wchar_t* GetWindowName(short id);
+    wchar_t* GetWindowName(WND_H id);
 
     // Returns the state of visibility of the window which matches the given handle
     // This function can fail if the handle is not valid
-    bool GetWindowVisibility(short id);
+    bool GetWindowVisibility(WND_H id);
 
     // Returns the width of the window which matches the given handle
     // This function can fail if the handle is not valid
-    int GetWindowWidth(short id);
+    int GetWindowWidth(WND_H id);
 
     // Returns the height of the window which matches the given handle
     // This function can fail if the handle is not valid
-    int GetWindowHeight(short id);
+    int GetWindowHeight(WND_H id);
 
     // Returns the window size
     // This function can fail if the handle is not valid
-    std::pair<int, int> GetWindowDimensions(short id);
+    std::pair<int, int> GetWindowDimensions(WND_H id);
 
     // Returns the window positions on the x-axis
     // This function can fail if the handle is invalid
-    int GetWindowXPos(short id, WP wpr);
+    int GetWindowXPos(WND_H id, WP wpr);
 
     // Returns the window position on the y-axis
     // This function can fail if the handle is invalid
-    int GetWindowYPos(short id, WP wpr);
+    int GetWindowYPos(WND_H id, WP wpr);
 
     // Returns the distance from the top-left corner from the display to the specified corner of the window
     // This function can fail if the handle is invalid
-    std::pair<int, int> GetWindowPosition(short id, WP wpr);
+    std::pair<int, int> GetWindowPosition(WND_H id, WP wpr);
 
     // Returns the number of open windows
     int GetWindowCount();
 
     // Changes the name of the specified window to the given name
     // Can fail if the handle is invalid
-    bool ChangeWindowName(short id, const wchar_t* name);
+    bool ChangeWindowName(WND_H id, const wchar_t* name);
 
     // Return whether the specified window has keyboard focus or not
-    bool WindowHasFocus(short id);
+    bool WindowHasFocus(WND_H id);
 
     // Returns whether the passed handle corresponds to an existing window or not
-    bool IsValidHandle(short handle);
+    bool IsValidHandle(WND_H handle);
 
     // Returns true as long as any window is open
     bool Running();
@@ -344,7 +349,7 @@ namespace tsd // tonexum software division
 
     // Creates a message box with the given information
     // Can only have one owner
-    int MessageBox(short owner, const wchar_t* title, const wchar_t* msg, int flags);
+    int MessageBox(WND_H owner, const wchar_t* title, const wchar_t* msg, int flags);
 
     // Check the keystate for the specified key, return true if the key is pressed
     bool IsKeyPressed(Key code);
@@ -423,10 +428,10 @@ namespace tsd // tonexum software division
 
     // Returns true if the mouse is hovering over the specified window. It does not matter if the window has focus or not
     // Always returns false if the handle is invalid.
-    bool WindowContainsMouse(short handle);
+    bool WindowContainsMouse(WND_H handle);
 
     // Returns a handle to the window that currently contains the mouse. This is independent from focus.
     // If none of your window contains the mouse it will return null and set an error.
     // You may choose to ignore the error if intended as it is insignificant.
-    short GetMouseContainerWindow();
+    WND_H GetMouseContainerWindow();
 }

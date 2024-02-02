@@ -84,7 +84,7 @@ namespace in
         HWND hWnd{};
         std::vector<HWND> dependers; // handles to windows that depend on this one
 
-        short id = 0;
+        tsd::WND_H id = 0;
         wchar_t* name = nullptr;
         bool isVisible = true, isValid = true, hasFocus = true, hasMouseInClientArea = 0;
         short xPos = 0, yPos = 0, width = 0, height = 0;
@@ -95,7 +95,7 @@ namespace in
 
     struct // general information about the state of the application
     {
-        std::map<short, WindowData*> wndIdMap{};
+        std::map<tsd::WND_H, WindowData*> wndIdMap{};
         std::map<HWND, WindowData*> wndHandleMap{};
         HINSTANCE hInstance = 0; // handle to window class
         HICON hIcon{};
@@ -205,7 +205,7 @@ namespace in
 
     // Look through AppInfo.windows and return the instance matching the id of the underlying window
     // Time complexity is linear to the ammount of windows open
-    WindowData* GetWindowData(short id);
+    WindowData* GetWindowData(tsd::WND_H id);
 
     // Loops through AppData.windows and erases all WindowData that is invalid
     void EraseWindowData(HWND hWnd);

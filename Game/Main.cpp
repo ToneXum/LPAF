@@ -13,9 +13,15 @@ int main()
 {
     tsd::Initialise(IDI_ICON1, IDC_CURSOR1); // Intellisense? Are you good?
 
-    short dependant = tsd::CreateWindow(L"Dependant", 500, 500, 0, 0, nullptr, 0);
+    tsd::WindowCreateData cdt{};
+    cdt.name = L"Dependant"; cdt.height = 500; cdt.width = 500;
+    tsd::WND_H dependant = tsd::CreateWindow(cdt);
 
-    short windowHandle = tsd::CreateWindow(L"Boring Box", 500, 500, 0, 0, nullptr, 0);
+    cdt.name = L"This is not even visible";
+    tsd::WND_H windowHandle = tsd::CreateWindow(cdt);
+
+    cdt.name = L"Uninvited guest";
+    tsd::WND_H whoInvitedThisGuy = tsd::CreateWindow(cdt);
 
     while (tsd::Running())
     {

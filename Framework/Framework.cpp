@@ -397,9 +397,9 @@ in::WindowData* in::GetWindowData(HWND handle)
     return nullptr;
 }
 
-in::WindowData* in::GetWindowData(short id)
+in::WindowData* in::GetWindowData(tsd::WND_H id)
 {
-    std::map<short, WindowData*>::iterator res = in::AppInfo.wndIdMap.find(id);
+    std::map<tsd::WND_H, WindowData*>::iterator res = in::AppInfo.wndIdMap.find(id);
     if (res != in::AppInfo.wndIdMap.end())
     {
         return res->second;
@@ -779,33 +779,32 @@ void in::Log(const char* msg, LL ll)
 
 // Whoops
 #undef CreateWindow
-short tsd::CreateWindow(const wchar_t* name, int width, int height, int xPos, int yPos, const short* dependants, unsigned depCount)
+tsd::WND_H tsd::CreateWindow(const tsd::WindowCreateData& wndCrtData)
 {
     if (!in::AppInfo.isInitialised) { in::Log(L"CreateWindow() was called before initialisation", in::LL::ERROR); return 0; } // init was not called
-    if (!name) { in::Log(L"Nullptr was passed to a required parameter at CreateWindow()", in::LL::ERROR); return 0; } // name is nullptr
-    if ((height <= 0) || (width <= 0)) { in::Log(L"Invalid heigt or width ammount for window creation", in::LL::ERROR); return 0; }
+    if (!wndCrtData.name) { in::Log(L"Nullptr was passed to a required parameter at CreateWindow()", in::LL::ERROR); return 0; } // name is nullptr
+    if ((wndCrtData.height <= 0) || (wndCrtData.width <= 0)) { in::Log(L"Invalid heigt or width ammount for window creation", in::LL::ERROR); return 0; }
 
     in::WindowData* wndData = new in::WindowData;
 
     in::AppInfo.windowCount += 1;
     in::AppInfo.windowsOpened += 1;
 
-    wndData->name       = const_cast<wchar_t*>(name);
-    wndData->width      = width;
-    wndData->height     = height;
-    wndData->xPos       = xPos;
-    wndData->yPos       = yPos;
+    wndData->name       = (wchar_t*)wndCrtData.name;
+    wndData->width      = wndCrtData.width;
+    wndData->height     = wndCrtData.height;
+    wndData->xPos       = wndCrtData.xPos;
+    wndData->yPos       = wndCrtData.yPos;
     wndData->isValid    = true;
     wndData->hasFocus   = true;
     wndData->hasMouseInClientArea = false;
     wndData->id         = in::AppInfo.windowsOpened;
     
-    if (dependants && depCount)
+    if (!wndCrtData.dependants.empty())
     {
-        for (unsigned i = 0; i < depCount; i++)
+        for (WND_H i : wndCrtData.dependants)
         {
-            // this is unsafe like shit
-            wndData->dependers.push_back(in::GetWindowData(dependants[i])->hWnd);
+            wndData->dependers.push_back(in::GetWindowData(i)->hWnd);
         }
     }
     
@@ -829,53 +828,66 @@ short tsd::CreateWindow(const wchar_t* name, int width, int height, int xPos, in
     return wndData->id;
 }
 
-void tsd::OnWindowCloseAttempt(short handle, bool(*func)(void))
+void tsd::OnWindowCloseAttempt(WND_H handle, bool(*func)(void))
 {
     in::GetWindowData(handle)->OnCloseAttempt = func;
 }
 
-void tsd::OnWindowClose(short handle, void(*func)(void))
+void tsd::OnWindowClose(WND_H handle, void(*func)(void))
 {
+    std::unique_lock<std::mutex> lock(in::AppInfo.wndDataMtx);
     in::GetWindowData(handle)->OnClose = func;
+    lock.unlock();
 }
 
-wchar_t* tsd::GetWindowName(short id)
+wchar_t* tsd::GetWindowName(WND_H id)
 {
+    std::unique_lock<std::mutex> lock(in::AppInfo.wndDataMtx);
     in::WindowData* wndData = in::GetWindowData(id);
-    if (!wndData) { in::Log(L"Invalid handle was passed to GetWindowName()", in::LL::WARNING); return nullptr; }
+    if (!wndData) [[unlikely]] { in::Log(L"Invalid handle was passed to GetWindowName()", in::LL::WARNING); return nullptr; }
+    lock.unlock();
     return wndData->name;
 }
 
-bool tsd::GetWindowVisibility(short id)
+bool tsd::GetWindowVisibility(WND_H id)
 {
+    std::unique_lock<std::mutex> lock(in::AppInfo.wndDataMtx);
     in::WindowData* wndData = in::GetWindowData(id);
     if (!wndData) [[unlikely]] { in::Log(L"Invalid handle was passed to GetWindowVisibility()", in::LL::WARNING); return false; }
+    lock.unlock();
     return wndData->isVisible;
 }
 
-int tsd::GetWindowWidth(short id)
+int tsd::GetWindowWidth(WND_H id)
 {
+    std::unique_lock<std::mutex> lock(in::AppInfo.wndDataMtx);
     in::WindowData* wndData = in::GetWindowData(id);
     if (!wndData) [[unlikely]] { in::Log(L"Invalid handle was passed to GetWindowWidth()", in::LL::WARNING); return false; }
+    lock.unlock();
     return wndData->width;
 }
 
-int tsd::GetWindowHeight(short id)
+int tsd::GetWindowHeight(WND_H id)
 {
+    std::unique_lock<std::mutex> lock(in::AppInfo.wndDataMtx);
     in::WindowData* wndData = in::GetWindowData(id);
     if (!wndData) [[unlikely]] { in::Log(L"Invalid handle was passed to GetWindowHeight()", in::LL::WARNING); return false; }
+    lock.unlock();
     return wndData->height;
 }
 
-std::pair<int, int> tsd::GetWindowDimensions(short id)
+std::pair<int, int> tsd::GetWindowDimensions(WND_H id)
 {
+    std::unique_lock<std::mutex> lock(in::AppInfo.wndDataMtx);
     in::WindowData* wndData = in::GetWindowData(id);
     if (!wndData) [[unlikely]] { in::Log(L"Invalid handle was passed to GetWindowDimensions()", in::LL::WARNING); return {0, 0}; }
+    lock.unlock();
     return {wndData->width, wndData->height};
 }
 
-int tsd::GetWindowXPos(short id, WP wpr)
+int tsd::GetWindowXPos(WND_H id, WP wpr)
 {
+    std::unique_lock<std::mutex> lock(in::AppInfo.wndDataMtx);
     in::WindowData* wndData = in::GetWindowData(id);
     if (!wndData) [[unlikely]] { in::Log(L"Invalid handle was passed to GetWindowXPos()", in::LL::WARNING); return 0; }
     RECT rect{};
@@ -884,17 +896,25 @@ int tsd::GetWindowXPos(short id, WP wpr)
     switch (wpr)
     {
     case WP_LEFT:
+    {
+        lock.unlock();
         return rect.left;
+    }
     case WP_RIGHT:
+    {
+        lock.unlock();
         return rect.right;
+    }
     }
 
     in::Log(L"Invalid positional identifier was passed to GetWindowXPos()", in::LL::WARNING);
+    lock.unlock();
     return 0;
 }
 
-int tsd::GetWindowYPos(short id, WP wpr)
+int tsd::GetWindowYPos(WND_H id, WP wpr)
 {
+    std::unique_lock<std::mutex> lock(in::AppInfo.wndDataMtx);
     in::WindowData* wndData = in::GetWindowData(id);
     if (!wndData) [[unlikely]] { in::Log(L"Invalid handle was passed to GetWindowYPos()", in::LL::WARNING); return 0; }
     RECT rect{};
@@ -903,17 +923,25 @@ int tsd::GetWindowYPos(short id, WP wpr)
     switch (wpr)
     {
     case WP_TOP:
+    {
+        lock.unlock();
         return rect.top;
+    }
     case WP_BOTTOM:
+    {
+        lock.unlock();
         return rect.bottom;
+    }
     }
 
     in::Log(L"Invalid positional identifier was passed to GetWindowYPos()", in::LL::WARNING);
+    lock.unlock();
     return 0;
 }
 
-std::pair<int, int> tsd::GetWindowPosition(short id, WP wpr)
+std::pair<int, int> tsd::GetWindowPosition(WND_H id, WP wpr)
 {
+    std::unique_lock<std::mutex> lock(in::AppInfo.wndDataMtx);
     in::WindowData* wndData = in::GetWindowData(id);
     if (!wndData) [[unlikely]] { in::Log(L"Invalid handle was passed to GetWindowPosition()", in::LL::WARNING); return {0, 0}; }
     RECT rect{};
@@ -922,16 +950,29 @@ std::pair<int, int> tsd::GetWindowPosition(short id, WP wpr)
     switch (wpr)
     {
     case WP_TOP_LEFT:
+    {
+        lock.unlock();
         return { rect.left, rect.top };
+    }
     case WP_TOP_RIGHT:
+    {
+        lock.unlock();
         return { rect.right, rect.top };
+    }
     case WP_BOTTOM_LEFT:
+    {
+        lock.unlock();
         return { rect.left, rect.bottom };
+    }
     case WP_BOTTOM_RIGHT:
+    {
+        lock.unlock();
         return { rect.right, rect.bottom };
+    }
     }
 
     in::Log(L"Invalid positional identifier was passed to GetWindowPosition()", in::LL::WARNING);
+    lock.unlock();
     return {0, 0};
 }
 
@@ -940,7 +981,7 @@ int tsd::GetWindowCount(void)
     return in::AppInfo.windowCount;
 }
 
-bool tsd::ChangeWindowName(short id, const wchar_t* name)
+bool tsd::ChangeWindowName(WND_H id, const wchar_t* name)
 {
     std::unique_lock<std::mutex> lock(in::AppInfo.wndDataMtx);
     in::WindowData* wndData = in::GetWindowData(id);
@@ -956,15 +997,17 @@ bool tsd::ChangeWindowName(short id, const wchar_t* name)
     return true;
 }
 
-bool tsd::WindowHasFocus(short id)
+bool tsd::WindowHasFocus(WND_H id)
 {
+    std::unique_lock<std::mutex> lock(in::AppInfo.wndDataMtx);
     in::WindowData* wndData = in::GetWindowData(id);
     if (!wndData) [[unlikely]] { return false; }
+    lock.unlock();
     return wndData->hasFocus;
 }
 
-bool tsd::IsValidHandle(short handle)
-{
+bool tsd::IsValidHandle(WND_H handle)
+{   // no mutex neccessary here, no data that may be volatile
     if (in::GetWindowData(handle))
         return true;
     return false;
@@ -982,7 +1025,7 @@ void tsd::Halt(int ms)
 
 #undef MessageBox
 #undef IGNORE
-int tsd::MessageBox(short owner, const wchar_t* title, const wchar_t* msg, int flags)
+int tsd::MessageBox(WND_H owner, const wchar_t* title, const wchar_t* msg, int flags)
 // by now win32 is just getting anoying
 #ifdef UNICODE
 #define MessageBox  MessageBoxW
@@ -1218,20 +1261,30 @@ int tsd::GetMouseWheelDelta()
     return 0;
 }
 
-bool tsd::WindowContainsMouse(short handle)
+bool tsd::WindowContainsMouse(WND_H handle)
 {
+    std::unique_lock<std::mutex> lock(in::AppInfo.wndDataMtx);
     in::WindowData* wndData = in::GetWindowData(handle);
-    if (wndData) [[likely]]
+    if (wndData)
+    {
+        lock.unlock();
         return wndData->hasMouseInClientArea;
+    }
+    lock.unlock();
     return false;
 }
 
-short tsd::GetMouseContainerWindow()
+tsd::WND_H tsd::GetMouseContainerWindow()
 {
-    for (std::pair<short, in::WindowData*> i : in::AppInfo.wndIdMap)
+    std::unique_lock<std::mutex> lock(in::AppInfo.wndDataMtx);
+    for (std::pair<WND_H, in::WindowData*> i : in::AppInfo.wndIdMap)
     {
         if (i.second->hasMouseInClientArea)
+        {
+            lock.unlock();
             return i.second->id;
+        }
     }
+    lock.unlock();
     return 0;
 }
