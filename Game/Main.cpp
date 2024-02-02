@@ -21,6 +21,9 @@ int main()
     {
         if (tsd::IsValidHandle(windowHandle))
             tsd::ChangeWindowName(windowHandle, tsd::IsKeyPressed(tsd::K_E) ? L"E is pressed" : L"E is not pressed");
+        
+        if (tsd::IsValidHandle(dependant))
+            tsd::ChangeWindowName(dependant, tsd::WindowContainsMouse(dependant) ? L"I have the mouse" : L"I dont have the mouse");
         // simulate computation
         tsd::Halt(16);
     }

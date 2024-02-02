@@ -27,43 +27,6 @@
 
 #pragma once
 
-// throw away a bunch of windows garbage
-#ifndef FULL_WINTARD
-#define WIN32_LEAN_AND_MEAN
-#define NOGDICAPMASKS
-#define NOSYSMETRICS
-#define NOMENUS
-#define NOICONS
-#define NOSYSCOMMANDS
-#define NORASTEROPS
-#define OEMRESOURCE
-#define NOATOM
-#define NOCLIPBOARD
-#define NOCOLOR
-#define NOCTLMGR
-#define NODRAWTEXT
-#define NOKERNEL
-#define NONLS
-#define NOMEMMGR
-#define NOMETAFILE
-#define NOOPENFILE
-#define NOSCROLL
-#define NOSERVICE
-#define NOSOUND
-#define NOTEXTMETRIC
-#define NOWH
-#define NOCOMM
-#define NOKANJI
-#define NOHELP
-#define NOPROFILER
-#define NODEFERWINDOWPOS
-#define NOMCX
-#define NORPC
-#define NOPROXYSTUB
-#define NOIMAGE
-#define NOTAPE
-#endif
-
 #define NOMINMAX
 
 #define STRICT
@@ -71,6 +34,7 @@
 // Windows
 #include <Windows.h>
 #include <windowsx.h>
+#include <WinUser.h>
 
 #undef ERROR
 
@@ -90,6 +54,8 @@
 #include <chrono>
 #include <time.h>
 #include <array>
+#include <queue>
+#include <map>
 
 // Vulkan SKD
 #include "vulkan/vulkan.h"
@@ -104,17 +70,14 @@
 // Manual error creation with automatic additional information
 #define FRMWRK_ERR(msg) { in::CreateManualError(__LINE__, __FUNCDNAME__, msg); }
 
+// Custom Win32 messages
+#define CWM_CREATEWINDOWREQ         WM_USER + 1
+#define CWM_STUPIDITY               WM_USER + 2
+
 namespace in
 {
     void DoNothing_V();
     bool DoNothing_B();
-
-    enum WindowThreadAction
-    {
-        WTA_NONE,
-        WTA_OPEN,
-        WTA_CLOSE
-    };
 
     struct WindowData // additional data associated to each window
     {
@@ -130,20 +93,21 @@ namespace in
         bool (*OnCloseAttempt)() = DoNothing_B;
     };
 
-    struct WindowThreadActionInfo
-    {
-        in::WindowThreadAction action;
-        in::WindowData* usrData;
-    };
-
     struct // general information about the state of the application
     {
-        std::vector<WindowData*> windows{}; // window specific information container
+        std::map<short, WindowData*> wndIdMap{};
+        std::map<HWND, WindowData*> wndHandleMap{};
         HINSTANCE hInstance = 0; // handle to window class
         HICON hIcon{};
         HCURSOR hCursor{};
         std::thread* windowThread{};
-        std::mutex logMtx; // this probably as close as this gets when it comes to how a mutex is supposed to be used
+        HANDLE nativeThreadHandle{};
+        std::mutex logMtx{}; // this probably as close as this gets when it comes to how a mutex is supposed to be used
+        std::mutex wndDataMtx{};
+
+        std::condition_variable wndThrdCv{};
+        std::mutex wndThrdMtx{};
+        bool wndThrdIsRunning = false;
 
         // Bitset for keyboard key states
         std::bitset<256> keystates = 0;
@@ -166,8 +130,6 @@ namespace in
         int windowsOpened = 0; // ammount of windows this program has opened in the past
         bool isRunning = true; // becomes false when no window is open anymore
         bool isInitialised = false; // becomes true when initialise is called
-        
-        in::WindowThreadActionInfo windowThreadAction[3]{}; // make the window thread do something
     } AppInfo;
 
     struct
@@ -222,11 +184,9 @@ namespace in
     );
 #endif // _DEBUG
 
-    void WindowsThread();
-    void SetWindowThreadAction(WindowThreadActionInfo wndThrdAct);
+    void WindowsThread(WindowData* wndDt);
 
     void CreateNativeWindow(WindowData* wndDt);
-    void CloseNativeWindow(WindowData* wndDt);
 
     // Win32 Error creation
     void CreateWin32Error(int line, int c, const char* func);
@@ -248,7 +208,7 @@ namespace in
     WindowData* GetWindowData(short id);
 
     // Loops through AppData.windows and erases all WindowData that is invalid
-    void EraseUnusedWindowData();
+    void EraseWindowData(HWND hWnd);
 
     // Deallocates everything, closes handles and cleans up
     // Call when the program needs to end abruptly

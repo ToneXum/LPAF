@@ -29,55 +29,31 @@ void in::DoNothing_V()
 bool in::DoNothing_B()
 { return true; }
 
-void in::WindowsThread()
+void in::WindowsThread(WindowData* wndDt)
 {
+    in::AppInfo.nativeThreadHandle = GetCurrentThread();
+
     std::wostringstream startMsg;
     startMsg << L"The window manager thread was started";
     in::Log(startMsg.str().c_str(), in::LL::DEBUG);
 
+    in::CreateNativeWindow(wndDt);
+
+    std::unique_lock<std::mutex> lock(in::AppInfo.wndThrdMtx);
+    in::AppInfo.wndThrdIsRunning = true;
+    lock.unlock();
+    in::AppInfo.wndThrdCv.notify_one();
+
     // message pump for the window
     MSG msg{};
-    while (true)
+    while (GetMessageA(&msg, nullptr, 0, 0))
     {
-        while (PeekMessageA(&msg, nullptr, 0, 0, PM_REMOVE))
-        {
-            TranslateMessage(&msg);
-            DispatchMessage(&msg);
-        }
-
-        for (char i = 0; i < 3; i++)
-        {
-            switch (AppInfo.windowThreadAction[i].action)
-            {
-            case in::WTA_CLOSE:
-            {
-                in::CloseNativeWindow(AppInfo.windowThreadAction[i].usrData);
-                AppInfo.windowThreadAction[i] = in::WindowThreadActionInfo(WTA_NONE, nullptr);
-                break;
-            }
-            case in::WTA_OPEN:
-            {
-                in::CreateNativeWindow(AppInfo.windowThreadAction[i].usrData);
-                AppInfo.windowThreadAction[i] = in::WindowThreadActionInfo(WTA_NONE, nullptr);
-                break;
-            }
-            }
-        }
-        Sleep(10);
+        TranslateMessage(&msg);
+        DispatchMessageA(&msg);
     }
-}
 
-void in::SetWindowThreadAction(in::WindowThreadActionInfo wndThrdAct)
-{
-    for (char i = 0; i < 3; i++)
-    {
-        if (!in::AppInfo.windowThreadAction[i].action)
-        {
-            in::AppInfo.windowThreadAction[i] = wndThrdAct;
-            return;
-        }
-    }
-    in::Log(L"Too many window thread actions, buffer ran out", in::LL::ERROR);
+    in::AppInfo.wndThrdIsRunning = false;
+    in::AppInfo.wndThrdCv.notify_one();
 }
 
 void in::CreateNativeWindow(in::WindowData* wndDt)
@@ -94,10 +70,6 @@ void in::CreateNativeWindow(in::WindowData* wndDt)
         in::AppInfo.hInstance,
         nullptr
     ));
-    in::AppInfo.windowCount += 1;
-    in::AppInfo.windowsOpened += 1;
-
-    wndDt->id = in::AppInfo.windowsOpened;
 
     ShowWindow(wndDt->hWnd, 1);
 
@@ -112,15 +84,8 @@ void in::CreateNativeWindow(in::WindowData* wndDt)
     oss << L"Window " << wndDt->hWnd << " was created and recieved a handle of " << wndDt->id;
     in::Log(oss.str().c_str(), in::LL::DEBUG);
 
-    AppInfo.windows.push_back(wndDt);
-}
-
-void in::CloseNativeWindow(WindowData* wndDt)
-{
-    AppInfo.windowCount -= 1;
-    wndDt->OnClose();
-    wndDt->isValid = false;
-    in::EraseUnusedWindowData();
+    AppInfo.wndIdMap.insert({wndDt->id, wndDt});
+    AppInfo.wndHandleMap.insert({wndDt->hWnd, wndDt});
 }
 
 #ifdef _DEBUG
@@ -216,21 +181,37 @@ LRESULT in::WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
     switch (uMsg)
     {
     ///////////////////////////////////
+    // Custom messages
+    case CWM_CREATEWINDOWREQ:
+    {
+        in::CreateNativeWindow((WindowData*)lParam);
+        break;
+    }
+    // Custom messages
+    ///////////////////////////////////
+    
+    ///////////////////////////////////
     // Closing the window
     case WM_CLOSE: // closing of a window has been requested
     {
-        if (GetWindowData(hWnd)->OnCloseAttempt())
+        if (GetWindowData(hWnd)->OnCloseAttempt()) // go ahead and close the window of returns true
             DestroyWindow(hWnd);
         return 0;
     }
     case WM_DESTROY: // closing a window was ordered and confirmed
     {
-        in::SetWindowThreadAction(in::WindowThreadActionInfo(in::WTA_CLOSE, GetWindowData(hWnd)));
-        if (tsd::GetWindowCount() == 1) // quit program if last window remaining is closed
+        WindowData* wnd = GetWindowData(hWnd);
+        wnd->OnClose();
+        wnd->isValid = false;
+        AppInfo.windowCount -= 1;
+        in::EraseWindowData(hWnd);
+
+        if (in::AppInfo.windowCount == 0) // quit program if last window remaining is closed
         {
             AppInfo.isRunning = false;
+            PostQuitMessage(0);
         }
-        
+
         return 0;
     }
     // Closing the window
@@ -292,13 +273,6 @@ LRESULT in::WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
         in::AppInfo.mouse.xPos = GET_X_LPARAM(lParam);
         in::AppInfo.mouse.yPos = GET_Y_LPARAM(lParam);
         GetWindowData(hWnd)->hasMouseInClientArea = true;
-
-        TRACKMOUSEEVENT msEv = {};
-        msEv.cbSize     = sizeof(TRACKMOUSEEVENT);
-        msEv.dwFlags    = TME_LEAVE;
-        msEv.hwndTrack  = hWnd;
-
-        WIN32_EC(TrackMouseEvent(&msEv));
 
         break;
     }
@@ -388,8 +362,6 @@ LRESULT in::WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
     // Focus gain and loss
     case WM_SETFOCUS:
     {
-        if (AppInfo.windows.empty())
-            break;
         WindowData* wndData = in::GetWindowData(hWnd);
         if (wndData)
         {
@@ -400,8 +372,6 @@ LRESULT in::WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
     }
     case WM_KILLFOCUS:
     {
-        if (AppInfo.windows.empty())
-            break;
         WindowData* wndData = in::GetWindowData(hWnd);
         if (wndData)
         {
@@ -419,57 +389,46 @@ LRESULT in::WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 in::WindowData* in::GetWindowData(HWND handle)
 {
-    for (WindowData* i : AppInfo.windows)
+    std::map<HWND, WindowData*>::iterator res = in::AppInfo.wndHandleMap.find(handle);
+    if (res != in::AppInfo.wndHandleMap.end())
     {
-        if (i->hWnd == handle)
-        {
-            return i;
-        }
+        return res->second;
     }
     return nullptr;
 }
 
 in::WindowData* in::GetWindowData(short id)
 {
-    for (WindowData* i : AppInfo.windows)
+    std::map<short, WindowData*>::iterator res = in::AppInfo.wndIdMap.find(id);
+    if (res != in::AppInfo.wndIdMap.end())
     {
-        if (i->id == id)
-        {
-            return i;
-        }
+        return res->second;
     }
     return nullptr;
 }
 
-void in::EraseUnusedWindowData()
+void in::EraseWindowData(HWND hWnd)
 {
-    int i = 0;
-    while (i < AppInfo.windows.size())
-    {
-        WindowData* wndDt = AppInfo.windows.at(i);
-        if (!wndDt->isValid)
-        {
-            std::wostringstream oss;
-            oss << L"Window data for " << wndDt->hWnd << " with the handle " << wndDt->id << " was deleted" << std::flush;
-            in::Log(oss.str().c_str(), in::LL::DEBUG);
-
-            delete wndDt;
-            std::vector<WindowData*>::iterator it = AppInfo.windows.begin() + i;
-            AppInfo.windows.erase(it);
-        }
-        else
-        {
-            i++;
-        }
-    }
+    std::unique_lock<std::mutex> lock(in::AppInfo.wndDataMtx);
+    std::map<HWND, WindowData*>::iterator res = in::AppInfo.wndHandleMap.find(hWnd); // find data to be erased
+    std::wostringstream msg;
+    msg << "Window data for " << res->first << " who's handle is " << res->second->id << " was deleted";
+    in::Log(msg.str().c_str(), in::LL::DEBUG);
+    in::AppInfo.wndIdMap.erase(res->second->id); // erase data from the id map using the id
+    delete res->second; // free window data
+    in::AppInfo.wndHandleMap.erase(res); // erase data from handle map using the iterator
+    lock.unlock();
 }
 
 void in::DeAlloc()
 {
-    for (WindowData* i : AppInfo.windows)
+    for (std::pair<HWND, WindowData*> i : AppInfo.wndHandleMap)
     {
-        delete i;
+        delete i.second;
     }
+    in::AppInfo.wndHandleMap.clear();
+    in::AppInfo.wndIdMap.clear();
+
     delete AppInfo.textInput;
 }
 
@@ -705,15 +664,17 @@ void tsd::Initialise(int iconId, int cursorId)
 
     in::InitialiseVulkan();
     in::Log(L"Framework was successfully initialised", in::LL::INFO);
-    in::AppInfo.windowThread = new std::thread(in::WindowsThread);
 }
 
 void tsd::Uninitialise()
 {
-    // not neccecary to delete the window data, it was deleted by EraseUnusedWindowData()
-    delete in::AppInfo.textInput;
+    std::unique_lock<std::mutex> lock(in::AppInfo.wndThrdMtx);
+    in::AppInfo.wndThrdCv.wait(lock, []{ return !in::AppInfo.wndThrdIsRunning; });
 
     WIN32_EC(UnregisterClassW(in::AppInfo.windowClassName, in::AppInfo.hInstance));
+
+    // not neccecary to delete the window data, it was deleted by EraseUnusedWindowData()
+    delete in::AppInfo.textInput;
 
     in::UninitialiseVulkan();
 
@@ -826,6 +787,9 @@ short tsd::CreateWindow(const wchar_t* name, int width, int height, int xPos, in
 
     in::WindowData* wndData = new in::WindowData;
 
+    in::AppInfo.windowCount += 1;
+    in::AppInfo.windowsOpened += 1;
+
     wndData->name       = const_cast<wchar_t*>(name);
     wndData->width      = width;
     wndData->height     = height;
@@ -834,6 +798,7 @@ short tsd::CreateWindow(const wchar_t* name, int width, int height, int xPos, in
     wndData->isValid    = true;
     wndData->hasFocus   = true;
     wndData->hasMouseInClientArea = false;
+    wndData->id         = in::AppInfo.windowsOpened;
     
     if (dependants && depCount)
     {
@@ -843,8 +808,23 @@ short tsd::CreateWindow(const wchar_t* name, int width, int height, int xPos, in
             wndData->dependers.push_back(in::GetWindowData(dependants[i])->hWnd);
         }
     }
+    
+    if (in::AppInfo.windowThread)
+    {
+        WIN32_EC(PostMessageA(
+            in::AppInfo.wndIdMap.find(1)->second->hWnd, // one window is always open while the thread is running
+            CWM_CREATEWINDOWREQ, 
+            (WPARAM)nullptr, 
+            (LPARAM)wndData)
+        );
+    }
+    else
+    {
+        in::AppInfo.windowThread = new std::thread(in::WindowsThread, wndData);
 
-    in::SetWindowThreadAction(in::WindowThreadActionInfo(in::WTA_OPEN, wndData));
+        std::unique_lock<std::mutex> lock(in::AppInfo.wndThrdMtx);
+        in::AppInfo.wndThrdCv.wait(lock, [] {return in::AppInfo.wndThrdIsRunning; });
+    }
 
     return wndData->id;
 }
@@ -962,10 +942,17 @@ int tsd::GetWindowCount(void)
 
 bool tsd::ChangeWindowName(short id, const wchar_t* name)
 {
+    std::unique_lock<std::mutex> lock(in::AppInfo.wndDataMtx);
     in::WindowData* wndData = in::GetWindowData(id);
-    if (!wndData) [[unlikely]] { in::Log(L"Invalid handle was passed to ChangeWindowName()", in::LL::ERROR); return false; }
-    SetWindowTextW(wndData->hWnd, name);
+    if (!wndData) [[unlikely]] 
+    { 
+        in::Log(L"Invalid handle was passed to ChangeWindowName()", in::LL::ERROR); 
+        lock.unlock(); 
+        return false; 
+    }
     wndData->name = (wchar_t*)name;
+    lock.unlock();
+    SetWindowTextW(wndData->hWnd, name);
     return true;
 }
 
@@ -1241,10 +1228,10 @@ bool tsd::WindowContainsMouse(short handle)
 
 short tsd::GetMouseContainerWindow()
 {
-    for (in::WindowData* i : in::AppInfo.windows)
+    for (std::pair<short, in::WindowData*> i : in::AppInfo.wndIdMap)
     {
-        if (i->hasMouseInClientArea)
-            return i->id;
+        if (i.second->hasMouseInClientArea)
+            return i.second->id;
     }
     return 0;
 }
