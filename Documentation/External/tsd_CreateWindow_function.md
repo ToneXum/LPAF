@@ -11,7 +11,7 @@ WND_H tsd::CreateWindow(
 `wndCrtDt`:
 Type: `tsd::WindowCreateData`
 
-A reference to a structure that contains all the information needed to describe the window that is supposed to be opened. See (WindowCreateData)[WindowCreateData-type-in-tsd.md] for more.
+A reference to a structure that contains all the information needed to describe the window that is supposed to be opened. See [WindowCreateData](tsd_WindowCreateData_type.md) for more.
 
 ### Return value
 `CreateWindow` returns a `WND_H` (basically just a number) which is a handle that the user can use to identify the window. When the function fails for whatever reason, a messages is printed to `stdout` and `CreateWindow` returns 0.
