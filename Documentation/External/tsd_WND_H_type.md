@@ -1,6 +1,7 @@
 ## WND_H
 `WND_H` is a datatype that acts as a handle to the windows that the user creates.
 
+### Definition
 ```C++
 typedef short WND_H;
 ```

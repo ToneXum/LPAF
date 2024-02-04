@@ -1,6 +1,7 @@
 ## CreateWindow
 The `CreateWindow` function can be used to open a new window on the desktop.
 
+### Definition
 ```C++
 WND_H tsd::CreateWindow(
     const WindowCreateData& wndCrtDt [in]
@@ -8,8 +9,7 @@ WND_H tsd::CreateWindow(
 ```
 
 ### Parameters
-`wndCrtDt`:
-Type: `tsd::WindowCreateData`
+`const WindowCreateData& wndCrtDt [in]`:
 
 A reference to a structure that contains all the information needed to describe the window that is supposed to be opened. See [WindowCreateData](tsd_WindowCreateData_type.md) for more.
 
