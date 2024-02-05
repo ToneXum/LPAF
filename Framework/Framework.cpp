@@ -616,7 +616,7 @@ void prx::vkDestroyDebugUtilsMessengerEXT(VkInstance instance,
     }
 }
 #endif // _DEBUG
-void tsd::Initialise(int iconId, int cursorId)
+void tsd::Initialize(int iconId, int cursorId)
 {
     // Get hInstance since the program does not use the winMain entry point
     in::AppInfo.hInstance = GetModuleHandle(0);
@@ -666,7 +666,7 @@ void tsd::Initialise(int iconId, int cursorId)
     in::Log(L"Framework was successfully initialised", in::LL::INFO);
 }
 
-void tsd::Uninitialise()
+void tsd::Uninitialize()
 {
     std::unique_lock<std::mutex> lock(in::AppInfo.wndThrdMtx);
     in::AppInfo.wndThrdCv.wait(lock, []{ return !in::AppInfo.wndThrdIsRunning; });

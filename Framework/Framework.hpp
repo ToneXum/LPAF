@@ -32,15 +32,18 @@ namespace tsd // tonexum software division
 
     struct InitialisationData
     {
-        bool doVulkanSetup;
-
+        int iconId, cursorId;
     };
 
     struct WindowCreateData
     {
-        unsigned int width, height, xPos, yPos;
+        unsigned int width, height;
+        int xPos, yPos;
         const wchar_t* name;
         std::vector<WND_H> dependants;
+
+        void (*OnClose)();
+        bool (*OnCloseAttempt)();
     };
 
     // Messagebox flags
@@ -279,15 +282,20 @@ namespace tsd // tonexum software division
 
     // Start the entirety of this framework up so it can be used.
     // Can fail if a resource id is invalid
-    void Initialise(int icon, int cursor);
+    void Initialize(int icon, int cursor);
 
     // Shutdown, cleanup.
-    // Only call when it is garanteed that all windows are closed. Otherwise it will get the execution of the
-    // Caller stuck
-    void Uninitialise();
+    // Only call when it is garanteed that all windows are closed.
+    void Uninitialize();
 
     // Create a new window 
     WND_H CreateWindow(const tsd::WindowCreateData& wndCrtData);
+
+    // Close a window
+    void CloseWindow(const WND_H handle);
+
+    // Close all windows
+    void CloseAllWindows();
 
     // Specify a function to be executed when a window is requested to be closed
     // The function must return a boolean indicating wheather the window should be closed

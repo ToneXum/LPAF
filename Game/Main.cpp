@@ -11,13 +11,13 @@
 // This is a simple test program to try out and find bugs in GAFW
 int main()
 {
-    tsd::Initialise(IDI_ICON1, IDC_CURSOR1); // Intellisense? Are you good?
+    tsd::Initialize(IDI_ICON1, IDC_CURSOR1); // Intellisense? Are you good?
 
     tsd::WindowCreateData cdt{};
     cdt.name = L"Dependant"; cdt.height = 500; cdt.width = 500;
     tsd::WND_H dependant = tsd::CreateWindow(cdt);
 
-    cdt.name = L"This is not even visible";
+    cdt.name = L"This is not even visible"; // name is constant, is cdt being copy-constructed?
     tsd::WND_H windowHandle = tsd::CreateWindow(cdt);
 
     cdt.name = L"Uninvited guest";
@@ -34,6 +34,6 @@ int main()
         tsd::Halt(16);
     }
 
-    tsd::Uninitialise();
+    tsd::Uninitialize();
     return 0;
 }
