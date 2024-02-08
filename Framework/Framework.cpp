@@ -20,14 +20,109 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
+// The definitions in this file are ordered in the following way:
+//  - Internals
+//      - Internal error handling
+//      - Native operations
+//          - Win32
+//          - Vulkan
+//      - Native utilities
+//  - Proxy functions
+//  - Framework
+//      - User operations
+//      - Utility functions
+//
+
 #include "Framework.hpp"
 #include "Internals.hpp"
 
-void in::DoNothing_V()
-{}
+#ifdef _DEBUG
+void in::CreateWin32Error(int line, int c, const char* func)
+{
+    //int e = GetLastError();
+    std::ostringstream msg;
+    char* eMsg = nullptr;
 
-bool in::DoNothing_B()
-{ return true; }
+    FormatMessageA(
+        FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
+        nullptr,
+        c,
+        MAKELANGID(LANG_ENGLISH, SUBLANG_ENGLISH_US),
+        reinterpret_cast<LPSTR>(&eMsg),
+        0,
+        nullptr
+    );
+
+    if (eMsg)
+    {
+        msg << "A Win32 API call resulted in fatal error " << c << " at line " << line << " in " << func << ".\n\n" << eMsg;
+        msg << "\n" << "This is an internal error likely caused by the framework itself, the application must quit now." << std::endl;
+    }
+    else
+    {
+        msg << "An Error occoured which even the error handler could not handle. This is usually caused by the error";
+        msg << " message being to long" << "\n\n";
+        msg << "I guess I fucked up..." << std::endl;
+    }
+
+    MessageBoxA(nullptr, msg.str().c_str(), "Internal Error!", MB_ICONERROR | MB_TASKMODAL | MB_OK);
+    LocalFree((LPSTR)eMsg);
+
+    DeAlloc();
+    std::exit(-1); // kill that fu- okay, okay ... calm down
+}
+#endif // _DEBUG
+#ifdef NDEBUG
+void in::CreateWin32Error(int line, int c, const char* func)
+{
+    std::wostringstream emsg;
+    emsg << "Win32 error: " << c << " at " << line << " in " << func << std::flush;
+    in::Log(emsg.str().c_str(), in::LL::ERROR);
+
+    std::ostringstream msg;
+    msg << "A fatal error occoured, the application must quit now!\n\nFor more information check 'Last_Log.txt' in the application";
+    msg << " directory" << std::flush;
+
+    MessageBoxA(nullptr, msg.str().c_str(), "Fatal Error!", MB_TASKMODAL | MB_OK | MB_ICONERROR);
+
+    DeAlloc();
+    std::exit(-1);
+}
+#endif // DEBUG
+
+void in::CreateManualError(int line, const char* func, const char* msg)
+{
+    std::ostringstream str;
+
+    str << "An oparation within the framework has caused an error:\n\n";
+    str << msg << "\n\n";
+    str << "Origin: " << func << " at " << line << "\n\n";
+    str << "This is an internal error likely caused by the framework itself. ";
+    str << "The program is unable to recover, the application must quit now!";
+    str << std::flush;
+
+    MessageBoxA(nullptr, str.str().c_str(), "Internal Error", MB_TASKMODAL | MB_OK | MB_ICONERROR);
+
+    DeAlloc();
+    std::exit(-1);
+}
+
+void in::CreateVulkanError(int line, int c, const char* func)
+{
+    std::ostringstream str;
+
+    str << "A Vulkan API oparation resulted in a fatal error:\n\n";
+    str << "Error: " << c << "\n";
+    str << "Origin: " << func << " at " << line << "\n\n";
+    str << "This is an internal error likely caused by the framework itself. ";
+    str << "The program is unable to recover and must quit now!";
+    str << std::flush;
+
+    MessageBoxA(nullptr, str.str().c_str(), "Internal Error", MB_TASKMODAL | MB_OK | MB_ICONERROR);
+
+    DeAlloc();
+    std::exit(-1);
+}
 
 void in::WindowsThread(WindowData* wndDt)
 {
@@ -86,94 +181,6 @@ void in::CreateNativeWindow(in::WindowData* wndDt)
 
     AppInfo.wndIdMap.insert({wndDt->id, wndDt});
     AppInfo.wndHandleMap.insert({wndDt->hWnd, wndDt});
-}
-
-#ifdef _DEBUG
-void in::CreateWin32Error(int line, int c, const char* func)
-{
-    //int e = GetLastError();
-    std::ostringstream msg;
-    char* eMsg = nullptr;
-
-    FormatMessageA(
-        FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
-        nullptr,
-        c,
-        MAKELANGID(LANG_ENGLISH, SUBLANG_ENGLISH_US),
-        reinterpret_cast<LPSTR>(&eMsg),
-        0,
-        nullptr
-    );
-
-    if (eMsg)
-    {
-        msg << "A Win32 API call resulted in fatal error " << c << " at line " << line << " in " << func << ".\n\n" << eMsg;
-        msg << "\n" << "This is an internal error likely caused by the framework itself, the application must quit now." << std::endl;
-    }
-    else
-    {
-        msg << "An Error occoured which even the error handler could not handle. This is usually caused by the error";
-        msg << " message being to long" << "\n\n";
-        msg << "I guess I fucked up..." << std::endl;
-    }
-
-    MessageBoxA(nullptr, msg.str().c_str(), "Internal Error!", MB_ICONERROR | MB_TASKMODAL | MB_OK);
-    LocalFree((LPSTR)eMsg);
-
-    DeAlloc();
-    std::exit(-1); // kill that fu- okay, okay ... calm down
-}
-#endif // _DEBUG
-#ifdef NDEBUG
-void in::CreateWin32Error(int line, int c, const char* func)
-{
-    std::wostringstream emsg;
-    emsg << "Win32 error: " << c << " at " << line << " in " << func << std::flush;
-    in::Log(emsg.str().c_str(), in::LL::ERROR);
-
-    std::ostringstream msg;
-    msg << "A fatal error occoured, the application must quit now!\n\nFor more information check 'Last_Log.txt' in the application";
-    msg << " directory" << std::flush; 
-
-    MessageBoxA(nullptr, msg.str().c_str(), "Fatal Error!", MB_TASKMODAL | MB_OK | MB_ICONERROR);
-
-    DeAlloc();
-    std::exit(-1);
-}
-#endif // DEBUG
-
-void in::CreateManualError(int line, const char* func, const char* msg)
-{
-    std::ostringstream str;
-
-    str << "An oparation within the framework has caused an error:\n\n";
-    str << msg << "\n\n";
-    str << "Origin: " << func << " at " << line << "\n\n";
-    str << "This is an internal error likely caused by the framework itself. ";
-    str << "The program is unable to recover, the application must quit now!";
-    str << std::flush;
-
-    MessageBoxA(nullptr, str.str().c_str(), "Internal Error", MB_TASKMODAL | MB_OK | MB_ICONERROR);
-
-    DeAlloc();
-    std::exit(-1);
-}
-
-void in::CreateVulkanError(int line, int c, const char* func)
-{
-    std::ostringstream str;
-
-    str << "A Vulkan API oparation resulted in a fatal error:\n\n";
-    str << "Error: " << c << "\n";
-    str << "Origin: " << func << " at " << line << "\n\n";
-    str << "This is an internal error likely caused by the framework itself. ";
-    str << "The program is unable to recover and must quit now!";
-    str << std::flush;
-
-    MessageBoxA(nullptr, str.str().c_str(), "Internal Error", MB_TASKMODAL | MB_OK | MB_ICONERROR);
-
-    DeAlloc();
-    std::exit(-1);
 }
 
 LRESULT in::WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
@@ -387,51 +394,6 @@ LRESULT in::WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
     return DefWindowProcW(hWnd, uMsg, wParam, lParam);
 }
 
-in::WindowData* in::GetWindowData(HWND handle)
-{
-    std::map<HWND, WindowData*>::iterator res = in::AppInfo.wndHandleMap.find(handle);
-    if (res != in::AppInfo.wndHandleMap.end())
-    {
-        return res->second;
-    }
-    return nullptr;
-}
-
-in::WindowData* in::GetWindowData(tsd::WND_H id)
-{
-    std::map<tsd::WND_H, WindowData*>::iterator res = in::AppInfo.wndIdMap.find(id);
-    if (res != in::AppInfo.wndIdMap.end())
-    {
-        return res->second;
-    }
-    return nullptr;
-}
-
-void in::EraseWindowData(HWND hWnd)
-{
-    std::unique_lock<std::mutex> lock(in::AppInfo.wndDataMtx);
-    std::map<HWND, WindowData*>::iterator res = in::AppInfo.wndHandleMap.find(hWnd); // find data to be erased
-    std::wostringstream msg;
-    msg << "Window data for " << res->first << " who's handle is " << res->second->id << " was deleted";
-    in::Log(msg.str().c_str(), in::LL::DEBUG);
-    in::AppInfo.wndIdMap.erase(res->second->id); // erase data from the id map using the id
-    delete res->second; // free window data
-    in::AppInfo.wndHandleMap.erase(res); // erase data from handle map using the iterator
-    lock.unlock();
-}
-
-void in::DeAlloc()
-{
-    for (std::pair<HWND, WindowData*> i : AppInfo.wndHandleMap)
-    {
-        delete i.second;
-    }
-    in::AppInfo.wndHandleMap.clear();
-    in::AppInfo.wndIdMap.clear();
-
-    delete AppInfo.textInput;
-}
-
 void in::InitialiseVulkan()
 {
     // do setup for validation layers
@@ -473,20 +435,20 @@ void in::InitialiseVulkan()
 #endif // _DEBUG
 
     VkApplicationInfo appInf{};
-    appInf.sType            = VK_STRUCTURE_TYPE_APPLICATION_INFO;
+    appInf.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
     appInf.pApplicationName = "GAFW Renderer";
-    appInf.apiVersion       = VK_MAKE_API_VERSION(1, 1, 0, 0);
-    appInf.pEngineName      = "No Engine";
-    appInf.engineVersion    = VK_MAKE_API_VERSION(1, 1, 0, 0);
-    appInf.apiVersion       = VK_API_VERSION_1_3;
+    appInf.apiVersion = VK_MAKE_API_VERSION(1, 1, 0, 0);
+    appInf.pEngineName = "No Engine";
+    appInf.engineVersion = VK_MAKE_API_VERSION(1, 1, 0, 0);
+    appInf.apiVersion = VK_API_VERSION_1_3;
 
     VkInstanceCreateInfo createInf{};
-    createInf.sType                 = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
-    createInf.pApplicationInfo      = &appInf;
+    createInf.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
+    createInf.pApplicationInfo = &appInf;
 #ifdef _DEBUG
-    createInf.enabledLayerCount     = (unsigned int)in::RenderInfo.validationLayers.size();
-    createInf.ppEnabledLayerNames   = in::RenderInfo.validationLayers.data();
-    createInf.pNext                 = &mssngrInf;
+    createInf.enabledLayerCount = (unsigned int)in::RenderInfo.validationLayers.size();
+    createInf.ppEnabledLayerNames = in::RenderInfo.validationLayers.data();
+    createInf.pNext = &mssngrInf;
 #endif // _DEBUG
     createInf.enabledExtensionCount = (unsigned int)in::RenderInfo.extension.size();
     createInf.ppEnabledExtensionNames = in::RenderInfo.extension.data();
@@ -502,12 +464,12 @@ void in::InitialiseVulkan()
     vkEnumeratePhysicalDevices(in::RenderInfo.vkInstance, &deviceCount, nullptr);
 
     if (!deviceCount) FRMWRK_ERR("There is no GPU that supports Vulkan installed in this machine.");
-    
+
     std::vector<VkPhysicalDevice> devices(deviceCount);
     vkEnumeratePhysicalDevices(in::RenderInfo.vkInstance, &deviceCount, devices.data());
 
     in::RenderInfo.physicalDevice = in::ChooseBestPhysicalDevice(devices); // choose first device, dont care about anything else
-    if (in::RenderInfo.physicalDevice == nullptr) 
+    if (in::RenderInfo.physicalDevice == nullptr)
         FRMWRK_ERR("There is no GPU installed in this machine that matches the requirements.");
 }
 
@@ -542,7 +504,7 @@ VkPhysicalDevice in::ChooseBestPhysicalDevice(const std::vector<VkPhysicalDevice
             if (!fam.queueFlags & VK_QUEUE_GRAPHICS_BIT)
                 break;
         }
-        
+
         VkPhysicalDeviceProperties devProp{};
         vkGetPhysicalDeviceProperties(devi, &devProp);
 
@@ -565,7 +527,7 @@ VkPhysicalDevice in::ChooseBestPhysicalDevice(const std::vector<VkPhysicalDevice
         GPUScore gpuScore = { score, devi };
         rankedDevices.push_back(gpuScore);
     }
-    
+
     GPUScore currentHigh{};
     for (GPUScore s : rankedDevices)
     {
@@ -573,6 +535,65 @@ VkPhysicalDevice in::ChooseBestPhysicalDevice(const std::vector<VkPhysicalDevice
     }
 
     return currentHigh.dev;
+}
+
+void in::DeAlloc()
+{
+    for (std::pair<HWND, WindowData*> i : AppInfo.wndHandleMap)
+    {
+        delete i.second;
+    }
+    in::AppInfo.wndHandleMap.clear();
+    in::AppInfo.wndIdMap.clear();
+
+    delete AppInfo.textInput;
+}
+
+void in::DoNothing_V()
+{}
+
+bool in::DoNothing_B()
+{
+    return true;
+}
+
+in::WindowData* in::GetWindowData(HWND handle)
+{
+    std::unique_lock<std::mutex> lock(in::AppInfo.wndDataMtx);
+    std::map<HWND, WindowData*>::iterator res = in::AppInfo.wndHandleMap.find(handle);
+    if (res != in::AppInfo.wndHandleMap.end())
+    {
+        lock.unlock();
+        return res->second;
+    }
+    lock.unlock();
+    return nullptr;
+}
+
+in::WindowData* in::GetWindowData(f::WND_H id)
+{
+    std::unique_lock<std::mutex> lock(in::AppInfo.wndDataMtx);
+    std::map<f::WND_H, WindowData*>::iterator res = in::AppInfo.wndIdMap.find(id);
+    if (res != in::AppInfo.wndIdMap.end())
+    {
+        lock.unlock();
+        return res->second;
+    }
+    lock.unlock();
+    return nullptr;
+}
+
+void in::EraseWindowData(HWND hWnd)
+{
+    std::unique_lock<std::mutex> lock(in::AppInfo.wndDataMtx);
+    std::map<HWND, WindowData*>::iterator res = in::AppInfo.wndHandleMap.find(hWnd); // find data to be erased
+    std::wostringstream msg;
+    msg << "Window data for " << res->first << " who's handle is " << res->second->id << " was deleted";
+    in::Log(msg.str().c_str(), in::LL::DEBUG);
+    in::AppInfo.wndIdMap.erase(res->second->id); // erase data from the id map using the id
+    delete res->second; // free window data
+    in::AppInfo.wndHandleMap.erase(res); // erase data from handle map using the iterator
+    lock.unlock();
 }
 
 #ifdef _DEBUG
@@ -616,7 +637,8 @@ void prx::vkDestroyDebugUtilsMessengerEXT(VkInstance instance,
     }
 }
 #endif // _DEBUG
-void tsd::Initialize(int iconId, int cursorId)
+
+void f::Initialize(int iconId, int cursorId)
 {
     // Get hInstance since the program does not use the winMain entry point
     in::AppInfo.hInstance = GetModuleHandle(0);
@@ -666,7 +688,7 @@ void tsd::Initialize(int iconId, int cursorId)
     in::Log(L"Framework was successfully initialised", in::LL::INFO);
 }
 
-void tsd::Uninitialize()
+void f::Uninitialize()
 {
     std::unique_lock<std::mutex> lock(in::AppInfo.wndThrdMtx);
     in::AppInfo.wndThrdCv.wait(lock, []{ return !in::AppInfo.wndThrdIsRunning; });
@@ -779,10 +801,10 @@ void in::Log(const char* msg, LL ll)
 
 // Whoops
 #undef CreateWindow
-tsd::WND_H tsd::CreateWindow(const tsd::WindowCreateData& wndCrtData)
+f::WND_H f::CreateWindow(const f::WindowCreateData& wndCrtData)
 {
     if (!in::AppInfo.isInitialised) { in::Log(L"CreateWindow() was called before initialisation", in::LL::ERROR); return 0; } // init was not called
-    if (!wndCrtData.name) { in::Log(L"Nullptr was passed to a required parameter at CreateWindow()", in::LL::ERROR); return 0; } // name is nullptr
+    if (!wndCrtData.pName) { in::Log(L"Nullptr was passed to a required parameter at CreateWindow()", in::LL::ERROR); return 0; } // name is nullptr
     if ((wndCrtData.height <= 0) || (wndCrtData.width <= 0)) { in::Log(L"Invalid heigt or width ammount for window creation", in::LL::ERROR); return 0; }
 
     in::WindowData* wndData = new in::WindowData;
@@ -790,7 +812,7 @@ tsd::WND_H tsd::CreateWindow(const tsd::WindowCreateData& wndCrtData)
     in::AppInfo.windowCount += 1;
     in::AppInfo.windowsOpened += 1;
 
-    wndData->name       = (wchar_t*)wndCrtData.name;
+    wndData->name       = (wchar_t*)wndCrtData.pName;
     wndData->width      = wndCrtData.width;
     wndData->height     = wndCrtData.height;
     wndData->xPos       = wndCrtData.xPos;
@@ -828,19 +850,19 @@ tsd::WND_H tsd::CreateWindow(const tsd::WindowCreateData& wndCrtData)
     return wndData->id;
 }
 
-void tsd::OnWindowCloseAttempt(WND_H handle, bool(*func)(void))
+void f::OnWindowCloseAttempt(WND_H handle, bool(*func)(void))
 {
     in::GetWindowData(handle)->OnCloseAttempt = func;
 }
 
-void tsd::OnWindowClose(WND_H handle, void(*func)(void))
+void f::OnWindowClose(WND_H handle, void(*func)(void))
 {
     std::unique_lock<std::mutex> lock(in::AppInfo.wndDataMtx);
     in::GetWindowData(handle)->OnClose = func;
     lock.unlock();
 }
 
-wchar_t* tsd::GetWindowName(WND_H id)
+wchar_t* f::GetWindowName(WND_H id)
 {
     std::unique_lock<std::mutex> lock(in::AppInfo.wndDataMtx);
     in::WindowData* wndData = in::GetWindowData(id);
@@ -849,7 +871,7 @@ wchar_t* tsd::GetWindowName(WND_H id)
     return wndData->name;
 }
 
-bool tsd::GetWindowVisibility(WND_H id)
+bool f::GetWindowVisibility(WND_H id)
 {
     std::unique_lock<std::mutex> lock(in::AppInfo.wndDataMtx);
     in::WindowData* wndData = in::GetWindowData(id);
@@ -858,7 +880,7 @@ bool tsd::GetWindowVisibility(WND_H id)
     return wndData->isVisible;
 }
 
-int tsd::GetWindowWidth(WND_H id)
+int f::GetWindowWidth(WND_H id)
 {
     std::unique_lock<std::mutex> lock(in::AppInfo.wndDataMtx);
     in::WindowData* wndData = in::GetWindowData(id);
@@ -867,7 +889,7 @@ int tsd::GetWindowWidth(WND_H id)
     return wndData->width;
 }
 
-int tsd::GetWindowHeight(WND_H id)
+int f::GetWindowHeight(WND_H id)
 {
     std::unique_lock<std::mutex> lock(in::AppInfo.wndDataMtx);
     in::WindowData* wndData = in::GetWindowData(id);
@@ -876,7 +898,7 @@ int tsd::GetWindowHeight(WND_H id)
     return wndData->height;
 }
 
-std::pair<int, int> tsd::GetWindowDimensions(WND_H id)
+std::pair<int, int> f::GetWindowDimensions(WND_H id)
 {
     std::unique_lock<std::mutex> lock(in::AppInfo.wndDataMtx);
     in::WindowData* wndData = in::GetWindowData(id);
@@ -885,7 +907,7 @@ std::pair<int, int> tsd::GetWindowDimensions(WND_H id)
     return {wndData->width, wndData->height};
 }
 
-int tsd::GetWindowXPos(WND_H id, WP wpr)
+int f::GetWindowXPos(WND_H id, WP wpr)
 {
     std::unique_lock<std::mutex> lock(in::AppInfo.wndDataMtx);
     in::WindowData* wndData = in::GetWindowData(id);
@@ -912,7 +934,7 @@ int tsd::GetWindowXPos(WND_H id, WP wpr)
     return 0;
 }
 
-int tsd::GetWindowYPos(WND_H id, WP wpr)
+int f::GetWindowYPos(WND_H id, WP wpr)
 {
     std::unique_lock<std::mutex> lock(in::AppInfo.wndDataMtx);
     in::WindowData* wndData = in::GetWindowData(id);
@@ -939,7 +961,7 @@ int tsd::GetWindowYPos(WND_H id, WP wpr)
     return 0;
 }
 
-std::pair<int, int> tsd::GetWindowPosition(WND_H id, WP wpr)
+std::pair<int, int> f::GetWindowPosition(WND_H id, WP wpr)
 {
     std::unique_lock<std::mutex> lock(in::AppInfo.wndDataMtx);
     in::WindowData* wndData = in::GetWindowData(id);
@@ -976,12 +998,12 @@ std::pair<int, int> tsd::GetWindowPosition(WND_H id, WP wpr)
     return {0, 0};
 }
 
-int tsd::GetWindowCount(void)
+int f::GetWindowCount(void)
 {
     return in::AppInfo.windowCount;
 }
 
-bool tsd::ChangeWindowName(WND_H id, const wchar_t* name)
+bool f::ChangeWindowName(WND_H id, const wchar_t* name)
 {
     std::unique_lock<std::mutex> lock(in::AppInfo.wndDataMtx);
     in::WindowData* wndData = in::GetWindowData(id);
@@ -997,7 +1019,7 @@ bool tsd::ChangeWindowName(WND_H id, const wchar_t* name)
     return true;
 }
 
-bool tsd::WindowHasFocus(WND_H id)
+bool f::WindowHasFocus(WND_H id)
 {
     std::unique_lock<std::mutex> lock(in::AppInfo.wndDataMtx);
     in::WindowData* wndData = in::GetWindowData(id);
@@ -1006,26 +1028,26 @@ bool tsd::WindowHasFocus(WND_H id)
     return wndData->hasFocus;
 }
 
-bool tsd::IsValidHandle(WND_H handle)
+bool f::IsValidHandle(WND_H handle)
 {   // no mutex neccessary here, no data that may be volatile
     if (in::GetWindowData(handle))
         return true;
     return false;
 }
 
-bool tsd::Running()
+bool f::Running()
 {
     return in::AppInfo.isRunning;
 }
 
-void tsd::Halt(int ms)
+void f::Halt(int ms)
 {
     Sleep(ms);
 }
 
 #undef MessageBox
 #undef IGNORE
-int tsd::MessageBox(WND_H owner, const wchar_t* title, const wchar_t* msg, int flags)
+int f::MessageBox(WND_H owner, const wchar_t* title, const wchar_t* msg, int flags)
 // by now win32 is just getting anoying
 #ifdef UNICODE
 #define MessageBox  MessageBoxW
@@ -1040,60 +1062,62 @@ int tsd::MessageBox(WND_H owner, const wchar_t* title, const wchar_t* msg, int f
 
     // Where switch statement?
     // Cant put (non-constant) expressions into switch cases
-    if (flags & MF_TASKMODAL)
+#undef MB_TASKMODAL
+    if (flags & MB_TASKMODAL)
+#define MB_TASKMODAL 0x00002000L
         rawFlags = rawFlags | MB_TASKMODAL;
 
-    if (flags & MF_ICON_WARNING)
+    if (flags & MB_ICON_WARNING)
         rawFlags = rawFlags | MB_ICONWARNING;
-    if (flags & MF_ICON_ERROR)
+    if (flags & MB_ICON_ERROR)
         rawFlags = rawFlags | MB_ICONERROR;
-    if (flags & MF_ICON_INFO)
+    if (flags & MB_ICON_INFO)
         rawFlags = rawFlags | MB_ICONINFORMATION;
-    if (flags & MF_ICON_QUESTION)
+    if (flags & MB_ICON_QUESTION)
         rawFlags = rawFlags | MB_ICONQUESTION;
     
-    if (flags & MF_BUTTON_OK)
+    if (flags & MB_BUTTON_OK)
         rawFlags = rawFlags | MB_OK;
-    if (flags & MF_BUTTON_OK_CANCEL)
+    if (flags & MB_BUTTON_OK_CANCEL)
         rawFlags = rawFlags | MB_OKCANCEL;
-    if (flags & MF_BUTTON_YES_NO)
+    if (flags & MB_BUTTON_YES_NO)
         rawFlags = rawFlags | MB_YESNO;
-    if (flags & MF_BUTTON_RETRY_CANEL)
+    if (flags & MB_BUTTON_RETRY_CANEL)
         rawFlags = rawFlags | MB_RETRYCANCEL;
 
-    if (flags & MF_BUTTON_YES_NO_CANCEL)
+    if (flags & MB_BUTTON_YES_NO_CANCEL)
         rawFlags = rawFlags | MB_YESNOCANCEL;
-    if (flags & MF_BUTTON_ABORT_RETRY_IGNORE)
+    if (flags & MB_BUTTON_ABORT_RETRY_IGNORE)
         rawFlags = rawFlags | MB_ABORTRETRYIGNORE;
-    if (flags & MF_BUTTON_CANCEL_RETRY_CONTINUE)
+    if (flags & MB_BUTTON_CANCEL_RETRY_CONTINUE)
         rawFlags = rawFlags | MB_CANCELTRYCONTINUE;
 
     int result = MessageBoxW(ownerData ? ownerData->hWnd : 0, msg, title, rawFlags);
     if (result == 0)
         in::Log(L"Invalid set of flags where passed to MessageBox()", in::LL::ERROR);
-
+#undef MB_OK
     switch (result)
     {
-    case IDABORT:       return MF_ABORT;
-    case IDCANCEL:      return MF_CANCEL;
-    case IDCONTINUE:    return MF_CONTINUE;
-    case IDIGNORE:      return MF_IGNORE;
-    case IDNO:          return MF_NO;
-    case IDOK:          return MF_OK;
-    case IDRETRY:       return MF_RETRY;
-    case IDTRYAGAIN:    return MF_TRYAGAIN;
-    case IDYES:         return MF_YES;
+    case IDABORT:       return MB_ABORT;
+    case IDCANCEL:      return MB_CANCEL;
+    case IDCONTINUE:    return MB_CONTINUE;
+    case IDIGNORE:      return MB_IGNORE;
+    case IDNO:          return MB_NO;
+    case IDOK:          return MB_OK;
+    case IDRETRY:       return MB_RETRY;
+    case IDTRYAGAIN:    return MB_TRYAGAIN;
+    case IDYES:         return MB_YES;
     }
-    return MF_CANCEL; // should never reach this
+    return MB_CANCEL; // should never reach this
 }
 #define IGNORE 0
 
-bool tsd::IsKeyPressed(Key code)
+bool f::IsKeyPressed(Key code)
 {
     return in::AppInfo.keystates.test((int)code);
 }
 
-bool tsd::IsKeyPressedOnce(Key code)
+bool f::IsKeyPressedOnce(Key code)
 {
     bool state = in::AppInfo.keystates.test((int)code);
     if (state)
@@ -1101,7 +1125,7 @@ bool tsd::IsKeyPressedOnce(Key code)
     return state;
 }
 
-bool tsd::IsKeyReleased(Key code)
+bool f::IsKeyReleased(Key code)
 {
     static bool lastState;
     if (lastState && !IsKeyPressed(code))
@@ -1113,12 +1137,12 @@ bool tsd::IsKeyReleased(Key code)
     return false;
 }
 
-bool tsd::IsAnyKeyPressed()
+bool f::IsAnyKeyPressed()
 {
     return in::AppInfo.keystates.any();
 }
 
-void tsd::SetTextInputState(bool state, bool clear)
+void f::SetTextInputState(bool state, bool clear)
 {
     in::AppInfo.textInputEnabled = state;
     if (clear)
@@ -1131,12 +1155,12 @@ void tsd::SetTextInputState(bool state, bool clear)
     }
 }
 
-wchar_t* tsd::GetTextInput()
+wchar_t* f::GetTextInput()
 {
     return in::AppInfo.textInput;
 }
 
-void tsd::ClearTextInput()
+void f::ClearTextInput()
 {
     for (int i = 0; i < 100000; i++)
     {
@@ -1145,12 +1169,12 @@ void tsd::ClearTextInput()
     in::AppInfo.textInputIndex = 0;
 }
 
-bool tsd::IsTextInputEnabled()
+bool f::IsTextInputEnabled()
 {
     return in::AppInfo.textInputEnabled;
 }
 
-tsd::MouseInfo tsd::GetMouseInfo()
+f::MouseInfo f::GetMouseInfo()
 {
     MouseInfo msInfo = {};
 
@@ -1161,27 +1185,27 @@ tsd::MouseInfo tsd::GetMouseInfo()
     msInfo.x2       = in::AppInfo.mouse.x2Button;
     msInfo.xPos     = in::AppInfo.mouse.xPos;
     msInfo.yPos     = in::AppInfo.mouse.yPos;
-    msInfo.containingWindow = tsd::GetMouseContainerWindow();
+    msInfo.containingWindow = f::GetMouseContainerWindow();
 
     return msInfo;
 }
 
-int tsd::GetMouseX()
+int f::GetMouseX()
 {
     return in::AppInfo.mouse.xPos;
 }
 
-int tsd::GetMouseY()
+int f::GetMouseY()
 {
     return in::AppInfo.mouse.yPos;
 }
 
-bool tsd::GetMouseLeftButton()
+bool f::GetMouseLeftButton()
 {
     return in::AppInfo.mouse.leftButton;
 }
 
-bool tsd::GetMouseLeftButtonOnce()
+bool f::GetMouseLeftButtonOnce()
 {
     bool state = in::AppInfo.mouse.leftButton;
     if (state)
@@ -1189,12 +1213,12 @@ bool tsd::GetMouseLeftButtonOnce()
     return state;
 }
 
-bool tsd::GetMouseRightButton()
+bool f::GetMouseRightButton()
 {
     return in::AppInfo.mouse.rightButton;
 }
 
-bool tsd::GetMouseRightButtonOnce()
+bool f::GetMouseRightButtonOnce()
 {
     bool state = in::AppInfo.mouse.rightButton;
     if (state)
@@ -1202,12 +1226,12 @@ bool tsd::GetMouseRightButtonOnce()
     return state;
 }
 
-bool tsd::GetMouseMiddleButton()
+bool f::GetMouseMiddleButton()
 {
     return in::AppInfo.mouse.middleButton;
 }
 
-bool tsd::GetMouseMiddleButtonOnce()
+bool f::GetMouseMiddleButtonOnce()
 {
     bool state = in::AppInfo.mouse.middleButton;
     if (state)
@@ -1215,12 +1239,12 @@ bool tsd::GetMouseMiddleButtonOnce()
     return state;
 }
 
-bool tsd::GetMouseX1Button()
+bool f::GetMouseX1Button()
 {
     return in::AppInfo.mouse.x1Button;
 }
 
-bool tsd::GetMouseX1ButtonOnce()
+bool f::GetMouseX1ButtonOnce()
 {
     bool state = in::AppInfo.mouse.x1Button;
     if (state)
@@ -1228,12 +1252,12 @@ bool tsd::GetMouseX1ButtonOnce()
     return state;
 }
 
-bool tsd::GetMouseX2Button()
+bool f::GetMouseX2Button()
 {
     return in::AppInfo.mouse.x2Button;
 }
 
-bool tsd::GetMouseX2ButtonOnce()
+bool f::GetMouseX2ButtonOnce()
 {
     bool state = in::AppInfo.mouse.x2Button;
     if (state)
@@ -1241,7 +1265,7 @@ bool tsd::GetMouseX2ButtonOnce()
     return state;
 }
 
-int tsd::GetMouseWheelDelta()
+int f::GetMouseWheelDelta()
 {
     static int lastDelta;
 
@@ -1261,7 +1285,7 @@ int tsd::GetMouseWheelDelta()
     return 0;
 }
 
-bool tsd::WindowContainsMouse(WND_H handle)
+bool f::WindowContainsMouse(WND_H handle)
 {
     std::unique_lock<std::mutex> lock(in::AppInfo.wndDataMtx);
     in::WindowData* wndData = in::GetWindowData(handle);
@@ -1274,7 +1298,7 @@ bool tsd::WindowContainsMouse(WND_H handle)
     return false;
 }
 
-tsd::WND_H tsd::GetMouseContainerWindow()
+f::WND_H f::GetMouseContainerWindow()
 {
     std::unique_lock<std::mutex> lock(in::AppInfo.wndDataMtx);
     for (std::pair<WND_H, in::WindowData*> i : in::AppInfo.wndIdMap)
