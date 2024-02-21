@@ -5,7 +5,7 @@ VisualStudioVersion = 17.4.33110.190
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Framework", "Framework\Framework.vcxproj", "{E77C51A6-35E3-4003-86C0-318FC6828292}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Game", "Game\Game.vcxproj", "{3830CB92-1689-4F38-B5D3-6FE4B3912C18}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Tests", "Tests\Tests.vcxproj", "{3830CB92-1689-4F38-B5D3-6FE4B3912C18}"
 	ProjectSection(ProjectDependencies) = postProject
 		{E77C51A6-35E3-4003-86C0-318FC6828292} = {E77C51A6-35E3-4003-86C0-318FC6828292}
 	EndProjectSection

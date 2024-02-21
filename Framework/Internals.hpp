@@ -72,7 +72,6 @@
 
 // Custom Win32 messages
 #define CWM_CREATEWINDOWREQ         WM_USER + 1
-#define CWM_STUPIDITY               WM_USER + 2
 
 namespace in
 {

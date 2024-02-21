@@ -21,9 +21,18 @@
     <ClInclude Include="Internals.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Vulkan.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Framework.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Vulkan.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Internals.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

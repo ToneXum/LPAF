@@ -179,9 +179,12 @@
   <ItemGroup>
     <ClInclude Include="Framework.hpp" />
     <ClInclude Include="Internals.hpp" />
+    <ClInclude Include="Vulkan.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Framework.cpp" />
+    <ClCompile Include="Internals.cpp" />
+    <ClCompile Include="Vulkan.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

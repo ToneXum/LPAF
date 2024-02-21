@@ -22,7 +22,7 @@ int main()
         // simulate computation
         f::Halt(16);
     }
-
+    
     f::Uninitialize();
     return 0;
 }
