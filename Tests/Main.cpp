@@ -15,10 +15,23 @@ int main()
     cdt.pName = L"Uninvited guest";
     f::WND_H whoInvitedThisGuy = f::CreateWindow(cdt);
 
+    f::SetTextInputState(true);
     while (f::Running())
     {        
-        if (f::IsValidHandle(dependant))
-            f::ChangeWindowName(dependant, f::WindowContainsMouse(dependant) ? L"I have the mouse" : L"I dont have the mouse");
+        f::ChangeWindowName(dependant, f::GetTextInput());
+        
+        if (f::IsKeyPressedOnce(f::K_ENTER))
+        {
+            if (f::GetTextInputState())
+            {
+                f::SetTextInputState(false);
+            }
+            else
+            {
+                f::SetTextInputState(true);
+            }
+        }
+
         // simulate computation
         f::Halt(16);
     }

@@ -20,12 +20,15 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-/// About this file:
-/// 
-/// This header is containing the internal symbols that are not supposed to be
-/// exposed to the end user.
+// About this file:
+// 
+// This header is containing the internal symbols that are not supposed to be
+// exposed to the end user.
 
 #pragma once
+
+#include "Framework.hpp"
+#include "Vulkan.hpp"
 
 #define NOMINMAX
 
@@ -57,30 +60,29 @@
 #include <queue>
 #include <map>
 
-// Vulkan SKD
-#include "vulkan/vulkan.h"
-
 // Error check for Win32 API calls
-#define WIN32_EC(x) { if (!x) { in::CreateWin32Error(__LINE__, GetLastError(), __FUNCDNAME__); } }
+#define WIN32_EC(x) { if (!x) { i::CreateWin32Error(__LINE__, GetLastError(), __FUNCDNAME__); } }
 // Error check for Win32 API calls but the return value is saved
-#define WIN32_EC_RET(var, func) { var = func; if (!var) { in::CreateWin32Error(__LINE__, GetLastError(), __FUNCDNAME__); } }
-
-#define VUL_EC(x) { VkResult r = x; if (r) { in::CreateVulkanError(__LINE__, r, __FUNCDNAME__); } }
+#define WIN32_EC_RET(var, func) { var = func; if (!var) { i::CreateWin32Error(__LINE__, GetLastError(), __FUNCDNAME__); } }
 
 // Manual error creation with automatic additional information
-#define FRMWRK_ERR(msg) { in::CreateManualError(__LINE__, __FUNCDNAME__, msg); }
+#define FRMWRK_ERR(msg) { i::CreateManualError(__LINE__, __FUNCDNAME__, msg); }
 
 // Custom Win32 messages
-#define CWM_CREATEWINDOWREQ         WM_USER + 1
+#define WM_CREATEWINDOWREQ         WM_USER + 1
 
-namespace in
+namespace i
 {
-    void DoNothing_V();
-    bool DoNothing_B();
+    // Functions that do nothing
+    // First letter coresponds with the arguments
+    // Second letter coresponds to the return type
+    // Types are abbreviated, B for bool; V for void; I for int; U for unsigned; etc...
+    void DoNothing_V_V();
+    bool DoNothing_V_B();
 
     struct WindowData // additional data associated to each window
     {
-        HWND hWnd{};
+        HWND window{};
         std::vector<HWND> dependers; // handles to windows that depend on this one
 
         f::WND_H id = 0;
@@ -88,75 +90,74 @@ namespace in
         bool isVisible = true, isValid = true, hasFocus = true, hasMouseInClientArea = 0;
         short xPos = 0, yPos = 0, width = 0, height = 0;
 
-        void (*OnClose)() = DoNothing_V;
-        bool (*OnCloseAttempt)() = DoNothing_B;
+        void (*pfOnClose)() = DoNothing_V_V;
+        bool (*pfOnCloseAttempt)() = DoNothing_V_B;
     };
 
-    struct // general information about the state of the application
+    class Win32State
     {
-        std::map<f::WND_H, WindowData*> wndIdMap{};
-        std::map<HWND, WindowData*> wndHandleMap{};
-        HINSTANCE hInstance = 0; // handle to window class
-        HICON hIcon{};
-        HCURSOR hCursor{};
-        std::thread* windowThread{};
-        HANDLE nativeThreadHandle{};
-        std::mutex logMtx{}; // this probably as close as this gets when it comes to how a mutex is supposed to be used
-        std::mutex wndDataMtx{};
+    public:
+        Win32State(){}
 
-        std::condition_variable wndThrdCv{};
-        std::mutex wndThrdMtx{};
-        bool wndThrdIsRunning = false;
+        // Make it singleton
+        Win32State(Win32State const&) = delete;
+        Win32State operator=(Win32State const&) = delete;
+        Win32State operator=(Win32State const&&) = delete;
 
-        // Bitset for keyboard key states
-        std::bitset<256> keystates = 0;
+        const wchar_t* pClassName = L"GGFW Window Class";
+        HINSTANCE instance{}; // handle to window class
+        HICON icon{};
+        HCURSOR cursor{};
+        DWORD nativeThreadId{};
+        std::map<f::WND_H, WindowData*> identifiersToData{};
+        std::map<HWND, WindowData*> handlesToData{};
+    };
 
-        // Charfield for text input
-        wchar_t* textInput = nullptr; // pointer to the character field
-        bool textInputEnabled = false;
-        int textInputIndex = 0; // numbers of written characters in textInput
+    // just some ffffat 840 bytes...
+    class ProgrammState
+    {
+    public:
+        ProgrammState(){}
 
-        // Mouse information
-        struct
-        {
-            bool leftButton = false, rightButton = false, middleButton = false, x1Button = false, x2Button = false;
-            int xPos = 0, yPos = 0;
-            int wheelDelta = 0;
-        } mouse;
+        // Make it singleton
+        ProgrammState(ProgrammState const&) = delete;
+        ProgrammState operator=(ProgrammState const&) = delete; 
+        ProgrammState operator=(ProgrammState const&&) = delete;
 
-        const wchar_t* windowClassName = L"GGFW Window Class";
+        Win32State win32{};
+        v::VulkanState vulkan{};
+
         int windowCount = 0;  // guess what, its the count of the currently open windows
         int windowsOpened = 0; // ammount of windows this program has opened in the past
         bool isRunning = true; // becomes false when no window is open anymore
         bool isInitialised = false; // becomes true when initialise is called
-    } AppInfo;
 
-    struct
-    {
-        VkInstance vkInstance{};
-        VkPhysicalDevice physicalDevice{};
-        VkDevice device{};
+        // Mouse information
+        struct Mouse
+        {
+            bool leftButton{}, rightButton{}, middleButton{}, x1Button{}, x2Button{};
+            int xPos{}, yPos{};
+            int wheelDelta{};
+        } mouse;
 
-#ifdef _DEBUG
-        VkDebugUtilsMessengerEXT debugMessenger{};
-        std::array<const char*, 1> validationLayers
-        { 
-            "VK_LAYER_KHRONOS_validation" 
-        };
-#endif // _DEBUG
+        // Bitset for keyboard key states
+        std::bitset<256> keystates = 0;
 
-        // manual vulkan extensions, normally glfw would do this but oh well
-        // pre-build: there is no way this works!
-        // post-build: It fucking works!
-        const std::vector<const char*> extension
-        { 
-            "VK_KHR_surface",
-            "VK_KHR_win32_surface",
-#ifdef _DEBUG
-            "VK_EXT_debug_utils"
-#endif // _DEBUG
-        };
-    } RenderInfo;
+        wchar_t textInput[100000]{};
+        bool textInputEnabled = false;
+
+        std::thread* pWindowThread{};
+
+        std::mutex loggerMutex{}; // thread safety for logging
+        std::mutex windowDataMutex{}; // thread safety for accesses on the window data maps
+
+        std::condition_variable windowThreadConditionVar{};
+        std::mutex windowThreadMutex{};
+        bool windowThreadIsRunning = false;
+    };
+
+    // Gets pointer to state
+    inline ProgrammState* GetState();
 
     // Log level for in::Log(), this will determine the prefix of the message
     enum class LL
@@ -168,22 +169,7 @@ namespace in
         ERROR
     };
 
-    void InitialiseVulkan();
-
-    void UninitialiseVulkan();
-
-    VkPhysicalDevice ChooseBestPhysicalDevice(const std::vector<VkPhysicalDevice> &dev);
-
-#ifdef _DEBUG
-    VkBool32 VKAPI_CALL ValidationDegubCallback(
-        VkDebugUtilsMessageSeverityFlagBitsEXT msgSeverity,
-        VkDebugUtilsMessageTypeFlagsEXT msgType,
-        const VkDebugUtilsMessengerCallbackDataEXT* callbackData,
-        void* userData
-    );
-#endif // _DEBUG
-
-    void WindowsThread(WindowData* wndDt);
+    void WindowThread();
 
     void CreateNativeWindow(WindowData* wndDt);
 
@@ -192,9 +178,6 @@ namespace in
 
     // Manual and instant error creation
     void CreateManualError(int line, const char* func, const char* msg);
-
-    // Vulkan error creation
-    void CreateVulkanError(int line, int c, const char* func);
 
     LRESULT WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
@@ -216,21 +199,4 @@ namespace in
     // Writes to the log file using the handle stored in in::AppInfo
     void Log(const wchar_t* msg, LL ll);
     void Log(const char* msg, LL ll);
-}
-
-// declarations for proxy functions
-namespace prx
-{
-    VkResult vkCreateDebugUtilsMessengerEXT(
-        VkInstance instance,
-        const VkDebugUtilsMessengerCreateInfoEXT* pCreateInfo,
-        const VkAllocationCallbacks* pAllocator,
-        VkDebugUtilsMessengerEXT* pDebugMessenger
-    );
-
-    void vkDestroyDebugUtilsMessengerEXT(
-        VkInstance instance,
-        VkDebugUtilsMessengerEXT debugMessenger,
-        const VkAllocationCallbacks* pAllocator
-    );
 }
