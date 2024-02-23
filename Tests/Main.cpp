@@ -32,6 +32,9 @@ int main()
             }
         }
 
+        if (f::IsKeyPressedOnce(f::K_ESCAPE))
+            f::CloseWindow(whoInvitedThisGuy);
+
         // simulate computation
         f::Halt(16);
     }

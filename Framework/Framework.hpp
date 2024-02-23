@@ -292,16 +292,20 @@ namespace f // a one letter namespace name...
     // Create a new window 
     WND_H CreateWindow(const f::WindowCreateData& wndCrtData);
 
-    // Close a window
+    // Attemps to close a window
+    // This function will order OnWindowCloseAttempt to be called 
+    // which means that nothing will happen if the request is discarded
     void CloseWindow(const WND_H handle);
 
     // Close the window, dont care if it refuses
     void CloseWindowForce(const WND_H handle);
 
     // Close all windows
+    // This function will order OnWindowCloseAttempt to be called 
+    // which means that nothing will happen if the request is discarded
     void CloseAllWindows();
 
-    // Close all windows, dont care if the windows refuse
+    // Close all windows, dont care if some windows refuse
     void CloseAllWindowsForce();
 
     // Specify a function to be executed when a window is requested to be closed
@@ -449,4 +453,8 @@ namespace f // a one letter namespace name...
     // If none of your window contains the mouse it will return null and set an error.
     // You may choose to ignore the error if intended as it is insignificant.
     WND_H GetMouseContainerWindow();
+
+    // Returns a handle to the window that currently has focus
+    // Returns NULL none of the owned windows has focus
+    WND_H GetWindowWithFocus();
 }

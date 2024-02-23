@@ -131,7 +131,7 @@ f::WND_H f::CreateWindow(const f::WindowCreateData& wndCrtData)
         }
     }
 
-    WIN32_EC(PostThreadMessageA(
+    WIN32_EC(PostThreadMessageW(
         i::GetState()->win32.nativeThreadId,
         WM_CREATEWINDOWREQ, 
         (WPARAM)nullptr, 
@@ -139,6 +139,62 @@ f::WND_H f::CreateWindow(const f::WindowCreateData& wndCrtData)
     );
 
     return wndData->id;
+}
+
+void f::CloseWindow(const WND_H handle)
+{
+    i::WindowData* windowData = i::GetWindowData(handle);
+    
+    if (!windowData) // window does not exist
+        return;
+
+    WIN32_EC(PostMessageA(
+        windowData->window,
+        WM_CLOSE,
+        (WPARAM)nullptr,
+        (LPARAM)nullptr
+    ))
+}
+
+void f::CloseWindowForce(const WND_H handle)
+{
+    i::WindowData* windowData = i::GetWindowData(handle);
+
+    if (!windowData) // window does not exist
+        return;
+
+    WIN32_EC(PostMessageA(
+        windowData->window,
+        WM_DESTROY,
+        (WPARAM)nullptr,
+        (LPARAM)nullptr
+    ))
+}
+
+void f::CloseAllWindows()
+{
+    for (std::pair<f::WND_H, i::WindowData*>&& dataPair : i::GetState()->win32.identifiersToData)
+    {
+        WIN32_EC(PostMessageA(
+            dataPair.second->window,
+            WM_CLOSE,
+            (WPARAM)nullptr,
+            (LPARAM)nullptr
+        ))
+    }
+}
+
+void f::CloseAllWindowsForce()
+{
+    for (std::pair<f::WND_H, i::WindowData*>&& dataPair : i::GetState()->win32.identifiersToData)
+    {
+        WIN32_EC(PostMessageA(
+            dataPair.second->window,
+            WM_DESTROY,
+            (WPARAM)nullptr,
+            (LPARAM)nullptr
+        ))
+    }
 }
 
 #undef MessageBox
