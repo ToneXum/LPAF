@@ -4,7 +4,7 @@
 cmake-build-**
 
 # Finished builds
-.done**
+.done
 
 # Library mergers
 .mergers**
