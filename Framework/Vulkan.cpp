@@ -1,8 +1,31 @@
+// MIT License
+//
+// Copyright(c) 2023 ToneXum
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files(the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and /or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions :
+//
+// The above copyright notice and this permission notice shall be included in all
+// copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
+
 #include "Vulkan.hpp"
 #include "Internals.hpp"
 
-// About this file:
-// Here are all the implementation for Vulkan related operations
+#ifdef _WINDOWS
+#include "vulkan/vulkan_win32.h"
+#endif
 
 void v::InitialiseVulkan()
 {
@@ -120,7 +143,7 @@ VkPhysicalDevice v::ChooseBestPhysicalDevice(const std::vector<VkPhysicalDevice>
 
     for (const VkPhysicalDevice& devi : dev)
     {
-        unsigned score = 0, queueFamCount = 0; bool isQualified = true;
+        unsigned score = 0, queueFamCount = 0;
         vkGetPhysicalDeviceQueueFamilyProperties(devi, &queueFamCount, nullptr);
 
         std::vector<VkQueueFamilyProperties> queueFamilies(queueFamCount);
@@ -128,7 +151,7 @@ VkPhysicalDevice v::ChooseBestPhysicalDevice(const std::vector<VkPhysicalDevice>
 
         for (const VkQueueFamilyProperties& fam : queueFamilies)
         {
-            if (!fam.queueFlags & VK_QUEUE_GRAPHICS_BIT)
+            if (!(fam.queueFlags & VK_QUEUE_GRAPHICS_BIT))
                 break;
         }
 

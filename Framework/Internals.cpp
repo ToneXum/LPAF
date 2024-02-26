@@ -3,13 +3,13 @@
 // Copyright(c) 2023 ToneXum
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
-// of this softwareand associated documentation files(the "Software"), to deal
+// of this software and associated documentation files(the "Software"), to deal
 // in the Software without restriction, including without limitation the rights
 // to use, copy, modify, merge, publish, distribute, sublicense, and /or sell
 // copies of the Software, and to permit persons to whom the Software is
 // furnished to do so, subject to the following conditions :
 // 
-// The above copyright noticeand this permission notice shall be included in all
+// The above copyright notice and this permission notice shall be included in all
 // copies or substantial portions of the Software.
 //
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
@@ -134,7 +134,7 @@ void i::CreateNativeWindow(i::WindowData* wndDt)
         i::GetState()->win32.pClassName,
         wndDt->name,
         WS_MINIMIZEBOX | WS_CAPTION | WS_SYSMENU,
-        !wndDt->xPos ? CW_USEDEFAULT : wndDt->xPos, !wndDt->yPos ? CW_DEFAULT : wndDt->yPos, // man do I love tenary expression :)
+        !wndDt->xPos ? CW_USEDEFAULT : wndDt->xPos, !wndDt->yPos ? CW_USEDEFAULT : wndDt->yPos, // man do I love tenary expression :)
         wndDt->width, wndDt->height,
         nullptr,
         nullptr,
@@ -440,7 +440,7 @@ void i::Log(const wchar_t* msg, LL ll)
 
     char timeBuf[30] = { 0 }; // minimum required size for this is 26. Who knows if this is going to run in 9997976 years?
     ctime_s(timeBuf, sizeof(timeBuf), &currentDate);
-    *std::strchr(timeBuf, '\n') = 0; // replace that pesky newline with the null-char
+    *strchr(timeBuf, '\n') = 0; // replace that pesky newline with the null-char
 
     // extra buffer, prevents asychrony from messing with the output when this func is called from different threads at the same time
     std::wostringstream oss;
@@ -488,7 +488,7 @@ void i::Log(const char* msg, LL ll)
 
     char timeBuf[30] = { 0 }; // minimum required size for this is 26. Who knows if this is going to run in 9997976 years?
     ctime_s(timeBuf, sizeof(timeBuf), &currentDate);
-    *std::strchr(timeBuf, '\n') = 0; // replace that pesky newline with the null-char
+    *strchr(timeBuf, '\n') = 0; // replace that pesky newline with the null-char
 
     // extra buffer, prevents asychrony from messing with the output when this func is called from different threads at the same time
     std::ostringstream oss;

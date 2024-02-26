@@ -3,13 +3,13 @@
 // Copyright(c) 2023 ToneXum
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
-// of this softwareand associated documentation files(the "Software"), to deal
+// of this software and associated documentation files(the "Software"), to deal
 // in the Software without restriction, including without limitation the rights
 // to use, copy, modify, merge, publish, distribute, sublicense, and /or sell
 // copies of the Software, and to permit persons to whom the Software is
 // furnished to do so, subject to the following conditions :
 // 
-// The above copyright noticeand this permission notice shall be included in all
+// The above copyright notice and this permission notice shall be included in all
 // copies or substantial portions of the Software.
 //
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
@@ -29,9 +29,9 @@
 void f::Initialize(int iconId, int cursorId)
 {
     // Get hInstance since the program does not use the winMain entry point
-    i::GetState()->win32.instance = GetModuleHandle(0);
+    i::GetState()->win32.instance = GetModuleHandle(nullptr);
 
-    // Check the recourses, if invalid continue anyways
+    // Check the recourses, if invalid continue anyway
     if (iconId)
     {
         i::GetState()->win32.icon = (HICON)LoadImageA(
@@ -491,7 +491,7 @@ void f::SetTextInputState(bool state, bool clear)
     i::GetState()->textInputEnabled = state;
     if (clear) // true by default
     {
-        std::memset(i::GetState()->textInput, 0, 200000);
+        memset(i::GetState()->textInput, 0, 200000);
     }
 }
 
@@ -502,7 +502,7 @@ const wchar_t* f::GetTextInput()
 
 void f::ClearTextInput()
 {
-    std::memset(i::GetState()->textInput, 0, 200000);
+    memset(i::GetState()->textInput, 0, 200000);
 }
 
 bool f::GetTextInputState()

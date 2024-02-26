@@ -3,13 +3,13 @@
 // Copyright(c) 2023 ToneXum
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
-// of this softwareand associated documentation files(the "Software"), to deal
+// of this software and associated documentation files(the "Software"), to deal
 // in the Software without restriction, including without limitation the rights
 // to use, copy, modify, merge, publish, distribute, sublicense, and /or sell
 // copies of the Software, and to permit persons to whom the Software is
 // furnished to do so, subject to the following conditions :
 // 
-// The above copyright noticeand this permission notice shall be included in all
+// The above copyright notice and this permission notice shall be included in all
 // copies or substantial portions of the Software.
 //
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
@@ -20,26 +20,18 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-// About this file:
-// 
-// This header is containing the internal symbols that are not supposed to be
-// exposed to the end user.
-
 #pragma once
 
 #include "Framework.hpp"
 #include "Vulkan.hpp"
 
-#define NOMINMAX
-
-#define STRICT
-
-// Windows
+#ifdef _WINDOWS
 #include <Windows.h>
-#include <windowsx.h>
-#include <WinUser.h>
+#include <Windowsx.h>
 
 #undef ERROR
+#endif // _WINDOWS
+
 
 // STL
 #include <vector>
@@ -55,21 +47,22 @@
 #include <bitset>
 #include <complex>
 #include <chrono>
-#include <time.h>
+#include <ctime>
 #include <array>
 #include <queue>
 #include <map>
+#include <condition_variable>
 
 // Error check for Win32 API calls
-#define WIN32_EC(x) { if (!x) { i::CreateWin32Error(__LINE__, GetLastError(), __FUNCDNAME__); } }
+#define WIN32_EC(x) { if (!x) { i::CreateWin32Error(__LINE__, GetLastError(), __func__); } }
 // Error check for Win32 API calls but the return value is saved
-#define WIN32_EC_RET(var, func) { var = func; if (!var) { i::CreateWin32Error(__LINE__, GetLastError(), __FUNCDNAME__); } }
+#define WIN32_EC_RET(var, func) { var = func; if (!var) { i::CreateWin32Error(__LINE__, GetLastError(), __func__); } }
 
 // Manual error creation with automatic additional information
-#define FRMWRK_ERR(msg) { i::CreateManualError(__LINE__, __FUNCDNAME__, msg); }
+#define FRMWRK_ERR(msg) { i::CreateManualError(__LINE__, __func__, msg); }
 
 // Custom Win32 messages
-#define WM_CREATEWINDOWREQ         WM_USER + 1
+#define WM_CREATEWINDOWREQ         (WM_USER + 1)
 
 namespace i
 {
@@ -87,7 +80,7 @@ namespace i
 
         f::WND_H id = 0;
         wchar_t* name = nullptr;
-        bool isVisible = true, isValid = true, hasFocus = true, hasMouseInClientArea = 0;
+        bool isVisible = true, isValid = true, hasFocus = true, hasMouseInClientArea = false;
         short xPos = 0, yPos = 0, width = 0, height = 0;
 
         void (*pfOnClose)() = DoNothing_V_V;
@@ -97,7 +90,7 @@ namespace i
     class Win32State
     {
     public:
-        Win32State(){}
+        Win32State() = default;
 
         // Make it singleton
         Win32State(Win32State const&) = delete;
@@ -117,7 +110,7 @@ namespace i
     class ProgrammState
     {
     public:
-        ProgrammState(){}
+        ProgrammState() = default;
 
         // Make it singleton
         ProgrammState(ProgrammState const&) = delete;
