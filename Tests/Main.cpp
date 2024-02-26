@@ -1,16 +1,12 @@
-#include "Framework.hpp"
-#include "resource.h"
+#include "../Framework/Framework.hpp"
 
 int main()
 {
-    f::Initialize(IDI_ICON1, IDC_CURSOR1); // Intellisense? Are you good?
+    f::Initialize(0, 0); // Intellisense? Are you good?
 
     f::WindowCreateData cdt{};
     cdt.pName = L"Dependant"; cdt.height = 500; cdt.width = 500;
     f::WND_H dependant = f::CreateWindow(cdt);
-
-    cdt.pName = L"";
-    f::WND_H windowHandle = f::CreateWindow(cdt);
 
     cdt.pName = L"Uninvited guest";
     f::WND_H whoInvitedThisGuy = f::CreateWindow(cdt);
