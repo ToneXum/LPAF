@@ -1,5 +1,8 @@
 ## Writen by Tonexum
 
+# Uncommited changes
+.idea/shelf**
+
 # Output directory
 cmake-build-**
 
