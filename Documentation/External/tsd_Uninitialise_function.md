@@ -1,9 +1,9 @@
-# tsd::Uninitialize
+# tsd::UnInitialize
 Used to clean up the data the used by the framework. Only after a call to this function should the application quit.
 
 ### Definition
 ```C++
-void Uninitialize(void);
+void UnInitialize(void);
 ```
 
 ### Remarks

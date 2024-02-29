@@ -67,7 +67,7 @@ namespace v
 
     void InitialiseVulkan();
 
-    void UninitialiseVulkan();
+    void UnInitializeVulkan();
 
     VkPhysicalDevice ChooseBestPhysicalDevice(const std::vector<VkPhysicalDevice>& dev);
 
@@ -76,7 +76,7 @@ namespace v
 
 #ifdef _DEBUG
     // Called when a validation layer is invoked
-    VkBool32 VKAPI_CALL ValidationDegubCallback(
+    VkBool32 VKAPI_CALL ValidationDebugCallback(
         VkDebugUtilsMessageSeverityFlagBitsEXT msgSeverity,
         VkDebugUtilsMessageTypeFlagsEXT msgType,
         const VkDebugUtilsMessengerCallbackDataEXT* callbackData,
@@ -84,18 +84,21 @@ namespace v
     );
 #endif // _DEBUG
 
-    // This is a proxy function
-    VkResult vkCreateDebugUtilsMessengerEXT(
-        VkInstance instance,
-        const VkDebugUtilsMessengerCreateInfoEXT* pCreateInfo,
-        const VkAllocationCallbacks* pAllocator,
-        VkDebugUtilsMessengerEXT* pDebugMessenger
-    );
+    namespace p
+    {
+        // This is a proxy function
+        VkResult CreateDebugUtilsMessengerExt(
+            VkInstance instance,
+            const VkDebugUtilsMessengerCreateInfoEXT* pCreateInfo,
+            const VkAllocationCallbacks* pAllocator,
+            VkDebugUtilsMessengerEXT* pDebugMessenger
+        );
 
-    // This is a proxy function
-    void vkDestroyDebugUtilsMessengerEXT(
-        VkInstance instance,
-        VkDebugUtilsMessengerEXT debugMessenger,
-        const VkAllocationCallbacks* pAllocator
-    );
+        // This is a proxy function
+        void DestroyDebugUtilsMessengerExt(
+            VkInstance instance,
+            VkDebugUtilsMessengerEXT debugMessenger,
+            const VkAllocationCallbacks* pAllocator
+        );
+    }
 }

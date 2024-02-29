@@ -17,3 +17,8 @@ For even more information like announcements, polls and Q&A you can visit the [D
 
 ### Contact
 For any inquiries you can send an E-Mail to tonexum@national.shitposting.agency (Yes, I'm not joking. Checked every few days)
+
+
+### Mention
+![JetBrains Logo (Main) logo](https://resources.jetbrains.com/storage/products/company/brand/logos/jb_beam.png)
+Big thanks goes to [JetBrains](https://jb.gg/) for granting me (ToneXum) a free license for open source development.

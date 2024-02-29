@@ -4,13 +4,13 @@ Used to specify or change the function to be called when a window is requested t
 ### Definition
 ```C++
 void OnWindowCloseAttempt(
-    WND_H handle, 
+    WndH handle, 
     bool(*func)(void)
     );
 ```
 
 ### Parameters
-`WND_H handle`:
+`WndH handle`:
 A handle to the window who's function pointer should be changed.
 
 `bool (*func)(void)`:

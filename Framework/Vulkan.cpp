@@ -42,7 +42,7 @@ void v::InitialiseVulkan()
     for (const char* layerName : i::GetState()->vulkan.validationLayers) // loops through the layers we want
     {
         bool found = false;
-        for (const VkLayerProperties& layerProperties : availableLayers) // loop throught the layer we have
+        for (const VkLayerProperties& layerProperties : availableLayers) // loop through the layers we have
         {
             if (strcmp(layerName, layerProperties.layerName) == 0) // strcmp does a bitmask, 0 means strings are equal
             {
@@ -53,23 +53,23 @@ void v::InitialiseVulkan()
         if (!found) allLayersFound = false;
     }
 
-    if (!allLayersFound) FRMWRK_ERR("Not all validation layers requested where found.");
+    if (!allLayersFound) FRAMEWORK_ERR("Not all validation layers requested where found.")
 
-    VkDebugUtilsMessengerCreateInfoEXT mssngrInf{};
-    mssngrInf.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
-    mssngrInf.messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT |
-        VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT |
-        VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
-    mssngrInf.messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT |
-        VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT |
-        VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
-    mssngrInf.pfnUserCallback = v::ValidationDegubCallback;
-    mssngrInf.pUserData = nullptr;
+    VkDebugUtilsMessengerCreateInfoEXT messenger{};
+    messenger.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
+    messenger.messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT |
+                                VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT |
+                                VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
+    messenger.messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT |
+                            VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT |
+                            VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
+    messenger.pfnUserCallback = v::ValidationDebugCallback;
+    messenger.pUserData = nullptr;
 #endif // _DEBUG
 
     VkApplicationInfo appInf{};
     appInf.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
-    appInf.pApplicationName = "GAFW Renderer";
+    appInf.pApplicationName = "LPAF Renderer";
     appInf.apiVersion = VK_MAKE_API_VERSION(1, 1, 0, 0);
     appInf.pEngineName = "No Engine";
     appInf.engineVersion = VK_MAKE_API_VERSION(1, 1, 0, 0);
@@ -81,35 +81,37 @@ void v::InitialiseVulkan()
 #ifdef _DEBUG
     createInf.enabledLayerCount = (unsigned int)i::GetState()->vulkan.validationLayers.size();
     createInf.ppEnabledLayerNames = i::GetState()->vulkan.validationLayers.data();
-    createInf.pNext = &mssngrInf;
+    createInf.pNext = &messenger;
 #endif // _DEBUG
     createInf.enabledExtensionCount = (unsigned int)i::GetState()->vulkan.extension.size();
     createInf.ppEnabledExtensionNames = i::GetState()->vulkan.extension.data();
 
-    VUL_EC(vkCreateInstance(&createInf, nullptr, &i::GetState()->vulkan.vkInstance));
-    i::Log(L"A Vulkan instance was created", i::LL::INFO);
+    VUL_EC(vkCreateInstance(&createInf, nullptr, &i::GetState()->vulkan.vkInstance))
+    i::Log(L"A Vulkan instance was created", i::LogLvl::Info);
 
 #ifdef _DEBUG
-    VUL_EC(v::vkCreateDebugUtilsMessengerEXT(i::GetState()->vulkan.vkInstance, &mssngrInf, nullptr, &i::GetState()->vulkan.debugMessenger));
+    VUL_EC(v::p::CreateDebugUtilsMessengerExt(i::GetState()->vulkan.vkInstance,
+                                             &messenger, nullptr, &i::GetState()->vulkan.debugMessenger))
 #endif // _DEBUG
 
     unsigned deviceCount = 0;
     vkEnumeratePhysicalDevices(i::GetState()->vulkan.vkInstance, &deviceCount, nullptr);
 
-    if (!deviceCount) FRMWRK_ERR("There is no GPU that supports Vulkan installed in this machine.");
+    if (!deviceCount) FRAMEWORK_ERR("There is no GPU that supports Vulkan installed in this machine.")
 
     std::vector<VkPhysicalDevice> devices(deviceCount);
     vkEnumeratePhysicalDevices(i::GetState()->vulkan.vkInstance, &deviceCount, devices.data());
 
-    i::GetState()->vulkan.physicalDevice = v::ChooseBestPhysicalDevice(devices); // choose first device, dont care about anything else
+    // choose first device, don't care about anything else
+    i::GetState()->vulkan.physicalDevice = v::ChooseBestPhysicalDevice(devices);
     if (i::GetState()->vulkan.physicalDevice == nullptr)
-        FRMWRK_ERR("There is no GPU installed in this machine that matches the requirements.");
+        FRAMEWORK_ERR("There is no GPU installed in this machine that matches the requirements.")
 }
 
-void v::UninitialiseVulkan()
+void v::UnInitializeVulkan()
 {
 #ifdef _DEBUG
-    v::vkDestroyDebugUtilsMessengerEXT(i::GetState()->vulkan.vkInstance, i::GetState()->vulkan.debugMessenger, nullptr);
+    v::p::DestroyDebugUtilsMessengerExt(i::GetState()->vulkan.vkInstance, i::GetState()->vulkan.debugMessenger, nullptr);
 #endif // _DEBUG
 
     vkDestroyInstance(i::GetState()->vulkan.vkInstance, nullptr);
@@ -119,7 +121,7 @@ void v::CreateVulkanError(int line, int c, const char* func)
 {
     std::ostringstream str;
 
-    str << "A Vulkan API oparation resulted in a fatal error:\n\n";
+    str << "A Vulkan API operation resulted in a fatal error:\n\n";
     str << "Error: " << c << "\n";
     str << "Origin: " << func << " at " << line << "\n\n";
     str << "This is an internal error likely caused by the framework itself. ";
@@ -134,12 +136,12 @@ void v::CreateVulkanError(int line, int c, const char* func)
 
 VkPhysicalDevice v::ChooseBestPhysicalDevice(const std::vector<VkPhysicalDevice>& dev)
 {
-    struct GPUScore
+    struct GpuScore
     {
         unsigned score;
         VkPhysicalDevice dev;
     };
-    std::vector<GPUScore> rankedDevices;
+    std::vector<GpuScore> rankedDevices;
 
     for (const VkPhysicalDevice& devi : dev)
     {
@@ -174,12 +176,12 @@ VkPhysicalDevice v::ChooseBestPhysicalDevice(const std::vector<VkPhysicalDevice>
         if (devFeat.multiViewport)
             score += 1;
 
-        GPUScore gpuScore = { score, devi };
+        GpuScore gpuScore = {score, devi };
         rankedDevices.push_back(gpuScore);
     }
 
-    GPUScore currentHigh{};
-    for (GPUScore s : rankedDevices)
+    GpuScore currentHigh{};
+    for (GpuScore s : rankedDevices)
     {
         if (s.score > currentHigh.score) { currentHigh.score = s.score; currentHigh.dev = s.dev; }
     }
@@ -188,7 +190,7 @@ VkPhysicalDevice v::ChooseBestPhysicalDevice(const std::vector<VkPhysicalDevice>
 }
 
 #ifdef _DEBUG
-VkBool32 VKAPI_CALL v::ValidationDegubCallback(
+VkBool32 VKAPI_CALL v::ValidationDebugCallback(
     VkDebugUtilsMessageSeverityFlagBitsEXT msgSeverity,
     VkDebugUtilsMessageTypeFlagsEXT msgType,
     const VkDebugUtilsMessengerCallbackDataEXT* callbackData,
@@ -196,12 +198,12 @@ VkBool32 VKAPI_CALL v::ValidationDegubCallback(
 {
     if (msgSeverity >= VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT)
     {
-        i::Log(callbackData->pMessage, i::LL::VALIDATION);
+        i::Log(callbackData->pMessage, i::LogLvl::Validation);
     }
     return 0u;
 }
 
-VkResult v::vkCreateDebugUtilsMessengerEXT(VkInstance instance,
+VkResult v::p::CreateDebugUtilsMessengerExt(VkInstance instance,
     const VkDebugUtilsMessengerCreateInfoEXT* pCreateInfo,
     const VkAllocationCallbacks* pAllocator,
     VkDebugUtilsMessengerEXT* pDebugMessenger)
@@ -217,7 +219,7 @@ VkResult v::vkCreateDebugUtilsMessengerEXT(VkInstance instance,
     }
 }
 
-void v::vkDestroyDebugUtilsMessengerEXT(VkInstance instance,
+void v::p::DestroyDebugUtilsMessengerExt(VkInstance instance,
     VkDebugUtilsMessengerEXT debugMessenger,
     const VkAllocationCallbacks* pAllocator)
 {

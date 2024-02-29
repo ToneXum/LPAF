@@ -28,6 +28,10 @@
 
 void f::Initialize(int iconId, int cursorId)
 {
+    // Create thread as early as possible. Since the execution does not start immediately this function will wait for it
+    // to do so. In the meantime, it can perform work.
+    i::GetState()->pWindowThread = new std::thread(i::WindowThread);
+
     // Get hInstance since the program does not use the winMain entry point
     i::GetState()->win32.instance = GetModuleHandle(nullptr);
 
@@ -42,7 +46,7 @@ void f::Initialize(int iconId, int cursorId)
 
         if (!i::GetState()->win32.icon) 
         { 
-            i::Log(L"Specified recourse Id for an icon was invalid", i::LL::ERROR);
+            i::Log(L"Specified recourse Id for an icon was invalid", i::LogLvl::Error);
         }
     }
 
@@ -56,7 +60,7 @@ void f::Initialize(int iconId, int cursorId)
 
         if (!i::GetState()->win32.cursor) 
         { 
-            i::Log(L"Specified recourse Id for a mouse was invalid", i::LL::ERROR);
+            i::Log(L"Specified recourse Id for a mouse was invalid", i::LogLvl::Error);
         }
     }
     
@@ -75,38 +79,40 @@ void f::Initialize(int iconId, int cursorId)
     wc.lpszMenuName     = nullptr;
     wc.style            = 0;
 
-    WIN32_EC(RegisterClassExW(&wc));
+    WIN32_EC(RegisterClassExW(&wc))
 
-    i::GetState()->pWindowThread = new std::thread(i::WindowThread);
-
+    // Wait for the window thread to start its execution if it has not already
     std::unique_lock<std::mutex> lock(i::GetState()->windowThreadMutex);
     i::GetState()->windowThreadConditionVar.wait(lock, [] {return i::GetState()->windowThreadIsRunning; });
 
     i::GetState()->isInitialised = true;
 
     v::InitialiseVulkan();
-    i::Log(L"Framework was successfully initialised", i::LL::INFO);
+    i::Log(L"Framework was successfully initialised", i::LogLvl::Info);
 }
 
-void f::Uninitialize()
+void f::UnInitialize()
 {
+    f::CloseAllWindowsForce();
+
+    // As soon as all windows are closed (aka the manager thread is not running anymore), execution will continue
     std::unique_lock<std::mutex> lock(i::GetState()->windowThreadMutex);
     i::GetState()->windowThreadConditionVar.wait(lock, []{ return !i::GetState()->windowThreadIsRunning; });
 
-    WIN32_EC(UnregisterClassW(i::GetState()->win32.pClassName, i::GetState()->win32.instance));
+    WIN32_EC(UnregisterClassW(i::GetState()->win32.pClassName, i::GetState()->win32.instance))
 
-    v::UninitialiseVulkan();
+    v::UnInitializeVulkan();
 
-    i::Log(L"Framework was successfully uninitialised", i::LL::INFO);
+    i::Log(L"Framework was successfully uninitialised", i::LogLvl::Info);
 }
 
 // Whoops
 #undef CreateWindow
-f::WND_H f::CreateWindow(const f::WindowCreateData& wndCrtData)
+f::WndH f::CreateWindowAsync(const f::WindowCreateData& wndCrtData)
 {
-    if (!i::GetState()->isInitialised) { i::Log(L"CreateWindow() was called before initialisation", i::LL::ERROR); return 0; } // init was not called
-    if (!wndCrtData.pName) { i::Log(L"Nullptr was passed to a required parameter at CreateWindow()", i::LL::ERROR); return 0; } // name is nullptr
-    if ((wndCrtData.height <= 0) || (wndCrtData.width <= 0)) { i::Log(L"Invalid heigt or width ammount for window creation", i::LL::ERROR); return 0; }
+    if (!i::GetState()->isInitialised) { i::Log(L"CreateWindowAsync() was called before initialisation", i::LogLvl::Error); return 0; } // init was not called
+    if (!wndCrtData.pName) { i::Log(L"Nullptr was passed to a required parameter at CreateWindowAsync()", i::LogLvl::Error); return 0; } // name is nullptr
+    if ((wndCrtData.height <= 0) || (wndCrtData.width <= 0)) { i::Log(L"Invalid height or width amount for window creation", i::LogLvl::Error); return 0; }
 
     i::WindowData* wndData = new i::WindowData;
 
@@ -125,23 +131,23 @@ f::WND_H f::CreateWindow(const f::WindowCreateData& wndCrtData)
     
     if (!wndCrtData.dependants.empty())
     {
-        for (WND_H i : wndCrtData.dependants)
+        for (WndH i : wndCrtData.dependants)
         {
-            wndData->dependers.push_back(i::GetWindowData(i)->window);
+            wndData->dependants.push_back(i::GetWindowData(i)->window);
         }
     }
 
     WIN32_EC(PostThreadMessageW(
-        i::GetState()->win32.nativeThreadId,
-        WM_CREATEWINDOWREQ, 
-        (WPARAM)nullptr, 
-        (LPARAM)wndData)
-    );
+            i::GetState()->win32.nativeThreadId,
+            WM_CREATE_WINDOW_REQ,
+            (WPARAM)nullptr,
+            (LPARAM)wndData)
+    )
 
     return wndData->id;
 }
 
-void f::CloseWindow(const WND_H handle)
+void f::CloseWindow(const WndH handle)
 {
     i::WindowData* windowData = i::GetWindowData(handle);
     
@@ -156,7 +162,7 @@ void f::CloseWindow(const WND_H handle)
     ))
 }
 
-void f::CloseWindowForce(const WND_H handle)
+void f::CloseWindowForce(const WndH handle)
 {
     i::WindowData* windowData = i::GetWindowData(handle);
 
@@ -173,7 +179,7 @@ void f::CloseWindowForce(const WND_H handle)
 
 void f::CloseAllWindows()
 {
-    for (std::pair<f::WND_H, i::WindowData*>&& dataPair : i::GetState()->win32.identifiersToData)
+    for (std::pair<f::WndH, i::WindowData*>&& dataPair : i::GetState()->win32.identifiersToData)
     {
         WIN32_EC(PostMessageA(
             dataPair.second->window,
@@ -186,7 +192,7 @@ void f::CloseAllWindows()
 
 void f::CloseAllWindowsForce()
 {
-    for (std::pair<f::WND_H, i::WindowData*>&& dataPair : i::GetState()->win32.identifiersToData)
+    for (std::pair<f::WndH, i::WindowData*>&& dataPair : i::GetState()->win32.identifiersToData)
     {
         WIN32_EC(PostMessageA(
             dataPair.second->window,
@@ -199,229 +205,221 @@ void f::CloseAllWindowsForce()
 
 #undef MessageBox
 #undef IGNORE
-int f::MessageBox(WND_H owner, const wchar_t* title, const wchar_t* msg, int flags)
-// by now win32 is just getting anoying
-#ifdef UNICODE
-#define MessageBox  MessageBoxW
-#else
-#define MessageBox  MessageBoxA
-#endif
+int f::MessageBox(WndH owner, const wchar_t* title, const wchar_t* msg, int flags)
 {
-    // return null if the window is not found so I dont care
+    // return null if the window is not found, so I don't care
     i::WindowData* ownerData = i::GetWindowData(owner);
 
     long rawFlags = 0;
 
     // Where switch statement?
     // Cant put (non-constant) expressions into switch cases
-#undef MB_TASKMODAL
-    if (flags & MB_TASKMODAL)
-#define MB_TASKMODAL 0x00002000L
+    if (flags & MbTaskModal)
         rawFlags = rawFlags | MB_TASKMODAL;
 
-    if (flags & MB_ICON_WARNING)
+    if (flags & MbIconWarning)
         rawFlags = rawFlags | MB_ICONWARNING;
-    if (flags & MB_ICON_ERROR)
+    if (flags & MbIconError)
         rawFlags = rawFlags | MB_ICONERROR;
-    if (flags & MB_ICON_INFO)
+    if (flags & MbIconInfo)
         rawFlags = rawFlags | MB_ICONINFORMATION;
-    if (flags & MB_ICON_QUESTION)
+    if (flags & MbIconQuestion)
         rawFlags = rawFlags | MB_ICONQUESTION;
 
-    if (flags & MB_BUTTON_OK)
+    if (flags & MbButtonOk)
         rawFlags = rawFlags | MB_OK;
-    if (flags & MB_BUTTON_OK_CANCEL)
+    if (flags & MbButtonOkCancel)
         rawFlags = rawFlags | MB_OKCANCEL;
-    if (flags & MB_BUTTON_YES_NO)
+    if (flags & MbButtonYesNo)
         rawFlags = rawFlags | MB_YESNO;
-    if (flags & MB_BUTTON_RETRY_CANEL)
+    if (flags & MbButtonRetryCancel)
         rawFlags = rawFlags | MB_RETRYCANCEL;
 
-    if (flags & MB_BUTTON_YES_NO_CANCEL)
+    if (flags & MbButtonYesNoCancel)
         rawFlags = rawFlags | MB_YESNOCANCEL;
-    if (flags & MB_BUTTON_ABORT_RETRY_IGNORE)
+    if (flags & MbButtonAbortRetryIgnore)
         rawFlags = rawFlags | MB_ABORTRETRYIGNORE;
-    if (flags & MB_BUTTON_CANCEL_RETRY_CONTINUE)
+    if (flags & MbButtonCancelRetryContinue)
         rawFlags = rawFlags | MB_CANCELTRYCONTINUE;
 
-    int result = MessageBoxW(ownerData ? ownerData->window : 0, msg, title, rawFlags);
+    int result = MessageBoxW(ownerData ? ownerData->window : nullptr, msg, title, rawFlags);
     if (result == 0)
-        i::Log(L"Invalid set of flags where passed to MessageBox()", i::LL::ERROR);
+        i::Log(L"Invalid set of flags where passed to MessageBox()", i::LogLvl::Error);
 #undef MB_OK
     switch (result)
     {
-    case IDABORT:       return MB_ABORT;
-    case IDCANCEL:      return MB_CANCEL;
-    case IDCONTINUE:    return MB_CONTINUE;
-    case IDIGNORE:      return MB_IGNORE;
-    case IDNO:          return MB_NO;
-    case IDOK:          return MB_OK;
-    case IDRETRY:       return MB_RETRY;
-    case IDTRYAGAIN:    return MB_TRYAGAIN;
-    case IDYES:         return MB_YES;
+        case IDABORT:       return MrAbort;
+        case IDCANCEL:      return MrCancel; // also sent when user presses X-button on message box
+        case IDCONTINUE:    return MrContinue;
+        case IDIGNORE:      return MrIgnore;
+        case IDNO:          return MrNo;
+        case IDOK:          return MrOk;
+        case IDRETRY:       return MrRetry;
+        case IDTRYAGAIN:    return MrTryAgain;
+        case IDYES:         return MrYes;
+        default:            return MrCancel; // should never reach this
     }
-    return MB_CANCEL; // should never reach this
 }
 #define IGNORE 0
 
-void f::OnWindowCloseAttempt(WND_H handle, bool(*func)(void))
+void f::OnWindowCloseAttempt(WndH handle, bool(*func)())
 {
     i::GetWindowData(handle)->pfOnCloseAttempt = func;
 }
 
-void f::OnWindowClose(WND_H handle, void(*func)(void))
+void f::OnWindowClose(WndH handle, void(*func)())
 {
     std::unique_lock<std::mutex> lock(i::GetState()->windowDataMutex);
     i::GetWindowData(handle)->pfOnClose = func;
-    lock.unlock();
 }
 
-wchar_t* f::GetWindowName(WND_H id)
+wchar_t* f::GetWindowName(WndH handle)
 {
     std::unique_lock<std::mutex> lock(i::GetState()->windowDataMutex);
-    i::WindowData* wndData = i::GetWindowData(id);
-    if (!wndData) [[unlikely]] { i::Log(L"Invalid handle was passed to GetWindowName()", i::LL::WARNING); return nullptr; }
-    lock.unlock();
+    i::WindowData* wndData = i::GetWindowData(handle);
+    if (!wndData) [[unlikely]] { i::Log(L"Invalid handle was passed to GetWindowName()", i::LogLvl::Warning); return nullptr; }
     return wndData->name;
 }
 
-bool f::GetWindowVisibility(WND_H id)
+bool f::GetWindowVisibility(WndH handle)
 {
     std::unique_lock<std::mutex> lock(i::GetState()->windowDataMutex);
-    i::WindowData* wndData = i::GetWindowData(id);
-    if (!wndData) [[unlikely]] { i::Log(L"Invalid handle was passed to GetWindowVisibility()", i::LL::WARNING); return false; }
-    lock.unlock();
+    i::WindowData* wndData = i::GetWindowData(handle);
+    if (!wndData) [[unlikely]] { i::Log(L"Invalid handle was passed to GetWindowVisibility()", i::LogLvl::Warning); return false; }
     return wndData->isVisible;
 }
 
-int f::GetWindowWidth(WND_H id)
+unsigned short f::GetWindowWidth(WndH handle)
 {
     std::unique_lock<std::mutex> lock(i::GetState()->windowDataMutex);
-    i::WindowData* wndData = i::GetWindowData(id);
-    if (!wndData) [[unlikely]] { i::Log(L"Invalid handle was passed to GetWindowWidth()", i::LL::WARNING); return false; }
-    lock.unlock();
+    i::WindowData* wndData = i::GetWindowData(handle);
+    if (!wndData) [[unlikely]] { i::Log(L"Invalid handle was passed to GetWindowWidth()", i::LogLvl::Warning); return false; }
     return wndData->width;
 }
 
-int f::GetWindowHeight(WND_H id)
+unsigned short f::GetWindowHeight(WndH handle)
 {
     std::unique_lock<std::mutex> lock(i::GetState()->windowDataMutex);
-    i::WindowData* wndData = i::GetWindowData(id);
-    if (!wndData) [[unlikely]] { i::Log(L"Invalid handle was passed to GetWindowHeight()", i::LL::WARNING); return false; }
-    lock.unlock();
+    i::WindowData* wndData = i::GetWindowData(handle);
+    if (!wndData) [[unlikely]] { i::Log(L"Invalid handle was passed to GetWindowHeight()", i::LogLvl::Warning); return false; }
     return wndData->height;
 }
 
-std::pair<int, int> f::GetWindowDimensions(WND_H id)
+std::pair<unsigned short, unsigned short> f::GetWindowDimensions(WndH handle)
 {
     std::unique_lock<std::mutex> lock(i::GetState()->windowDataMutex);
-    i::WindowData* wndData = i::GetWindowData(id);
-    if (!wndData) [[unlikely]] { i::Log(L"Invalid handle was passed to GetWindowDimensions()", i::LL::WARNING); return {0, 0}; }
-    lock.unlock();
+    i::WindowData* wndData = i::GetWindowData(handle);
+    if (!wndData) [[unlikely]] { i::Log(L"Invalid handle was passed to GetWindowDimensions()", i::LogLvl::Warning); return {0, 0}; }
     return {wndData->width, wndData->height};
 }
 
-int f::GetWindowXPos(WND_H id, WindowPositionRelation wpr)
+int f::GetWindowXPos(WndH handle, WindowPositionRelation wpr)
 {
     std::unique_lock<std::mutex> lock(i::GetState()->windowDataMutex);
-    i::WindowData* wndData = i::GetWindowData(id);
-    if (!wndData) [[unlikely]] { i::Log(L"Invalid handle was passed to GetWindowXPos()", i::LL::WARNING); return 0; }
+    i::WindowData* wndData = i::GetWindowData(handle);
+    if (!wndData) [[unlikely]] { i::Log(L"Invalid handle was passed to GetWindowXPos()", i::LogLvl::Warning); return 0; }
     RECT rect{};
     GetWindowRect(wndData->window, &rect);
 
     switch (wpr)
     {
-    case WP_LEFT:
-    {
-        lock.unlock();
-        return rect.left;
+        case WpLeft:
+        {
+            lock.unlock();
+            return rect.left;
+        }
+        case WpRight:
+        {
+            lock.unlock();
+            return rect.right;
+        }
+        default:
+        {
+            i::Log(L"Invalid positional identifier was passed to GetWindowXPos()", i::LogLvl::Warning);
+            lock.unlock();
+            return 0;
+        }
     }
-    case WP_RIGHT:
-    {
-        lock.unlock();
-        return rect.right;
-    }
-    }
-
-    i::Log(L"Invalid positional identifier was passed to GetWindowXPos()", i::LL::WARNING);
-    lock.unlock();
-    return 0;
 }
 
-int f::GetWindowYPos(WND_H id, WindowPositionRelation wpr)
+int f::GetWindowYPos(WndH handle, WindowPositionRelation wpr)
 {
     std::unique_lock<std::mutex> lock(i::GetState()->windowDataMutex);
-    i::WindowData* wndData = i::GetWindowData(id);
-    if (!wndData) [[unlikely]] { i::Log(L"Invalid handle was passed to GetWindowYPos()", i::LL::WARNING); return 0; }
+    i::WindowData* wndData = i::GetWindowData(handle);
+    if (!wndData) [[unlikely]] { i::Log(L"Invalid handle was passed to GetWindowYPos()", i::LogLvl::Warning); return 0; }
     RECT rect{};
     GetWindowRect(wndData->window, &rect);
 
     switch (wpr)
     {
-    case WP_TOP:
-    {
-        lock.unlock();
-        return rect.top;
+        case WpTop:
+        {
+            lock.unlock();
+            return rect.top;
+        }
+        case WpBottom:
+        {
+            lock.unlock();
+            return rect.bottom;
+        }
+        default:
+        {
+            i::Log(L"Invalid positional identifier was passed to GetWindowYPos()", i::LogLvl::Warning);
+            lock.unlock();
+            return 0;
+        }
     }
-    case WP_BOTTOM:
-    {
-        lock.unlock();
-        return rect.bottom;
-    }
-    }
-
-    i::Log(L"Invalid positional identifier was passed to GetWindowYPos()", i::LL::WARNING);
-    lock.unlock();
-    return 0;
 }
 
-std::pair<int, int> f::GetWindowPosition(WND_H id, WindowPositionRelation wpr)
+std::pair<int, int> f::GetWindowPosition(WndH handle, WindowPositionRelation wpr)
 {
     std::unique_lock<std::mutex> lock(i::GetState()->windowDataMutex);
-    i::WindowData* wndData = i::GetWindowData(id);
-    if (!wndData) [[unlikely]] { i::Log(L"Invalid handle was passed to GetWindowPosition()", i::LL::WARNING); return {0, 0}; }
+    i::WindowData* wndData = i::GetWindowData(handle);
+    if (!wndData) [[unlikely]] { i::Log(L"Invalid handle was passed to GetWindowPosition()", i::LogLvl::Warning); return {0, 0}; }
     RECT rect{};
     GetWindowRect(wndData->window, &rect);
     
     switch (wpr)
     {
-    case WP_TOP_LEFT:
-    {
-        lock.unlock();
-        return { rect.left, rect.top };
+        case WpTopLeft:
+        {
+            lock.unlock();
+            return { rect.left, rect.top };
+        }
+        case WpTopRight:
+        {
+            lock.unlock();
+            return { rect.right, rect.top };
+        }
+        case WpBottomLeft:
+        {
+            lock.unlock();
+            return { rect.left, rect.bottom };
+        }
+        case WpBottomRight:
+        {
+            lock.unlock();
+            return { rect.right, rect.bottom };
+        }
+        default:
+        {
+            i::Log(L"Invalid positional identifier was passed to GetWindowPosition()", i::LogLvl::Warning);
+            lock.unlock();
+            return {0, 0};
+        }
     }
-    case WP_TOP_RIGHT:
-    {
-        lock.unlock();
-        return { rect.right, rect.top };
-    }
-    case WP_BOTTOM_LEFT:
-    {
-        lock.unlock();
-        return { rect.left, rect.bottom };
-    }
-    case WP_BOTTOM_RIGHT:
-    {
-        lock.unlock();
-        return { rect.right, rect.bottom };
-    }
-    }
-
-    i::Log(L"Invalid positional identifier was passed to GetWindowPosition()", i::LL::WARNING);
-    lock.unlock();
-    return {0, 0};
 }
 
-int f::GetWindowCount(void)
+int f::GetWindowCount()
 {
     return i::GetState()->windowCount;
 }
 
-void f::ChangeWindowName(WND_H id, const wchar_t* name)
+void f::ChangeWindowName(WndH handle, const wchar_t* name)
 {
     std::unique_lock<std::mutex> lock(i::GetState()->windowDataMutex);
 
-    i::WindowData* wndData = i::GetWindowData(id);
+    i::WindowData* wndData = i::GetWindowData(handle);
     if (!wndData) { return; }
     wndData->name = (wchar_t*)name;
 
@@ -430,17 +428,17 @@ void f::ChangeWindowName(WND_H id, const wchar_t* name)
     SetWindowTextW(wndData->window, name);
 }
 
-bool f::WindowHasFocus(WND_H id)
+bool f::WindowHasFocus(WndH handle)
 {
     std::unique_lock<std::mutex> lock(i::GetState()->windowDataMutex);
-    i::WindowData* wndData = i::GetWindowData(id);
+    i::WindowData* wndData = i::GetWindowData(handle);
     if (!wndData) [[unlikely]] { return false; }
     lock.unlock();
     return wndData->hasFocus;
 }
 
-bool f::IsValidHandle(WND_H handle)
-{   // no mutex neccessary here, no data that may be volatile
+bool f::IsValidHandle(WndH handle)
+{   // no mutex necessary here, no data that may be volatile
     if (i::GetWindowData(handle))
         return true;
     return false;
@@ -451,21 +449,21 @@ bool f::Running()
     return i::GetState()->isRunning;
 }
 
-void f::Halt(int ms)
+void f::Halt(int milliseconds)
 {
-    Sleep(ms);
+    Sleep(milliseconds);
 }
 
 bool f::IsKeyPressed(Key code)
 {
-    return i::GetState()->keystates.test((int)code);
+    return i::GetState()->keyStates.test((int)code);
 }
 
 bool f::IsKeyPressedOnce(Key code)
 {
-    bool state = i::GetState()->keystates.test((int)code);
+    bool state = i::GetState()->keyStates.test((int)code);
     if (state)
-        i::GetState()->keystates.reset((int)code);
+        i::GetState()->keyStates.reset((int)code);
     return state;
 }
 
@@ -483,7 +481,7 @@ bool f::IsKeyReleased(Key code)
 
 bool f::IsAnyKeyPressed()
 {
-    return i::GetState()->keystates.any();
+    return i::GetState()->keyStates.any();
 }
 
 void f::SetTextInputState(bool state, bool clear)
@@ -621,7 +619,7 @@ int f::GetMouseWheelDelta()
     return 0;
 }
 
-bool f::WindowContainsMouse(WND_H handle)
+bool f::WindowContainsMouse(WndH handle)
 {
     std::unique_lock<std::mutex> lock(i::GetState()->windowDataMutex);
     i::WindowData* wndData = i::GetWindowData(handle);
@@ -634,10 +632,10 @@ bool f::WindowContainsMouse(WND_H handle)
     return false;
 }
 
-f::WND_H f::GetMouseContainerWindow()
+f::WndH f::GetMouseContainerWindow()
 {
     std::unique_lock<std::mutex> lock(i::GetState()->windowDataMutex);
-    for (std::pair<WND_H, i::WindowData*> i : i::GetState()->win32.identifiersToData)
+    for (std::pair<WndH, i::WindowData*> i : i::GetState()->win32.identifiersToData)
     {
         if (i.second->hasMouseInClientArea)
         {

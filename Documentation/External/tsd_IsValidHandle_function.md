@@ -4,12 +4,12 @@ Used to test if a handle is valid.
 ### Definition
 ```C++
 bool IsValidHandle(
-    WND_H handle
+    WndH handle
     );
 ```
 
 ### Parameters
-`WND_H handle`:
+`WndH handle`:
 The handle to be tested.
 
 ### Return value

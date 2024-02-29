@@ -1,5 +1,5 @@
 # tsd::WindowCreateData
-`WindowCreateData` is a structure type for data that you pass to [tsd::CreateWindow](tsd_CreateWindow_function.md).
+`WindowCreateData` is a structure type for data that you pass to [tsd::CreateWindowAsync](tsd_CreateWindow_function.md).
 
 ### Definition
 ```C++
@@ -8,7 +8,7 @@ struct WindowCreateData
     unsigned int width, height;
     int xPos, yPos;
     const wchar_t* name;
-    std::vector<WND_H> dependants;
+    std::vector<WndH> dependants;
     void (*OnClose)();
     bool (*OnCloseAttempt)();
 };
@@ -24,7 +24,7 @@ The x and y position of the upper left corner of the window. Leave them `0` to l
 `const wchar_t* name`:
 The name of the window that is displayed on informational surfaces across the operating system. On Microsoft Windows that would be the non-client region of the window, the TaskManager, the Taskbar and other services that pull names of running applications. This pointer must point to a valid, null-terminated wide string.
 
-`std::vector<WND_H> dependants`:
+`std::vector<WndH> dependants`:
 A vector of window handles. When the window is closed, all windows matching the handles will also be closed. This mechanism can be evaded by simply refusing in the underlying `CloseWindowAttempt` function. For more information see the two sections below.
 
 `void (*OnClose)()`:

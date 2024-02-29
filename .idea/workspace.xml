@@ -28,8 +28,25 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="b43a079c-b7ae-41fc-bc1a-f78f46edc6d3" name="Changes" comment="">
+    <list default="true" id="b43a079c-b7ae-41fc-bc1a-f78f46edc6d3" name="Changes" comment="initial rework">
+      <change beforePath="$PROJECT_DIR$/.idea/inspectionProfiles/Project_Default.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/inspectionProfiles/Project_Default.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/vcs.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Documentation/External/tsd_CreateWindow_function.md" beforeDir="false" afterPath="$PROJECT_DIR$/Documentation/External/tsd_CreateWindow_function.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Documentation/External/tsd_IsValidHandle_function.md" beforeDir="false" afterPath="$PROJECT_DIR$/Documentation/External/tsd_IsValidHandle_function.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Documentation/External/tsd_OnWindowCloseAttempt_function.md" beforeDir="false" afterPath="$PROJECT_DIR$/Documentation/External/tsd_OnWindowCloseAttempt_function.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Documentation/External/tsd_OnWindowClose_function.md" beforeDir="false" afterPath="$PROJECT_DIR$/Documentation/External/tsd_OnWindowClose_function.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Documentation/External/tsd_Uninitialise_function.md" beforeDir="false" afterPath="$PROJECT_DIR$/Documentation/External/tsd_Uninitialise_function.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Documentation/External/tsd_WND_H_type.md" beforeDir="false" afterPath="$PROJECT_DIR$/Documentation/External/tsd_WND_H_type.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Documentation/External/tsd_WindowCreateData_type.md" beforeDir="false" afterPath="$PROJECT_DIR$/Documentation/External/tsd_WindowCreateData_type.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Framework/Framework.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Framework/Framework.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Framework/Framework.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/Framework/Framework.hpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Framework/Internals.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Framework/Internals.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Framework/Internals.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/Framework/Internals.hpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Framework/Vulkan.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Framework/Vulkan.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Framework/Vulkan.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/Framework/Vulkan.hpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Tests/Main.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Tests/Main.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/readme.md" beforeDir="false" afterPath="$PROJECT_DIR$/readme.md" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -48,27 +65,25 @@
     </option>
   </component>
   <component name="Git.Settings">
-    <favorite-branches>
-      <branch-storage>
-        <map>
-          <entry type="LOCAL">
-            <value>
-              <list>
-                <branch-info repo="$PROJECT_DIR$/Framework" source="cmake-remake" />
-              </list>
-            </value>
-          </entry>
-        </map>
-      </branch-storage>
-    </favorite-branches>
     <option name="RECENT_BRANCH_BY_REPOSITORY">
       <map>
+        <entry key="$PROJECT_DIR$" value="master" />
         <entry key="$PROJECT_DIR$/Framework" value="master" />
       </map>
     </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
     <option name="ROOT_SYNC" value="SYNC" />
   </component>
+  <component name="GitHubPullRequestSearchHistory"><![CDATA[{
+  "lastFilter": {
+    "state": "OPEN",
+    "assignee": "ToneXum"
+  }
+}]]></component>
+  <component name="GitHubPullRequestState"><![CDATA[{
+  "prStates": [
+  ]
+}]]></component>
   <component name="GithubProjectSettings">
     <option name="branchProtectionPatterns">
       <list>
@@ -76,6 +91,12 @@
       </list>
     </option>
   </component>
+  <component name="GithubPullRequestsUISettings"><![CDATA[{
+  "selectedUrlAndAccountId": {
+    "url": "https://github.com/ToneXum/LPAF",
+    "accountId": "fedc32be-036a-4b9c-a888-046ee53b3bc2"
+  }
+}]]></component>
   <component name="HighlightingSettingsPerFile">
     <setting file="file://$PROJECT_DIR$/../.SKD/Vulkan/Include/vulkan/vulkan.h" root0="SKIP_INSPECTION" />
   </component>
@@ -94,6 +115,7 @@
   &quot;associatedIndex&quot;: 1
 }</component>
   <component name="ProjectId" id="2cpKJZHdXdQaCuFCyzCqYz8oIfk" />
+  <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
@@ -101,7 +123,7 @@
   <component name="PropertiesComponent"><![CDATA[{
   "keyToString": {
     "ASKED_MARK_IGNORED_FILES_AS_EXCLUDED": "true",
-    "CMake Application.Framework_Lib.executor": "Run",
+    "CMake Application.Framework_Lib.executor": "Debug",
     "CMake Application.Test_Application.executor": "Run",
     "RunOnceActivity.OpenProjectViewOnStart": "true",
     "RunOnceActivity.ShowReadmeOnStart": "true",
@@ -109,15 +131,17 @@
     "RunOnceActivity.readMode.enableVisualFormatting": "true",
     "cf.first.check.clang-format": "false",
     "cidr.known.project.marker": "true",
-    "git-widget-placeholder": "master",
+    "git-widget-placeholder": "cmake-remake",
     "last_opened_file_path": "D:/File Dump/Programming Projects/Framework/CMakeLists.txt",
     "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.stylelint": "true",
     "node.js.detected.package.tslint": "true",
     "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.stylelint": "",
     "node.js.selected.package.tslint": "(autodetect)",
     "nodejs_package_manager_path": "npm",
     "run.code.analysis.last.selected.profile": "pProject Default",
-    "settings.editor.selected.configurable": "CMakeSettings",
+    "settings.editor.selected.configurable": "Errors",
     "vue.rearranger.settings.migration": "true"
   }
 }]]></component>
@@ -129,17 +153,17 @@
     </key>
   </component>
   <component name="RunManager" selected="CMake Application.Framework_Lib">
+    <configuration default="true" type="CLionExternalRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true">
+      <method v="2">
+        <option name="CLION.EXTERNAL.BUILD" enabled="true" />
+      </method>
+    </configuration>
     <configuration name="Framework_Lib" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="LPAF" TARGET_NAME="Framework_Lib" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="LPAF" RUN_TARGET_NAME="Test_Application">
       <method v="2">
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
       </method>
     </configuration>
     <configuration name="Test_Application" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="LPAF" TARGET_NAME="Test_Application" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="LPAF" RUN_TARGET_NAME="Test_Application">
-      <method v="2">
-        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
-      </method>
-    </configuration>
-    <configuration default="true" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true">
       <method v="2">
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
       </method>
@@ -166,6 +190,12 @@
       <workItem from="1708893800878" duration="3116000" />
       <workItem from="1708898131371" duration="893000" />
       <workItem from="1708965696906" duration="8934000" />
+      <workItem from="1708981540823" duration="1221000" />
+      <workItem from="1709056396402" duration="4471000" />
+      <workItem from="1709061080793" duration="4778000" />
+      <workItem from="1709141314882" duration="125000" />
+      <workItem from="1709148539205" duration="1806000" />
+      <workItem from="1709232316144" duration="5724000" />
     </task>
     <task id="LOCAL-00001" summary="initial rework">
       <option name="closed" value="true" />
@@ -175,7 +205,23 @@
       <option name="project" value="LOCAL" />
       <updated>1708980584480</updated>
     </task>
-    <option name="localTasksCounter" value="2" />
+    <task id="LOCAL-00002" summary="initial rework">
+      <option name="closed" value="true" />
+      <created>1708982335467</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1708982335467</updated>
+    </task>
+    <task id="LOCAL-00003" summary="initial rework">
+      <option name="closed" value="true" />
+      <created>1708982383563</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1708982383563</updated>
+    </task>
+    <option name="localTasksCounter" value="4" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -218,8 +264,22 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
+    <ignored-roots>
+      <path value="$PROJECT_DIR$/Framework" />
+    </ignored-roots>
     <MESSAGE value="initial rework" />
     <option name="LAST_COMMIT_MESSAGE" value="initial rework" />
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
+          <url>file://$PROJECT_DIR$/Framework/Vulkan.cpp</url>
+          <line>32</line>
+          <option name="timeStamp" value="1" />
+        </line-breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
   </component>
   <component name="XSLT-Support.FileAssociations.UIState">
     <expand />
