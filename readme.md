@@ -21,6 +21,5 @@ For any inquiries you can send an E-Mail to tonexum@national.shitposting.agency 
 
 ### Mention
 Big thanks goes to [JetBrains](https://jb.gg/) for granting me (ToneXum) a free license for open source development.
-<img    style="width: 50%; height 50%;" <!-- Damn, why is it so big? Haha, that's what she said -->
-        src="https://resources.jetbrains.com/storage/products/company/brand/logos/jb_beam.png" 
-        alt="Main JetBrains Logo">
+<!-- Damn, why is it so big? Haha, that's what she said -->
+<img style="width: 50%; height 50%;" src="https://resources.jetbrains.com/storage/products/company/brand/logos/jb_beam.png" alt="Main JetBrains Logo">
