@@ -13,7 +13,7 @@ int main()
 
     f::SetTextInputState(true);
     while (f::Running())
-    {        
+    {
         f::ChangeWindowName(dependant, f::GetTextInput());
         
         if (f::IsKeyPressedOnce(f::KeyEnter))

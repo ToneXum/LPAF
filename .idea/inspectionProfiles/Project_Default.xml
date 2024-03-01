@@ -2,7 +2,7 @@
   <profile version="1.0">
     <option name="myName" value="Project Default" />
     <inspection_tool class="ClangTidy" enabled="true" level="WARNING" enabled_by_default="true">
-      <option name="clangTidyChecks" value="*,-llvmlibc-*,-fuchsia-default-arguments-declarations,-modernize-use-trailing-return-type,-cppcoreguidelines-pro-type-reinterpret-cast,-google-readability-braces-around-statements,-hicpp-braces-around-statements,-readability-braces-around-statements" />
+      <option name="clangTidyChecks" value="*,-llvmlibc-*,-fuchsia-default-arguments-declarations,-modernize-use-trailing-return-type,-cppcoreguidelines-pro-type-reinterpret-cast,-google-readability-braces-around-statements,-hicpp-braces-around-statements,-readability-braces-around-statements,-fuchsia-default-arguments-calls,-cppcoreguidelines-avoid-magic-numbers,-readability-magic-numbers,-cppcoreguidelines-owning-memory,-readability-implicit-bool-conversion,-cppcoreguidelines-pro-type-const-cast,-cppcoreguidelines-pro-bounds-array-to-pointer-decay,-hicpp-no-array-decay,-cppcoreguidelines-pro-bounds-pointer-arithmetic,-concurrency-mt-unsafe,-misc-non-private-member-variables-in-classes,-misc-unused-parameters,-readability-isolate-declaration" />
     </inspection_tool>
     <inspection_tool class="OCInconsistentNaming" enabled="true" level="WEAK WARNING" enabled_by_default="true" />
     <inspection_tool class="OCUnusedConcept" enabled="false" level="WARNING" enabled_by_default="false" />

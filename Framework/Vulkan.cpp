@@ -44,7 +44,7 @@ void v::InitialiseVulkan()
         bool found = false;
         for (const VkLayerProperties& layerProperties : availableLayers) // loop through the layers we have
         {
-            if (strcmp(layerName, layerProperties.layerName) == 0) // strcmp does a bitmask, 0 means strings are equal
+            if (strcmp(layerName, layerProperties.layerName) == 0) // bitmask, 0 means strings are equal
             {
                 found = true;
                 break;
@@ -79,11 +79,11 @@ void v::InitialiseVulkan()
     createInf.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
     createInf.pApplicationInfo = &appInf;
 #ifdef _DEBUG
-    createInf.enabledLayerCount = (unsigned int)i::GetState()->vulkan.validationLayers.size();
+    createInf.enabledLayerCount = static_cast<unsigned int>(i::GetState()->vulkan.validationLayers.size());
     createInf.ppEnabledLayerNames = i::GetState()->vulkan.validationLayers.data();
     createInf.pNext = &messenger;
 #endif // _DEBUG
-    createInf.enabledExtensionCount = (unsigned int)i::GetState()->vulkan.extension.size();
+    createInf.enabledExtensionCount = static_cast<unsigned int>(i::GetState()->vulkan.extension.size());
     createInf.ppEnabledExtensionNames = i::GetState()->vulkan.extension.data();
 
     VUL_EC(vkCreateInstance(&createInf, nullptr, &i::GetState()->vulkan.vkInstance))
@@ -117,12 +117,12 @@ void v::UnInitializeVulkan()
     vkDestroyInstance(i::GetState()->vulkan.vkInstance, nullptr);
 }
 
-void v::CreateVulkanError(int line, int c, const char* func)
+void v::CreateVulkanError(int line, int code, const char* func)
 {
     std::ostringstream str;
 
     str << "A Vulkan API operation resulted in a fatal error:\n\n";
-    str << "Error: " << c << "\n";
+    str << "Error: " << code << "\n";
     str << "Origin: " << func << " at " << line << "\n\n";
     str << "This is an internal error likely caused by the framework itself. ";
     str << "The program is unable to recover and must quit now!";
@@ -138,14 +138,14 @@ VkPhysicalDevice v::ChooseBestPhysicalDevice(const std::vector<VkPhysicalDevice>
 {
     struct GpuScore
     {
-        unsigned score;
         VkPhysicalDevice dev;
-    };
+        unsigned score;
+    } __attribute__((aligned(16)));
     std::vector<GpuScore> rankedDevices;
 
     for (const VkPhysicalDevice& devi : dev)
     {
-        unsigned score = 0, queueFamCount = 0;
+        uint32_t score = 0, queueFamCount = 0;
         vkGetPhysicalDeviceQueueFamilyProperties(devi, &queueFamCount, nullptr);
 
         std::vector<VkQueueFamilyProperties> queueFamilies(queueFamCount);
@@ -176,14 +176,14 @@ VkPhysicalDevice v::ChooseBestPhysicalDevice(const std::vector<VkPhysicalDevice>
         if (devFeat.multiViewport)
             score += 1;
 
-        GpuScore gpuScore = {score, devi };
+        GpuScore gpuScore = {devi, score};
         rankedDevices.push_back(gpuScore);
     }
 
     GpuScore currentHigh{};
-    for (GpuScore s : rankedDevices)
+    for (GpuScore score : rankedDevices)
     {
-        if (s.score > currentHigh.score) { currentHigh.score = s.score; currentHigh.dev = s.dev; }
+        if (score.score > currentHigh.score) { currentHigh.score = score.score; currentHigh.dev = score.dev; }
     }
 
     return currentHigh.dev;
@@ -200,7 +200,7 @@ VkBool32 VKAPI_CALL v::ValidationDebugCallback(
     {
         i::Log(callbackData->pMessage, i::LogLvl::Validation);
     }
-    return 0u;
+    return 0U;
 }
 
 VkResult v::p::CreateDebugUtilsMessengerExt(VkInstance instance,
@@ -208,22 +208,21 @@ VkResult v::p::CreateDebugUtilsMessengerExt(VkInstance instance,
     const VkAllocationCallbacks* pAllocator,
     VkDebugUtilsMessengerEXT* pDebugMessenger)
 {
-    auto func = (PFN_vkCreateDebugUtilsMessengerEXT)vkGetInstanceProcAddr(instance, "vkCreateDebugUtilsMessengerEXT");
+    auto func = reinterpret_cast<PFN_vkCreateDebugUtilsMessengerEXT>(
+            vkGetInstanceProcAddr(instance, "vkCreateDebugUtilsMessengerEXT"));
     if (func != nullptr)
     {
         return func(instance, pCreateInfo, pAllocator, pDebugMessenger);
     }
-    else
-    {
-        return VK_ERROR_EXTENSION_NOT_PRESENT;
-    }
+    return VK_ERROR_EXTENSION_NOT_PRESENT;
 }
 
 void v::p::DestroyDebugUtilsMessengerExt(VkInstance instance,
     VkDebugUtilsMessengerEXT debugMessenger,
     const VkAllocationCallbacks* pAllocator)
 {
-    auto func = (PFN_vkDestroyDebugUtilsMessengerEXT)vkGetInstanceProcAddr(instance, "vkDestroyDebugUtilsMessengerEXT");
+    auto func = reinterpret_cast<PFN_vkDestroyDebugUtilsMessengerEXT>(
+            vkGetInstanceProcAddr(instance, "vkDestroyDebugUtilsMessengerEXT"));
     if (func != nullptr)
     {
         func(instance, debugMessenger, pAllocator);

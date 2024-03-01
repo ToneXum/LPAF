@@ -70,7 +70,7 @@ void i::CreateWin32Error(int line, int c, const char* func)
     msg << "A fatal error occoured, the application must quit now!\n\nFor more information check 'Last_Log.txt' in the application";
     msg << " directory" << std::flush;
 
-    MessageBoxA(nullptr, msg.str().c_str(), "Fatal Error!", MbTaskmodal | MB_OK | MB_ICONERROR);
+    MessageBoxA(nullptr, msg.str().c_str(), "Fatal Error!", MB_TASKMODAL | MB_OK | MB_ICONERROR);
 
     DeAlloc();
     std::exit(-1);
@@ -394,7 +394,6 @@ bool i::DoNothingVb()
 
 i::WindowData* i::GetWindowData(HWND handle)
 {
-    //std::unique_lock<std::mutex> lock(i::GetState()->windowDataMutex);
     auto found = i::GetState()->win32.handlesToData.find(handle);
 
     if (found != i::GetState()->win32.handlesToData.end())

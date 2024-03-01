@@ -38,11 +38,11 @@ void f::Initialize(int iconId, int cursorId)
     // Check the recourses, if invalid continue anyway
     if (iconId)
     {
-        i::GetState()->win32.icon = (HICON)LoadImageA(
+        i::GetState()->win32.icon = static_cast<HICON>(LoadImageA(
             i::GetState()->win32.instance, 
             MAKEINTRESOURCE(iconId), 
             IMAGE_ICON, 0, 0, 
-            LR_DEFAULTCOLOR);
+            LR_DEFAULTCOLOR));
 
         if (!i::GetState()->win32.icon) 
         { 
@@ -52,11 +52,11 @@ void f::Initialize(int iconId, int cursorId)
 
     if (cursorId)
     {
-        i::GetState()->win32.cursor = (HCURSOR)LoadImageA(
+        i::GetState()->win32.cursor = static_cast<HCURSOR>(LoadImageA(
             i::GetState()->win32.instance, 
             MAKEINTRESOURCE(cursorId), 
             IMAGE_CURSOR, 0, 0, 
-            LR_DEFAULTCOLOR);
+            LR_DEFAULTCOLOR));
 
         if (!i::GetState()->win32.cursor) 
         { 
@@ -64,22 +64,22 @@ void f::Initialize(int iconId, int cursorId)
         }
     }
     
-    WNDCLASSEXW wc = {};
+    WNDCLASSEXW wndC = {};
 
-    wc.cbClsExtra       = 0;
-    wc.cbSize           = sizeof(WNDCLASSEXW);
-    wc.cbWndExtra       = 0;
-    wc.hbrBackground    = nullptr;
-    wc.hCursor          = i::GetState()->win32.cursor;
-    wc.hIcon            = i::GetState()->win32.icon;
-    wc.hIconSm          = i::GetState()->win32.icon;
-    wc.hInstance        = i::GetState()->win32.instance;
-    wc.lpfnWndProc      = i::WindowProc;
-    wc.lpszClassName    = i::GetState()->win32.pClassName;
-    wc.lpszMenuName     = nullptr;
-    wc.style            = 0;
+    wndC.cbClsExtra       = 0;
+    wndC.cbSize           = sizeof(WNDCLASSEXW);
+    wndC.cbWndExtra       = 0;
+    wndC.hbrBackground    = nullptr;
+    wndC.hCursor          = i::GetState()->win32.cursor;
+    wndC.hIcon            = i::GetState()->win32.icon;
+    wndC.hIconSm          = i::GetState()->win32.icon;
+    wndC.hInstance        = i::GetState()->win32.instance;
+    wndC.lpfnWndProc      = i::WindowProc;
+    wndC.lpszClassName    = i::GetState()->win32.pClassName;
+    wndC.lpszMenuName     = nullptr;
+    wndC.style            = 0;
 
-    WIN32_EC(RegisterClassExW(&wc))
+    WIN32_EC(RegisterClassExW(&wndC))
 
     // Wait for the window thread to start its execution if it has not already
     std::unique_lock<std::mutex> lock(i::GetState()->windowThreadMutex);
@@ -114,12 +114,12 @@ f::WndH f::CreateWindowAsync(const f::WindowCreateData& wndCrtData)
     if (!wndCrtData.pName) { i::Log(L"Nullptr was passed to a required parameter at CreateWindowAsync()", i::LogLvl::Error); return 0; } // name is nullptr
     if ((wndCrtData.height <= 0) || (wndCrtData.width <= 0)) { i::Log(L"Invalid height or width amount for window creation", i::LogLvl::Error); return 0; }
 
-    i::WindowData* wndData = new i::WindowData;
+    auto* wndData = new i::WindowData;
 
     i::GetState()->windowCount += 1;
     i::GetState()->windowsOpened += 1;
 
-    wndData->name       = (wchar_t*)wndCrtData.pName;
+    wndData->name       = const_cast<wchar_t*>(wndCrtData.pName);
     wndData->width      = wndCrtData.width;
     wndData->height     = wndCrtData.height;
     wndData->xPos       = wndCrtData.xPos;
@@ -131,17 +131,18 @@ f::WndH f::CreateWindowAsync(const f::WindowCreateData& wndCrtData)
     
     if (!wndCrtData.dependants.empty())
     {
-        for (WndH i : wndCrtData.dependants)
+        for (WndH dep : wndCrtData.dependants)
         {
-            wndData->dependants.push_back(i::GetWindowData(i)->window);
+            wndData->dependants.push_back(i::GetWindowData(dep)->window);
         }
     }
 
     WIN32_EC(PostThreadMessageW(
             i::GetState()->win32.nativeThreadId,
             WM_CREATE_WINDOW_REQ,
-            (WPARAM)nullptr,
-            (LPARAM)wndData)
+            reinterpret_cast<WPARAM>(nullptr),
+            reinterpret_cast<LPARAM>(wndData)
+            )
     )
 
     return wndData->id;
@@ -157,8 +158,8 @@ void f::CloseWindow(const WndH handle)
     WIN32_EC(PostMessageA(
         windowData->window,
         WM_CLOSE,
-        (WPARAM)nullptr,
-        (LPARAM)nullptr
+        reinterpret_cast<WPARAM>(nullptr),
+        reinterpret_cast<LPARAM>(nullptr)
     ))
 }
 
@@ -172,8 +173,8 @@ void f::CloseWindowForce(const WndH handle)
     WIN32_EC(PostMessageA(
         windowData->window,
         WM_DESTROY,
-        (WPARAM)nullptr,
-        (LPARAM)nullptr
+        reinterpret_cast<WPARAM>(nullptr),
+        reinterpret_cast<LPARAM>(nullptr)
     ))
 }
 
@@ -184,8 +185,8 @@ void f::CloseAllWindows()
         WIN32_EC(PostMessageA(
             dataPair.second->window,
             WM_CLOSE,
-            (WPARAM)nullptr,
-            (LPARAM)nullptr
+            reinterpret_cast<WPARAM>(nullptr),
+            reinterpret_cast<LPARAM>(nullptr)
         ))
     }
 }
@@ -195,22 +196,22 @@ void f::CloseAllWindowsForce()
     for (std::pair<f::WndH, i::WindowData*>&& dataPair : i::GetState()->win32.identifiersToData)
     {
         WIN32_EC(PostMessageA(
-            dataPair.second->window,
-            WM_DESTROY,
-            (WPARAM)nullptr,
-            (LPARAM)nullptr
+                dataPair.second->window,
+                WM_DESTROY,
+                reinterpret_cast<WPARAM>(nullptr),
+                reinterpret_cast<LPARAM>(nullptr)
         ))
     }
 }
 
 #undef MessageBox
 #undef IGNORE
-int f::MessageBox(WndH owner, const wchar_t* title, const wchar_t* msg, int flags)
+int f::MessageBox(WndH owner, const wchar_t* title, const wchar_t* msg, uint16_t flags)
 {
     // return null if the window is not found, so I don't care
     i::WindowData* ownerData = i::GetWindowData(owner);
 
-    long rawFlags = 0;
+    uint32_t rawFlags = 0;
 
     // Where switch statement?
     // Cant put (non-constant) expressions into switch cases
@@ -289,7 +290,7 @@ bool f::GetWindowVisibility(WndH handle)
     return wndData->isVisible;
 }
 
-unsigned short f::GetWindowWidth(WndH handle)
+uint16_t f::GetWindowWidth(WndH handle)
 {
     std::unique_lock<std::mutex> lock(i::GetState()->windowDataMutex);
     i::WindowData* wndData = i::GetWindowData(handle);
@@ -297,7 +298,7 @@ unsigned short f::GetWindowWidth(WndH handle)
     return wndData->width;
 }
 
-unsigned short f::GetWindowHeight(WndH handle)
+uint16_t f::GetWindowHeight(WndH handle)
 {
     std::unique_lock<std::mutex> lock(i::GetState()->windowDataMutex);
     i::WindowData* wndData = i::GetWindowData(handle);
@@ -305,7 +306,7 @@ unsigned short f::GetWindowHeight(WndH handle)
     return wndData->height;
 }
 
-std::pair<unsigned short, unsigned short> f::GetWindowDimensions(WndH handle)
+std::pair<uint16_t, uint16_t> f::GetWindowDimensions(WndH handle)
 {
     std::unique_lock<std::mutex> lock(i::GetState()->windowDataMutex);
     i::WindowData* wndData = i::GetWindowData(handle);
@@ -421,7 +422,7 @@ void f::ChangeWindowName(WndH handle, const wchar_t* name)
 
     i::WindowData* wndData = i::GetWindowData(handle);
     if (!wndData) { return; }
-    wndData->name = (wchar_t*)name;
+    wndData->name = const_cast<wchar_t*>(name);
 
     lock.unlock();
 
@@ -438,10 +439,8 @@ bool f::WindowHasFocus(WndH handle)
 }
 
 bool f::IsValidHandle(WndH handle)
-{   // no mutex necessary here, no data that may be volatile
-    if (i::GetWindowData(handle))
-        return true;
-    return false;
+{
+    return i::GetWindowData(handle) != nullptr;
 }
 
 bool f::Running()
@@ -456,14 +455,14 @@ void f::Halt(int milliseconds)
 
 bool f::IsKeyPressed(Key code)
 {
-    return i::GetState()->keyStates.test((int)code);
+    return i::GetState()->keyStates.test(static_cast<int>(code));
 }
 
 bool f::IsKeyPressedOnce(Key code)
 {
-    bool state = i::GetState()->keyStates.test((int)code);
+    bool state = i::GetState()->keyStates.test(static_cast<int>(code));
     if (state)
-        i::GetState()->keyStates.reset((int)code);
+        i::GetState()->keyStates.reset(static_cast<int>(code));
     return state;
 }
 
@@ -609,7 +608,7 @@ int f::GetMouseWheelDelta()
         return 1;
     }
 
-    else if (lastDelta > i::GetState()->mouse.wheelDelta)
+    if (lastDelta > i::GetState()->mouse.wheelDelta)
     {
         lastDelta = i::GetState()->mouse.wheelDelta;
         return -1;
@@ -635,12 +634,12 @@ bool f::WindowContainsMouse(WndH handle)
 f::WndH f::GetMouseContainerWindow()
 {
     std::unique_lock<std::mutex> lock(i::GetState()->windowDataMutex);
-    for (std::pair<WndH, i::WindowData*> i : i::GetState()->win32.identifiersToData)
+    for (std::pair<WndH, i::WindowData*> pair : i::GetState()->win32.identifiersToData)
     {
-        if (i.second->hasMouseInClientArea)
+        if (pair.second->hasMouseInClientArea)
         {
             lock.unlock();
-            return i.second->id;
+            return pair.second->id;
         }
     }
     lock.unlock();

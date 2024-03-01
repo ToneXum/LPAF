@@ -64,129 +64,133 @@
 
 namespace i
 {
-    // Functions that do nothing
-    // First letter corresponds with the return type the rest indicate arguments
-    // Types are abbreviated, B for bool; V for void; I for int; U for unsigned; etc...
-    void DoNothingVv();
-    bool DoNothingVb();
+// Functions that do nothing
+// First letter corresponds with the return type the rest indicate arguments
+// Types are abbreviated, B for bool; V for void; I for int; U for unsigned; etc...
+void DoNothingVv();
+bool DoNothingVb();
 
-    struct WindowData // additional data associated to each window
+struct WindowData // additional data associated to each window
+{
+    std::vector<HWND> dependants; // handles to windows that depend on this one
+    HWND window{};
+
+    void (*pfOnClose)() = DoNothingVv;
+    bool (*pfOnCloseAttempt)() = DoNothingVb;
+
+    wchar_t* name = nullptr;
+    int16_t xPos = 0, yPos = 0;
+    uint16_t width = 0, height = 0;
+
+    f::WndH id = 0;
+
+    bool isVisible = true, isValid = true, hasFocus = true, hasMouseInClientArea = false;
+} __attribute__((aligned(128)));
+
+class Win32State
+{
+public:
+    Win32State() = default;
+    ~Win32State() = default;
+
+    // Make it singleton
+    Win32State(const Win32State&) = delete;
+    Win32State(const Win32State&&) = delete;
+    Win32State operator=(const Win32State&) = delete;
+    Win32State operator=(const Win32State&&) = delete;
+
+    const wchar_t* pClassName = L"LPAF Window Class";
+    HINSTANCE instance{}; // handle to window class
+    HICON icon{};
+    HCURSOR cursor{};
+    DWORD nativeThreadId{};
+    std::map<f::WndH, WindowData*> identifiersToData;
+    std::map<HWND, WindowData*> handlesToData;
+};
+
+class ProgramState
+{
+public:
+    ProgramState() = default;
+    ~ProgramState() = default;
+
+    ProgramState(const ProgramState&) = delete;
+    ProgramState(const ProgramState&&) = delete;
+    ProgramState operator=(const ProgramState&) = delete;
+    ProgramState operator=(const ProgramState&&) = delete;
+
+    Win32State win32;
+    v::VulkanState vulkan;
+
+    int16_t windowCount = 0, windowsOpened = 0;
+    bool isRunning = true; // becomes false when no window is open anymore
+    bool isInitialised = false; // becomes true when initialise is called
+
+    // Mouse information
+    struct Mouse
     {
-        HWND window{};
-        std::vector<HWND> dependants; // handles to windows that depend on this one
+        int xPos{}, yPos{};
+        int wheelDelta{};
+        bool leftButton{}, rightButton{}, middleButton{}, x1Button{}, x2Button{};
+    } __attribute__((aligned(32))) __attribute__((packed)) mouse;
 
-        f::WndH id = 0;
-        wchar_t* name = nullptr;
-        bool isVisible = true, isValid = true, hasFocus = true, hasMouseInClientArea = false;
-        short xPos = 0, yPos = 0;
-        unsigned short width = 0, height = 0;
+    // Bitset for keyboard key states
+    std::bitset<256> keyStates = 0;
 
-        void (*pfOnClose)() = DoNothingVv;
-        bool (*pfOnCloseAttempt)() = DoNothingVb;
-    };
+    wchar_t textInput[100000]{};
+    bool textInputEnabled = false;
 
-    class Win32State
-    {
-    public:
-        Win32State() = default;
+    std::thread* pWindowThread{};
 
-        // Make it singleton
-        Win32State(Win32State const&) = delete;
-        Win32State operator=(Win32State const&) = delete;
-        Win32State operator=(Win32State const&&) = delete;
+    std::mutex loggerMutex; // thread safety for logging
+    std::mutex windowDataMutex; // thread safety for accesses on the window data maps
 
-        const wchar_t* pClassName = L"LPAF Window Class";
-        HINSTANCE instance{}; // handle to window class
-        HICON icon{};
-        HCURSOR cursor{};
-        DWORD nativeThreadId{};
-        std::map<f::WndH, WindowData*> identifiersToData{};
-        std::map<HWND, WindowData*> handlesToData{};
-    };
+    std::condition_variable windowThreadConditionVar;
+    std::mutex windowThreadMutex;
+    bool windowThreadIsRunning = false;
+};
 
-    class ProgramState
-    {
-    public:
-        ProgramState() = default;
+// Gets pointer to state
+inline ProgramState* GetState();
 
-        // Make it singleton
-        ProgramState(ProgramState const&) = delete;
-        ProgramState operator=(ProgramState const&) = delete;
-        ProgramState operator=(ProgramState const&&) = delete;
+// Log level for in::Log(), this will determine the prefix of the message
+enum class LogLvl : uint8_t
+{
+    Info,
+    Debug,
+    Validation,
+    Warning,
+    Error
+};
 
-        Win32State win32{};
-        v::VulkanState vulkan{};
+void WindowThread();
 
-        short windowCount = 0;  // guess what, it's the count of the currently open windows
-        short windowsOpened = 0; // amount of windows this program has opened in the past
-        bool isRunning = true; // becomes false when no window is open anymore
-        bool isInitialised = false; // becomes true when initialise is called
+void CreateNativeWindow(WindowData* wndDt);
 
-        // Mouse information
-        struct Mouse
-        {
-            bool leftButton{}, rightButton{}, middleButton{}, x1Button{}, x2Button{};
-            int xPos{}, yPos{};
-            int wheelDelta{};
-        } mouse;
+// Win32 Error creation
+void CreateWin32Error(int line, int code, const char* func);
 
-        // Bitset for keyboard key states
-        std::bitset<256> keyStates = 0;
+// Manual and instant error creation
+void CreateManualError(int line, const char* func, const char* msg);
 
-        wchar_t textInput[100000]{};
-        bool textInputEnabled = false;
+LRESULT WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
-        std::thread* pWindowThread{};
+// Look through AppInfo.windows and return the instance matching the handle
+// Time complexity is linear to the amount of windows open
+WindowData* GetWindowData(HWND handle);
 
-        std::mutex loggerMutex{}; // thread safety for logging
-        std::mutex windowDataMutex{}; // thread safety for accesses on the window data maps
+// Look through AppInfo.windows and return the instance matching the id of the underlying window
+// Time complexity is linear to the amount of windows open
+WindowData* GetWindowData(f::WndH handle);
 
-        std::condition_variable windowThreadConditionVar{};
-        std::mutex windowThreadMutex{};
-        bool windowThreadIsRunning = false;
-    };
+// Loops through AppData.windows and erases all WindowData that is invalid
+void EraseWindowData(HWND hWnd);
 
-    // Gets pointer to state
-    inline ProgramState* GetState();
+// Deallocates everything, closes handles and cleans up
+// Call when the program needs to end abruptly
+void DeAlloc();
 
-    // Log level for in::Log(), this will determine the prefix of the message
-    enum class LogLvl
-    {
-        Info,
-        Debug,
-        Validation,
-        Warning,
-        Error
-    };
-
-    void WindowThread();
-
-    void CreateNativeWindow(WindowData* wndDt);
-
-    // Win32 Error creation
-    void CreateWin32Error(int line, int code, const char* func);
-
-    // Manual and instant error creation
-    void CreateManualError(int line, const char* func, const char* msg);
-
-    LRESULT WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
-
-    // Look through AppInfo.windows and return the instance matching the handle
-    // Time complexity is linear to the amount of windows open
-    WindowData* GetWindowData(HWND handle);
-
-    // Look through AppInfo.windows and return the instance matching the id of the underlying window
-    // Time complexity is linear to the amount of windows open
-    WindowData* GetWindowData(f::WndH handle);
-
-    // Loops through AppData.windows and erases all WindowData that is invalid
-    void EraseWindowData(HWND hWnd);
-
-    // Deallocates everything, closes handles and cleans up
-    // Call when the program needs to end abruptly
-    void DeAlloc();
-
-    // Writes to the log file using the handle stored in i::ProgramState
-    void Log(const wchar_t* msg, LogLvl logLvl);
-    void Log(const char* msg, LogLvl logLvl);
-}
+// Writes to the log file using the handle stored in i::ProgramState
+void Log(const wchar_t* msg, LogLvl logLvl);
+void Log(const char* msg, LogLvl logLvl);
+} // end namespace i

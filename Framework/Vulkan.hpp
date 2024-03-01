@@ -28,77 +28,79 @@
 // Vulkan SDK
 #include "vulkan/vulkan.h"
 
-#define VUL_EC(x) { VkResult r = x; if (r) { v::CreateVulkanError(__LINE__, r, __func__); } }
+#define VUL_EC(x) { VkResult res = x; if (res) { v::CreateVulkanError(__LINE__, res, __func__); } }
 
 namespace v
 {
-    class VulkanState
+class VulkanState
+{
+public:
+    VulkanState() = default;
+    ~VulkanState() = default;
+
+    // Make it singleton
+    VulkanState(const VulkanState&) = delete;
+    VulkanState(const VulkanState&&) = delete;
+    VulkanState operator=(const VulkanState&) = delete;
+    VulkanState operator=(const VulkanState&&) = delete;
+
+    VkInstance vkInstance{};
+    VkPhysicalDevice physicalDevice{};
+    VkDevice device{};
+
+#ifdef _DEBUG
+    VkDebugUtilsMessengerEXT debugMessenger{};
+    const std::vector<const char*> validationLayers
     {
-    public:
-        VulkanState() = default;
-
-        // Make it singleton
-        VulkanState(VulkanState const&) = delete;
-        VulkanState operator=(VulkanState const&) = delete;
-        VulkanState operator=(VulkanState const&&) = delete;
-
-        VkInstance vkInstance{};
-        VkPhysicalDevice physicalDevice{};
-        VkDevice device{};
-
-#ifdef _DEBUG
-        VkDebugUtilsMessengerEXT debugMessenger{};
-        const std::vector<const char*> validationLayers
-        {
-            "VK_LAYER_KHRONOS_validation"
-        };
-#endif // _DEBUG
-
-        const std::vector<const char*> extension
-        {
-#ifdef _DEBUG
-            "VK_EXT_debug_utils",
-#endif // _DEBUG
-
-            "VK_KHR_surface",
-            "VK_KHR_win32_surface",
-        };
+        "VK_LAYER_KHRONOS_validation"
     };
-
-    void InitialiseVulkan();
-
-    void UnInitializeVulkan();
-
-    VkPhysicalDevice ChooseBestPhysicalDevice(const std::vector<VkPhysicalDevice>& dev);
-
-    // Vulkan error creation
-    void CreateVulkanError(int line, int c, const char* func);
-
-#ifdef _DEBUG
-    // Called when a validation layer is invoked
-    VkBool32 VKAPI_CALL ValidationDebugCallback(
-        VkDebugUtilsMessageSeverityFlagBitsEXT msgSeverity,
-        VkDebugUtilsMessageTypeFlagsEXT msgType,
-        const VkDebugUtilsMessengerCallbackDataEXT* callbackData,
-        void* userData
-    );
 #endif // _DEBUG
 
-    namespace p
+    const std::vector<const char*> extension
     {
-        // This is a proxy function
-        VkResult CreateDebugUtilsMessengerExt(
-            VkInstance instance,
-            const VkDebugUtilsMessengerCreateInfoEXT* pCreateInfo,
-            const VkAllocationCallbacks* pAllocator,
-            VkDebugUtilsMessengerEXT* pDebugMessenger
-        );
+#ifdef _DEBUG
+        "VK_EXT_debug_utils",
+#endif // _DEBUG
 
-        // This is a proxy function
-        void DestroyDebugUtilsMessengerExt(
-            VkInstance instance,
-            VkDebugUtilsMessengerEXT debugMessenger,
-            const VkAllocationCallbacks* pAllocator
-        );
-    }
-}
+        "VK_KHR_surface",
+        "VK_KHR_win32_surface",
+    };
+};
+
+void InitialiseVulkan();
+
+void UnInitializeVulkan();
+
+VkPhysicalDevice ChooseBestPhysicalDevice(const std::vector<VkPhysicalDevice>& dev);
+
+// Vulkan error creation
+void CreateVulkanError(int line, int code, const char* func);
+
+#ifdef _DEBUG
+// Called when a validation layer is invoked
+VkBool32 VKAPI_CALL ValidationDebugCallback(
+    VkDebugUtilsMessageSeverityFlagBitsEXT msgSeverity,
+    VkDebugUtilsMessageTypeFlagsEXT msgType,
+    const VkDebugUtilsMessengerCallbackDataEXT* callbackData,
+    void* userData
+);
+#endif // _DEBUG
+
+namespace p
+{
+    // This is a proxy function
+    VkResult CreateDebugUtilsMessengerExt(
+        VkInstance instance,
+        const VkDebugUtilsMessengerCreateInfoEXT* pCreateInfo,
+        const VkAllocationCallbacks* pAllocator,
+        VkDebugUtilsMessengerEXT* pDebugMessenger
+    );
+
+    // This is a proxy function
+    void DestroyDebugUtilsMessengerExt(
+        VkInstance instance,
+        VkDebugUtilsMessengerEXT debugMessenger,
+        const VkAllocationCallbacks* pAllocator
+    );
+} // end namespace p
+} // end namespace v

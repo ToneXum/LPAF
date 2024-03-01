@@ -28,10 +28,18 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="b43a079c-b7ae-41fc-bc1a-f78f46edc6d3" name="Changes" comment="initial rework">
+    <list default="true" id="b43a079c-b7ae-41fc-bc1a-f78f46edc6d3" name="Changes" comment="delete visual studios project files">
+      <change beforePath="$PROJECT_DIR$/.idea/inspectionProfiles/Project_Default.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/inspectionProfiles/Project_Default.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Framework/Framework.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Framework/Framework.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Framework/Framework.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/Framework/Framework.hpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Framework/Internals.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Framework/Internals.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Framework/Internals.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/Framework/Internals.hpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Framework/Vulkan.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Framework/Vulkan.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Framework/Vulkan.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/Framework/Vulkan.hpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Tests/CMakeLists.txt" beforeDir="false" afterPath="$PROJECT_DIR$/Tests/CMakeLists.txt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Tests/Main.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Tests/Main.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/readme.md" beforeDir="false" afterPath="$PROJECT_DIR$/readme.md" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -41,7 +49,7 @@
   <component name="ClangdSettings">
     <option name="formatViaClangd" value="false" />
   </component>
-  <component name="ExecutionTargetManager" SELECTED_TARGET="CMakeBuildProfile:Debug" />
+  <component name="ExecutionTargetManager" SELECTED_TARGET="CMakeBuildProfile:Release" />
   <component name="FileTemplateManagerImpl">
     <option name="RECENT_TEMPLATES">
       <list>
@@ -95,9 +103,6 @@
   <component name="MarkdownSettingsMigration">
     <option name="stateVersion" value="1" />
   </component>
-  <component name="OCResolveContextSettings">
-    <option name="configuration" value="1-Release-Framework_Lib" />
-  </component>
   <component name="ProblemsViewState">
     <option name="selectedTabId" value="CurrentFile" />
   </component>
@@ -118,7 +123,7 @@
   <component name="PropertiesComponent"><![CDATA[{
   "keyToString": {
     "ASKED_MARK_IGNORED_FILES_AS_EXCLUDED": "true",
-    "CMake Application.Framework_Lib.executor": "Debug",
+    "CMake Application.Framework_Lib.executor": "Run",
     "CMake Application.Test_Application.executor": "Run",
     "RunOnceActivity.OpenProjectViewOnStart": "true",
     "RunOnceActivity.ShowReadmeOnStart": "true",
@@ -216,7 +221,15 @@
       <option name="project" value="LOCAL" />
       <updated>1708982383563</updated>
     </task>
-    <option name="localTasksCounter" value="4" />
+    <task id="LOCAL-00004" summary="delete visual studios project files">
+      <option name="closed" value="true" />
+      <created>1709327398610</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1709327398610</updated>
+    </task>
+    <option name="localTasksCounter" value="5" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -263,18 +276,8 @@
       <path value="$PROJECT_DIR$/Framework" />
     </ignored-roots>
     <MESSAGE value="initial rework" />
-    <option name="LAST_COMMIT_MESSAGE" value="initial rework" />
-  </component>
-  <component name="XDebuggerManager">
-    <breakpoint-manager>
-      <breakpoints>
-        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
-          <url>file://$PROJECT_DIR$/Framework/Vulkan.cpp</url>
-          <line>32</line>
-          <option name="timeStamp" value="1" />
-        </line-breakpoint>
-      </breakpoints>
-    </breakpoint-manager>
+    <MESSAGE value="delete visual studios project files" />
+    <option name="LAST_COMMIT_MESSAGE" value="delete visual studios project files" />
   </component>
   <component name="XSLT-Support.FileAssociations.UIState">
     <expand />

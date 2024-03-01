@@ -198,7 +198,7 @@ namespace f // a one letter namespace name...
         KeyErEof               = 0xF9, // erase end-of-file key
         KeyPlay                = 0xFA, // playback
         KeyZoom                = 0xFB, // change zoom level
-        KeyNoname              = 0xFC, // unused but still valid key
+        KeyNoName              = 0xFC, // unused but still valid key
         KeyPa1                 = 0xFD, // pa1 key
         KeyClearOem            = 0xFE  // oem specific clear key
     };
@@ -372,7 +372,7 @@ namespace f // a one letter namespace name...
 
     // Creates a message box with the given information
     // Can only have one owner
-    int MessageBox(WndH owner, const wchar_t* title, const wchar_t* msg, int flags);
+    int MessageBox(WndH owner, const wchar_t* title, const wchar_t* msg, uint16_t flags);
 
     // Check the key state for the specified key, return true if the key is pressed
     bool IsKeyPressed(Key code);
