@@ -109,7 +109,6 @@ void i::WindowThread()
 
     // message pump for the window
     MSG msg{};
-#pragma unroll
     while (GetMessageA(&msg, nullptr, 0, 0) != 0)
     {
         TranslateMessage(&msg);
@@ -159,7 +158,7 @@ void i::CreateNativeWindow(i::WindowData* wndDt)
     i::GetState()->win32.handlesToData.insert({wndDt->window, wndDt});
 }
 
-LRESULT i::WindowProc(HWND window, UINT message, WPARAM wParam, LPARAM lParam)
+LRESULT i::WindowProc(HWND window, UINT message, WPARAM wParam, LPARAM lParam) // NOLINT(*-function-cognitive-complexity)
 {
     switch (message)
     {
@@ -204,8 +203,8 @@ LRESULT i::WindowProc(HWND window, UINT message, WPARAM wParam, LPARAM lParam)
         // Keyboard and text input
         case WM_KEYDOWN:
         {
-            if (!(static_cast<uint64_t>(lParam) & 0x40000000ULL)) // bitmask, check previous key state
-                break;
+            if (!(static_cast<uint64_t>(lParam) & 0x40000000ULL)) // previous key state, break if key was down
+                break; // avoids unnecessary work
 
             i::GetState()->keyStates.set(wParam);
             break;
@@ -234,14 +233,14 @@ LRESULT i::WindowProc(HWND window, UINT message, WPARAM wParam, LPARAM lParam)
             {
                 if (wParam != 0x0008) // key is not backspace
                 {
-                    wchar_t* pText = static_cast<wchar_t*>(i::GetState()->textInput);
+                    auto* pText = static_cast<wchar_t*>(i::GetState()->textInput);
                     size_t textLength = std::wcslen(pText);
                     if (textLength == 100000) break;
                     pText[textLength] = static_cast<wchar_t>(wParam);
                 }
                 else
                 {
-                    wchar_t* pText = static_cast<wchar_t*>(i::GetState()->textInput);
+                    auto* pText = static_cast<wchar_t*>(i::GetState()->textInput);
                     size_t textLength = std::wcslen(pText);
                     pText[textLength - 1] = 0;
                 }
@@ -379,7 +378,6 @@ LRESULT i::WindowProc(HWND window, UINT message, WPARAM wParam, LPARAM lParam)
 
 void i::DeAlloc()
 {
-#pragma unroll 1
     for (std::pair<HWND, WindowData*> pair : i::GetState()->win32.handlesToData)
     {
         delete pair.second;
@@ -396,22 +394,20 @@ bool i::DoNothingVb()
 
 i::WindowData* i::GetWindowData(HWND handle)
 {
-    std::unique_lock<std::mutex> lock(i::GetState()->windowDataMutex);
-    std::map<HWND, WindowData*>::iterator found = i::GetState()->win32.handlesToData.find(handle);
+    //std::unique_lock<std::mutex> lock(i::GetState()->windowDataMutex);
+    auto found = i::GetState()->win32.handlesToData.find(handle);
 
     if (found != i::GetState()->win32.handlesToData.end())
     {
-        lock.unlock();
         return found->second;
     }
 
-    lock.unlock();
     return nullptr;
 }
 
 i::WindowData* i::GetWindowData(f::WndH handle)
 {
-    std::map<f::WndH, WindowData*>::iterator found = i::GetState()->win32.identifiersToData.find(handle);
+    auto found = i::GetState()->win32.identifiersToData.find(handle);
 
     if (found != i::GetState()->win32.identifiersToData.end())
     {
@@ -425,7 +421,7 @@ void i::EraseWindowData(HWND hWnd)
 {
     std::unique_lock<std::mutex> lock(i::GetState()->windowDataMutex);
 
-    std::map<HWND, WindowData*>::iterator res = i::GetState()->win32.handlesToData.find(hWnd); // find data to be erased
+    auto res = i::GetState()->win32.handlesToData.find(hWnd); // find data to be erased
 
     std::wostringstream msg;
     msg << "Window data for " << res->first << " who's handle is " << res->second->id << " was deleted";
@@ -434,8 +430,6 @@ void i::EraseWindowData(HWND hWnd)
     i::GetState()->win32.identifiersToData.erase(res->second->id); // erase data from the id map using the id
     delete res->second; // free window data
     i::GetState()->win32.handlesToData.erase(res); // erase data from handle map using the iterator
-
-    lock.unlock();
 }
 
 void i::Log(const wchar_t* msg, LogLvl logLvl)
@@ -444,12 +438,9 @@ void i::Log(const wchar_t* msg, LogLvl logLvl)
     std::chrono::system_clock::time_point now = std::chrono::system_clock::now();
     std::time_t currentDate = std::chrono::system_clock::to_time_t(now);
 
-    char timeBuf[30] = {0}; // minimum required size for this is 26. Who knows if this is going to run in 9997976 years?
-    int err = ctime_s(timeBuf, sizeof(timeBuf), &currentDate);
-    *strchr(timeBuf, '\n') = 0; // replace that pesky newline with the null-char
-
     i::GetState()->loggerMutex.lock();
-    std::cout << "[ " << timeBuf << " ]";
+    const time_t currentTime = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
+    std::cout << "[" << std::ctime(&currentTime) << "]";
 
     switch (logLvl)
     {
@@ -490,12 +481,9 @@ void i::Log(const char* msg, LogLvl logLvl)
     std::chrono::system_clock::time_point now = std::chrono::system_clock::now();
     std::time_t currentDate = std::chrono::system_clock::to_time_t(now);
 
-    char timeBuf[30] = {0}; // minimum required size for this is 26. Who knows if this is going to run in 9997976 years?
-    int err = ctime_s(timeBuf, sizeof(timeBuf), &currentDate);
-    *strchr(timeBuf, '\n') = 0; // replace that pesky newline with the null-char
-
     i::GetState()->loggerMutex.lock();
-    std::cout << "[ " << timeBuf << " ]";
+    const time_t currentTime = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
+    std::cout << "[ " << std::ctime(&currentTime) << " ]";
 
     switch (logLvl)
     {
