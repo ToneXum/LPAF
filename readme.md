@@ -19,7 +19,6 @@ For even more information like announcements, polls and Q&A you can visit the [D
 For any inquiries you can send an E-Mail to tonexum@national.shitposting.agency (Yes, I'm not joking. Checked every few days)
 
 
-### Mention
-Big thanks goes to [JetBrains](https://jb.gg/) for granting me (ToneXum) a free license for open source development.
-<!-- Damn, why is it so big? Haha, that's what she said -->
-<img style="width: 50%; height 50%;" src="https://resources.jetbrains.com/storage/products/company/brand/logos/jb_beam.png" alt="Main JetBrains Logo">
+### Special thanks to JetBrains
+[JetBrains](https://jb.gg/) supports this project by providing a licence to their products for open source development.
+<img style="width: 32%; height 32%;" src="https://resources.jetbrains.com/storage/products/company/brand/logos/jb_beam.png" alt="Main JetBrains Logo">
