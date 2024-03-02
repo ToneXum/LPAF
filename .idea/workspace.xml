@@ -28,23 +28,7 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="b43a079c-b7ae-41fc-bc1a-f78f46edc6d3" name="Changes" comment="edit image embed in readme.md">
-      <change afterPath="$PROJECT_DIR$/Documentation/External/CreateWindowAsync_function.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Documentation/External/CreateWindowSync_function.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Documentation/External/WindowCreateData_type.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Documentation/External/WndH_type.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Documentation/External/tsd_CreateWindow_function.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Documentation/External/tsd_Initialize_function.md" beforeDir="false" afterPath="$PROJECT_DIR$/Documentation/External/Initialize_function.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Documentation/External/tsd_IsValidHandle_function.md" beforeDir="false" afterPath="$PROJECT_DIR$/Documentation/External/IsValidHandle_function.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Documentation/External/tsd_OnWindowCloseAttempt_function.md" beforeDir="false" afterPath="$PROJECT_DIR$/Documentation/External/OnWindowCloseAttempt_function.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Documentation/External/tsd_OnWindowClose_function.md" beforeDir="false" afterPath="$PROJECT_DIR$/Documentation/External/OnWindowClose_function.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Documentation/External/tsd_Uninitialise_function.md" beforeDir="false" afterPath="$PROJECT_DIR$/Documentation/External/tsd_Uninitialise_function.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Documentation/External/tsd_WND_H_type.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Documentation/External/tsd_WindowCreateData_type.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Framework/Framework.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/Framework/Framework.hpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Framework/Internals.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Framework/Internals.cpp" afterDir="false" />
-    </list>
+    <list default="true" id="b43a079c-b7ae-41fc-bc1a-f78f46edc6d3" name="Changes" comment="slight documentation expansion" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -200,7 +184,7 @@
       <workItem from="1709141314882" duration="125000" />
       <workItem from="1709148539205" duration="1806000" />
       <workItem from="1709232316144" duration="5724000" />
-      <workItem from="1709338049869" duration="4047000" />
+      <workItem from="1709338049869" duration="5284000" />
     </task>
     <task id="LOCAL-00001" summary="initial rework">
       <option name="closed" value="true" />
@@ -266,7 +250,15 @@
       <option name="project" value="LOCAL" />
       <updated>1709340731562</updated>
     </task>
-    <option name="localTasksCounter" value="9" />
+    <task id="LOCAL-00009" summary="slight documentation expansion">
+      <option name="closed" value="true" />
+      <created>1709343377940</created>
+      <option name="number" value="00009" />
+      <option name="presentableId" value="LOCAL-00009" />
+      <option name="project" value="LOCAL" />
+      <updated>1709343377940</updated>
+    </task>
+    <option name="localTasksCounter" value="10" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -317,7 +309,8 @@
     <MESSAGE value="finish rework" />
     <MESSAGE value="edit image embed in readme.md" />
     <MESSAGE value="improve timestamps on log messages" />
-    <option name="LAST_COMMIT_MESSAGE" value="improve timestamps on log messages" />
+    <MESSAGE value="slight documentation expansion" />
+    <option name="LAST_COMMIT_MESSAGE" value="slight documentation expansion" />
   </component>
   <component name="XSLT-Support.FileAssociations.UIState">
     <expand />

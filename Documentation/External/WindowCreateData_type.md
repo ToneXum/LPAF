@@ -1,5 +1,5 @@
 # f::WindowCreateData
-`WindowCreateData` is a structure type for data that you pass to [f::CreateWindowAsync](CreateWindowAsync_function).
+`WindowCreateData` is a structure type for data that you pass to [f::CreateWindowAsync](CreateWindowAsync_function.md).
 
 ### Definition
 ```C++
@@ -39,11 +39,11 @@ two sections below.
 
 `void (*OnClose)()`:
 A function pointer that will be called when the window is closed. Leave this `nullptr` to not use this feature. If you 
-want to specify a function or change it after the window was created use [f::OnWindowClose](OnWindowClose_function).
+want to specify a function or change it after the window was created use [f::OnWindowClose](OnWindowClose_function.md).
 
 `bool (*OnCloseAttempt)()`:
 A function pointer that will be called when the window is requested to be closed. A close request happens when the X 
 button (non-client region or taskbar) or `Alt + F4` is pressed. The function must a return a boolean value indicating 
 whether the window should actually be closed. If it returns `true` on a call, the visible surface will be destroyed and 
 `OnClose` will be called. If it returns `false`, nothing will happen and the window stays open. If you want to specify a
-function or change it after the window was created use [f::OnWindowCloseAttempt](OnWindowCloseAttempt_function).
+function or change it after the window was created use [f::OnWindowCloseAttempt](OnWindowCloseAttempt_function.md).

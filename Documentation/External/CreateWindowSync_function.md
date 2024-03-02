@@ -1,6 +1,6 @@
 # f::CreateWindowSync
 Requests the creation of a new window on the desktop. You may only call this function after calling 
-[f::Initialise](Initialise_function). This function does guarantee that the window will be created after it returns. If 
+[f::Initialise](Initialise_function.md). This function does guarantee that the window will be created after it returns. If 
 you don't care about that, you may use [f::CreateWindowAsync](CreateWindowAsync_function.md) which does not wait and is
 therefore incredibly cheap.
 
@@ -14,7 +14,7 @@ WndH f::CreateWindowSync(
 ### Parameters
 `const WindowCreateData& windowCreateData`:
 A reference to a structure that contains all the information needed to describe the window that is supposed to be 
-opened. See [WindowCreateData](WindowCreateData_type) for more.
+opened. See [WindowCreateData](WindowCreateData_type.md) for more.
 
 ### Return value
 `CreateWindowSync` returns a `WndH` (basically just a number) which is a handle that the user can use to identify the
