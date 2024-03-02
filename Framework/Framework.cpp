@@ -23,10 +23,12 @@
 // About this file:
 // Here are all the implementations that the (framework) user interacts with.
 
+#include <csignal>
+
 #include "Framework.hpp"
 #include "Internals.hpp"
 
-void f::Initialise(int iconId, int cursorId)
+void f::Initialise(const InitializationData& initializationData)
 {
     // Create thread as early as possible. Since the execution does not start immediately this function will wait for it
     // to do so. In the meantime, it can perform work.
@@ -36,11 +38,11 @@ void f::Initialise(int iconId, int cursorId)
     i::GetState()->win32.instance = GetModuleHandle(nullptr);
 
     // Check the recourses, if invalid continue anyway
-    if (icon)
+    if (initializationData.iconId)
     {
         i::GetState()->win32.icon = static_cast<HICON>(LoadImageA(
             i::GetState()->win32.instance, 
-            MAKEINTRESOURCE(icon),
+            MAKEINTRESOURCE(initializationData.iconId),
             IMAGE_ICON, 0, 0, 
             LR_DEFAULTCOLOR));
 
@@ -50,11 +52,11 @@ void f::Initialise(int iconId, int cursorId)
         }
     }
 
-    if (cursor)
+    if (initializationData.cursorId)
     {
         i::GetState()->win32.cursor = static_cast<HCURSOR>(LoadImageA(
             i::GetState()->win32.instance, 
-            MAKEINTRESOURCE(cursor),
+            MAKEINTRESOURCE(initializationData.cursorId),
             IMAGE_CURSOR, 0, 0, 
             LR_DEFAULTCOLOR));
 
@@ -463,6 +465,7 @@ bool f::IsKeyPressedOnce(Key code)
     bool state = i::GetState()->keyStates.test(static_cast<int>(code));
     if (state)
         i::GetState()->keyStates.reset(static_cast<int>(code));
+
     return state;
 }
 
@@ -644,4 +647,9 @@ f::WndH f::GetMouseContainerWindow()
     }
     lock.unlock();
     return 0;
+}
+
+void f::SetWindowVisibility(f::WndH handle, f::WindowVisibility visibility)
+{
+    ShowWindow(i::GetWindowData(handle)->window, visibility);
 }

@@ -261,13 +261,34 @@ namespace f // a one letter namespace name...
         WpBottomRight
     };
 
+    enum InitialisationFlags : uint8_t
+    {
+        UseVulkan       = 0b1, // enable LPAFs renderer
+        NoClose         = 0b10, // disables to close button on all windows
+    };
+
+    enum WindowVisibility : uint8_t
+    {
+        WvHide, // hide
+        WvNormal, // show and activate
+        WvActivateMinimized, // minimize and activate
+        WvActivateMaximised, // maximize and activate
+        WvNormalNoActivate, // show and don't activate
+        WvActivate, // activate
+        WvMinimize, // minimize and deactivate
+        WvMinimizeNoActivate, // the same as WvMinimize?
+        WvActivateNoActivate, // XD
+        WvRestore // restore from minimize and activate
+    };
+
     // Handle to identify a window with
     using WndH = uint16_t;
 
     struct InitializationData
     {
         int iconId, cursorId;
-    };
+
+    } __attribute__((aligned(8)));
 
     // Window creation data, this describes the window that is supposed to be opened
     struct WindowCreateData
@@ -283,7 +304,7 @@ namespace f // a one letter namespace name...
     } __attribute__((aligned(64)));
 
     // Start the entire framework up, so it can be used.
-    void Initialise(int icon, int cursor);
+    void Initialise(const InitializationData& initialisationData);
 
     // Shutdown, cleanup.
     void UnInitialise();
@@ -310,6 +331,8 @@ namespace f // a one letter namespace name...
     // Close all windows, don't care if some windows refuse
     // OnWindowCloseAttempt will not be called
     void CloseAllWindowsForce();
+
+    void SetWindowVisibility(WndH handle, WindowVisibility visibility);
 
     // Specify a function to be executed when a window is requested to be closed
     // The function must return a boolean indicating whether the window should be closed

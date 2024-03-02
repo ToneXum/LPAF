@@ -47,8 +47,9 @@ void i::CreateWin32Error(int line, int code, const char* func)
 
     if (errorMessage == nullptr)
     {
-        msg << "A Win32 API call resulted in fatal error " << code << " at line " << line << " in " << func << ".\n\n" << errorMessage;
-        msg << "\n" << "This is an internal error likely caused by the framework itself, the application must quit now.\n";
+        msg << "A Win32 API call resulted in fatal error " << code << " at line " << line << " in " << func << ".\n\n";
+        msg << errorMessage << "\n";
+        msg << "This is an internal error likely caused by the framework itself, the application must quit now.\n";
     }
     else
     {
@@ -94,7 +95,10 @@ void i::CreateManualError(int line, const char* func, const char* msg)
     str << "The program is unable to recover, the application must quit now!";
     str << std::flush;
 
-    MessageBoxA(nullptr, str.str().c_str(), "Internal Error", uint64_t{MB_TASKMODAL} | uint64_t{MB_OK} | uint64_t{MB_ICONERROR});
+    MessageBoxA(nullptr, str.str().c_str(), "Internal Error",
+                uint64_t{MB_TASKMODAL} |
+                uint64_t{MB_OK} |
+                uint64_t{MB_ICONERROR});
 
     DeAlloc();
     std::exit(-1);
@@ -139,7 +143,8 @@ void i::CreateNativeWindow(i::WindowData* wndDt)
         i::GetState()->win32.pClassName,
         wndDt->name,
         WS_MINIMIZEBOX | WS_CAPTION | WS_SYSMENU,
-        !wndDt->xPos ? CW_USEDEFAULT : wndDt->xPos, !wndDt->yPos ? CW_USEDEFAULT : wndDt->yPos, // man do I love ternary expression :)
+            // man do I love ternary expressions :)
+        !wndDt->xPos ? CW_USEDEFAULT : wndDt->xPos, !wndDt->yPos ? CW_USEDEFAULT : wndDt->yPos,
         wndDt->width, wndDt->height,
         nullptr,
         nullptr,
@@ -152,7 +157,8 @@ void i::CreateNativeWindow(i::WindowData* wndDt)
     // ran out of range
     if (wndDt->id == SHRT_MAX)
     {
-        i::Log(L"Handle out of range, window was opened but no handle could be created. You somehow opened 32767 windows...", i::LogLvl::Error);
+        i::Log(L"Handle out of range, window was opened but no handle could be created. You somehow opened 32767 "
+               "windows...", i::LogLvl::Error);
         return;
     }
 
@@ -209,10 +215,11 @@ LRESULT i::WindowProc(HWND window, UINT message, WPARAM wParam, LPARAM lParam) /
         // Keyboard and text input
         case WM_KEYDOWN:
         {
-            if (!(static_cast<uint64_t>(lParam) & 0x40000000ULL)) // previous key state, break if key was down
-                break; // avoids unnecessary work
-
-            i::GetState()->keyStates.set(wParam);
+            if (!(lParam & 0x40000000))
+            {
+                i::Log("Key state was updated", i::LogLvl::Info);
+                i::GetState()->keyStates.set(wParam);
+            }
             break;
         }
         case WM_KEYUP:
@@ -222,8 +229,9 @@ LRESULT i::WindowProc(HWND window, UINT message, WPARAM wParam, LPARAM lParam) /
         }
         case WM_SYSKEYDOWN:
         {
-            if (!(static_cast<uint64_t>(lParam) & 0x40000000ULL)) // bitmask, check previous key state
+            if (!(lParam & 0x40000000))
             {
+                i::Log("Key state was updated", i::LogLvl::Info);
                 i::GetState()->keyStates.set(wParam);
             }
             break;
@@ -239,14 +247,14 @@ LRESULT i::WindowProc(HWND window, UINT message, WPARAM wParam, LPARAM lParam) /
             {
                 if (wParam != 0x0008) // key is not backspace
                 {
-                    auto* pText = static_cast<wchar_t*>(i::GetState()->textInput);
+                    auto* pText = i::GetState()->textInput;
                     size_t textLength = std::wcslen(pText);
                     if (textLength == 100000) break;
                     pText[textLength] = static_cast<wchar_t>(wParam);
                 }
-                else
+                else // key is backspace
                 {
-                    auto* pText = static_cast<wchar_t*>(i::GetState()->textInput);
+                    auto* pText = i::GetState()->textInput;
                     size_t textLength = std::wcslen(pText);
                     pText[textLength - 1] = 0;
                 }
@@ -527,3 +535,10 @@ i::ProgramState* i::GetState()
     static i::ProgramState* state{new i::ProgramState};
     return state;
 }
+
+i::ProgramState::ProgramState()
+    : textInput(new wchar_t[100000])
+{}
+
+i::ProgramState::~ProgramState()
+{ delete[] textInput; }

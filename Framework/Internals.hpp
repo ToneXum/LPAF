@@ -40,12 +40,23 @@
 #include "Framework.hpp"
 
 // Error check for Win32 API calls
-#define WIN32_EC(x) { if (!x) { i::CreateWin32Error(__LINE__, GetLastError(), __func__); } }
+#define WIN32_EC(x) { if (!(x)) { i::CreateWin32Error(__LINE__, GetLastError(), __func__); } }
 // Error check for Win32 API calls but the return value is saved
 #define WIN32_EC_RET(var, func) { var = func; if (!var) { i::CreateWin32Error(__LINE__, GetLastError(), __func__); } }
 
 // Manual error creation with automatic additional information
 #define FRAMEWORK_ERR(msg) { i::CreateManualError(__LINE__, __func__, msg); }
+
+#ifdef _DEBUG
+#ifdef _WINDOWS
+#define DEBUG_BREAK(expr) { if (!(expr)) { DebugBreak(); } }
+#else
+#include <signal.h>
+#define DEBUG_BREAK(expr) { if (!(expr)) { raise(SIGTRAP); } } // Its a trap!
+#endif
+#else
+#define DEBUG_BREAK
+#endif
 
 // Custom Win32 messages
 #define WM_CREATE_WINDOW_REQ         (WM_USER + 1)
@@ -87,20 +98,21 @@ public:
     Win32State operator=(const Win32State&) = delete;
     Win32State operator=(const Win32State&&) = delete;
 
+    std::map<f::WndH, WindowData*> identifiersToData;
+    std::map<HWND, WindowData*> handlesToData;
+
     const wchar_t* pClassName = L"LPAF Window Class";
     HINSTANCE instance{}; // handle to window class
     HICON icon{};
     HCURSOR cursor{};
     DWORD nativeThreadId{};
-    std::map<f::WndH, WindowData*> identifiersToData;
-    std::map<HWND, WindowData*> handlesToData;
 };
 
 class ProgramState
 {
 public:
-    ProgramState() = default;
-    ~ProgramState() = default;
+    ProgramState();
+    ~ProgramState();
 
     ProgramState(const ProgramState&) = delete;
     ProgramState(const ProgramState&&) = delete;
@@ -110,23 +122,16 @@ public:
     Win32State win32;
     v::VulkanState vulkan;
 
-    int16_t windowCount = 0, windowsOpened = 0;
-    bool isRunning = true; // becomes false when no window is open anymore
-    bool isInitialised = false; // becomes true when initialise is called
-
     // Mouse information
     struct Mouse
     {
         int xPos{}, yPos{};
         int wheelDelta{};
         bool leftButton{}, rightButton{}, middleButton{}, x1Button{}, x2Button{};
-    } __attribute__((aligned(32))) __attribute__((packed)) mouse;
+    } __attribute__((aligned(32))) mouse;
 
     // Bitset for keyboard key states
     std::bitset<256> keyStates = 0;
-
-    wchar_t textInput[100000]{};
-    bool textInputEnabled = false;
 
     std::thread* pWindowThread{};
 
@@ -135,6 +140,13 @@ public:
 
     std::condition_variable windowThreadConditionVar;
     std::mutex windowThreadMutex;
+
+    wchar_t* textInput;
+
+    int16_t windowCount = 0, windowsOpened = 0;
+    bool isRunning = true; // becomes false when no window is open anymore
+    bool isInitialised = false; // becomes true when initialise is called
+    bool textInputEnabled = false;
     bool windowThreadIsRunning = false;
 };
 

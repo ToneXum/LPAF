@@ -2,7 +2,7 @@
 
 int main()
 {
-    f::Initialise(0, 0); // Intellisense? Are you good?
+    f::Initialise(f::InitializationData()); // Intellisense? Are you good?
 
     f::WindowCreateData cdt{};
     cdt.pName = L"Dependant"; cdt.height = 500; cdt.width = 500;
@@ -10,6 +10,8 @@ int main()
 
     cdt.pName = L"Uninvited guest";
     f::WndH whoInvitedThisGuy = f::CreateWindowAsync(cdt);
+
+    uint8_t counter = 0;
 
     f::SetTextInputState(true);
     while (f::Running())
@@ -30,6 +32,20 @@ int main()
 
         if (f::IsKeyPressedOnce(f::KeyEscape))
             f::CloseWindow(whoInvitedThisGuy);
+
+        if (f::IsKeyPressedOnce(f::KeyH))
+        {
+            f::SetWindowVisibility(whoInvitedThisGuy, f::WvHide);
+            counter++;
+        }
+
+        if (counter == 128)
+        {
+            f::SetWindowVisibility(whoInvitedThisGuy, f::WvNormalNoActivate);
+            counter = 0;
+        }
+        if (counter > 0)
+            counter++;
 
         // simulate computation
         f::Halt(16);
