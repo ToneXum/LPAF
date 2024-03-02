@@ -29,23 +29,11 @@
 #undef ERROR
 #endif // _WINDOWS
 
-#include <array>
 #include <bitset>
-#include <chrono>
-#include <complex>
 #include <condition_variable>
-#include <cstdlib>
-#include <ctime>
-#include <exception>
-#include <fstream>
-#include <iostream>
 #include <map>
-#include <memory>
 #include <mutex>
-#include <queue>
-#include <sstream>
 #include <thread>
-#include <unordered_map>
 #include <vector>
 
 #include "Vulkan.hpp"

@@ -20,6 +20,12 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
+#include <algorithm>
+#include <chrono>
+#include <ctime>
+#include <iostream>
+#include <sstream>
+
 #include "Internals.hpp"
 
 #ifdef _DEBUG
@@ -48,7 +54,7 @@ void i::CreateWin32Error(int line, int code, const char* func)
     {
         msg << "An Error occurred but the error message could not be formated. ";
         msg << "This is either caused by the error message being too long or something going seriously wrong. ";
-        msg << "If you found a way to reliably produce this error, then please open an issue on LPAFs GitHub. \n";
+        msg << "If you found a way to reliably produce this error, please open an issue on LPAFs GitHub. \n";
     }
 
     MessageBoxA(nullptr, msg.str().c_str(), "Internal Error!", MB_ICONERROR | MB_TASKMODAL | MB_OK);
@@ -435,37 +441,37 @@ void i::Log(const wchar_t* msg, LogLvl logLvl)
 {
 #ifdef _DEBUG
     std::chrono::system_clock::time_point now = std::chrono::system_clock::now();
-    std::time_t currentDate = std::chrono::system_clock::to_time_t(now);
+    std::time_t currentTime = std::chrono::system_clock::to_time_t(now);
 
     i::GetState()->loggerMutex.lock();
-    const time_t currentTime = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
-    std::cout << "[" << std::ctime(&currentTime) << "]";
+    std::cout << "[" << std::put_time(std::localtime(&currentTime), "%d.%m.%Y %H:%M:%S") << "]";
 
     switch (logLvl)
     {
         case i::LogLvl::Info:
         {
-            std::cout << " [ Info ]: ";
+            std::cout << " [Info]: ";
             break;
         }
         case i::LogLvl::Debug:
         {
-            std::cout << " [ Debug ]: ";
+            std::cout << " [Debug]: ";
             break;
         }
         case i::LogLvl::Warning:
         {
-            std::cout << " [ Warning ]: ";
+            std::cout << " [Warning]: ";
             break;
         }
         case i::LogLvl::Error:
         {
-            std::cout << " [ Error ]: ";
+            std::cout << " [Error]: ";
             break;
         }
         case i::LogLvl::Validation:
         {
-            std::cout << " [ VALID ]: ";
+            std::cout << " [Valid]: ";
+            break;
         }
     }
 
@@ -478,37 +484,36 @@ void i::Log(const char* msg, LogLvl logLvl)
 {
 #ifdef _DEBUG
     std::chrono::system_clock::time_point now = std::chrono::system_clock::now();
-    std::time_t currentDate = std::chrono::system_clock::to_time_t(now);
+    std::time_t currentTime = std::chrono::system_clock::to_time_t(now);
 
     i::GetState()->loggerMutex.lock();
-    const time_t currentTime = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
-    std::cout << "[ " << std::ctime(&currentTime) << " ]";
+    std::cout << "[" << std::put_time(std::localtime(&currentTime), "%d.%m.%Y %H:%M:%S") << "]";
 
     switch (logLvl)
     {
         case i::LogLvl::Info:
         {
-            std::cout << " [ Info ]: ";
+            std::cout << " [Info]: ";
             break;
         }
         case i::LogLvl::Debug:
         {
-            std::cout << " [ Debug ]: ";
+            std::cout << " [Debug]: ";
             break;
         }
         case i::LogLvl::Warning:
         {
-            std::cout << " [ Warning ]: ";
+            std::cout << " [Warning]: ";
             break;
         }
         case i::LogLvl::Error:
         {
-            std::cout << " [ Error ]: ";
+            std::cout << " [Error]: ";
             break;
         }
         case i::LogLvl::Validation:
         {
-            std::cout << " [ VALID ]: ";
+            std::cout << " [Valid]: ";
         }
     }
 
