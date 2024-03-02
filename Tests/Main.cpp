@@ -2,7 +2,7 @@
 
 int main()
 {
-    f::Initialize(0, 0); // Intellisense? Are you good?
+    f::Initialise(0, 0); // Intellisense? Are you good?
 
     f::WindowCreateData cdt{};
     cdt.pName = L"Dependant"; cdt.height = 500; cdt.width = 500;
@@ -35,6 +35,6 @@ int main()
         f::Halt(16);
     }
 
-    f::UnInitialize();
+    f::UnInitialise();
     return 0;
 }

@@ -26,7 +26,7 @@
 #include "Framework.hpp"
 #include "Internals.hpp"
 
-void f::Initialize(int iconId, int cursorId)
+void f::Initialise(int iconId, int cursorId)
 {
     // Create thread as early as possible. Since the execution does not start immediately this function will wait for it
     // to do so. In the meantime, it can perform work.
@@ -36,11 +36,11 @@ void f::Initialize(int iconId, int cursorId)
     i::GetState()->win32.instance = GetModuleHandle(nullptr);
 
     // Check the recourses, if invalid continue anyway
-    if (iconId)
+    if (icon)
     {
         i::GetState()->win32.icon = static_cast<HICON>(LoadImageA(
             i::GetState()->win32.instance, 
-            MAKEINTRESOURCE(iconId), 
+            MAKEINTRESOURCE(icon),
             IMAGE_ICON, 0, 0, 
             LR_DEFAULTCOLOR));
 
@@ -50,11 +50,11 @@ void f::Initialize(int iconId, int cursorId)
         }
     }
 
-    if (cursorId)
+    if (cursor)
     {
         i::GetState()->win32.cursor = static_cast<HCURSOR>(LoadImageA(
             i::GetState()->win32.instance, 
-            MAKEINTRESOURCE(cursorId), 
+            MAKEINTRESOURCE(cursor),
             IMAGE_CURSOR, 0, 0, 
             LR_DEFAULTCOLOR));
 
@@ -91,7 +91,7 @@ void f::Initialize(int iconId, int cursorId)
     i::Log(L"Framework was successfully initialised", i::LogLvl::Info);
 }
 
-void f::UnInitialize()
+void f::UnInitialise()
 {
     f::CloseAllWindowsForce();
 

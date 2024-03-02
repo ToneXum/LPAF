@@ -450,27 +450,27 @@ void i::Log(const wchar_t* msg, LogLvl logLvl)
     {
         case i::LogLvl::Info:
         {
-            std::cout << " [Info]: ";
+            std::cout << "[Info]: ";
             break;
         }
         case i::LogLvl::Debug:
         {
-            std::cout << " [Debug]: ";
+            std::cout << "[Debug]: ";
             break;
         }
         case i::LogLvl::Warning:
         {
-            std::cout << " [Warning]: ";
+            std::cout << "[Warning]: ";
             break;
         }
         case i::LogLvl::Error:
         {
-            std::cout << " [Error]: ";
+            std::cout << "[Error]: ";
             break;
         }
         case i::LogLvl::Validation:
         {
-            std::cout << " [Valid]: ";
+            std::cout << "[Valid]: ";
             break;
         }
     }
@@ -493,27 +493,27 @@ void i::Log(const char* msg, LogLvl logLvl)
     {
         case i::LogLvl::Info:
         {
-            std::cout << " [Info]: ";
+            std::cout << "[Info]: ";
             break;
         }
         case i::LogLvl::Debug:
         {
-            std::cout << " [Debug]: ";
+            std::cout << "[Debug]: ";
             break;
         }
         case i::LogLvl::Warning:
         {
-            std::cout << " [Warning]: ";
+            std::cout << "[Warning]: ";
             break;
         }
         case i::LogLvl::Error:
         {
-            std::cout << " [Error]: ";
+            std::cout << "[Error]: ";
             break;
         }
         case i::LogLvl::Validation:
         {
-            std::cout << " [Valid]: ";
+            std::cout << "[Valid]: ";
         }
     }
 

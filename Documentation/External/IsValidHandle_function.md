@@ -1,4 +1,4 @@
-# tsd::IsValidHandle
+# f::IsValidHandle
 Used to test if a handle is valid.
 
 ### Definition

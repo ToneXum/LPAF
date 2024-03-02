@@ -264,10 +264,10 @@ namespace f // a one letter namespace name...
     // Handle to identify a window with
     using WndH = uint16_t;
 
-    //struct InitializationData
-    //{
-    //    int iconId, cursorId;
-    //};
+    struct InitializationData
+    {
+        int iconId, cursorId;
+    };
 
     // Window creation data, this describes the window that is supposed to be opened
     struct WindowCreateData
@@ -283,13 +283,15 @@ namespace f // a one letter namespace name...
     } __attribute__((aligned(64)));
 
     // Start the entire framework up, so it can be used.
-    void Initialize(int icon, int cursor);
+    void Initialise(int icon, int cursor);
 
     // Shutdown, cleanup.
-    void UnInitialize();
+    void UnInitialise();
 
     // Create a new window
-    WndH CreateWindowAsync(const f::WindowCreateData& wndCrtData);
+    WndH CreateWindowAsync(const f::WindowCreateData& windowCreateData);
+
+    WndH CreateWindowSync(const f::WindowCreateData& windowCreateData);
 
     // Attempts to close a window
     // This function will order OnWindowCloseAttempt to be called which means that nothing will happen if the request
