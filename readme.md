@@ -28,30 +28,30 @@ For even more information like announcements, polls and Q&A you can visit the [D
 ⭕️ -> Partially working or still being worked on<br>
 ❌ -> Not implemented or not working<br>
 
-- ⭕️ Basic features
-  - ✔️ Windows  
-  - ❌ MacOS
-  - ❌ Linux / Unix
-- ❌ Somewhat stable release
-  - ⭕️ Windows
-  - ❌ MacOS
-  - ❌ Linux / Unix
-- ✔️ Entrypoint for integrated renderer
-  - ✔️ Windows
-  - ✔️ MacOS
-  - ✔️ Linux / Unix
-- ❌ Full rendering implementation
-  - ❌ Windows
-  - ❌ MacOS
-  - ❌ Linux / Unix
-- ❌ Networking
-  - ❌ Windows
-  - ❌ MacOS
-  - ❌ Linux / Unix
-- ❌ Sound
-  - ❌ Windows
-  - ❌ MacOS
-  - ❌ Linux / Unix 
+- Basic features ⭕
+  - Windows ✔️
+  - MacOS ❌
+  - Linux / Unix ❌
+- Somewhat stable release ❌
+  - Windows ⭕
+  - MacOS ❌
+  - Linux / Unix ❌
+- Entrypoint for integrated renderer ✔️
+  - Windows ✔️
+  - MacOS ✔️
+  - Linux / Unix ✔️
+- Full rendering implementation ❌
+  - Windows ❌
+  - MacOS ❌
+  - Linux / Unix ❌
+- Networking ❌
+  - Windows ❌
+  - MacOS ❌
+  - Linux / Unix ❌
+- Sound ❌
+  - Windows ❌
+  - MacOS ❌
+  - Linux / Unix ❌
 
 ## Contact
 For any inquiries you can send an E-Mail to tonexum@national.shitposting.agency (Yes, I'm not joking. Checked every few 
