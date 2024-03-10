@@ -2,7 +2,12 @@
 
 int main()
 {
-    f::Initialise(f::InitializationData()); // Intellisense? Are you good?
+    f::InitialisationData initData{};
+    initData.cursorId   = 0;
+    initData.iconId     = 0;
+    initData.appStyle   = f::AsNoCloseButton;
+
+    f::Initialise(initData); // Intellisense? Are you good?
 
     f::WindowCreateData cdt{};
     cdt.pName = L"Dependant"; cdt.height = 500; cdt.width = 500;
@@ -46,6 +51,9 @@ int main()
         }
         if (counter > 0)
             counter++;
+
+        if (f::IsKeyPressedOnce(f::KeyP))
+            f::PlaySoundAsync("", false);
 
         // simulate computation
         f::Halt(16);

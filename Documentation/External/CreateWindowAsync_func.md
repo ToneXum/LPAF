@@ -1,17 +1,17 @@
 # f::CreateWindowAsync
-Requests the creation of a new window on the desktop. You may only call this function after calling [f::Initialise](Initialise_function.md).
+Requests the creation of a new window on the desktop. You may only call this function after calling [f::Initialise](Initialise_func).
 This function does not guarantee that the window will be created after this function returns. If this is a problem, see 
-[CreateWindowSync](CreateWindowSync_function.md)
+[CreateWindowSync](CreateWindowSync_func)
 
 ### Definition
 ```C++
 WndH f::CreateWindowAsync(
-    const WindowCreateData& windowCreateData
+    [in] const WindowCreateData& windowCreateData
     );
 ```
 
 ### Parameters
-`const WindowCreateData& wndCrtDt`:
+`const WindowCreateData& wndCrtDt`: <br>
 A reference to a structure that contains all the information needed to describe the window that is supposed to be 
 opened. See [WindowCreateData](WindowCreateData_type.md) for more.
 

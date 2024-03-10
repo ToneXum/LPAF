@@ -25,6 +25,7 @@
 #ifdef _WINDOWS
 #include <Windows.h>
 #include <Windowsx.h>
+#include <xaudio2.h>
 
 #undef ERROR
 #endif // _WINDOWS

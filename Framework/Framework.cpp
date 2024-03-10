@@ -28,7 +28,7 @@
 #include "Framework.hpp"
 #include "Internals.hpp"
 
-void f::Initialise(const InitializationData& initializationData)
+void f::Initialise(const InitialisationData& initializationData)
 {
     // Create thread as early as possible. Since the execution does not start immediately this function will wait for it
     // to do so. In the meantime, it can perform work.
@@ -280,7 +280,7 @@ wchar_t* f::GetWindowName(WndH handle)
 {
     std::unique_lock<std::mutex> lock(i::GetState()->windowDataMutex);
     i::WindowData* wndData = i::GetWindowData(handle);
-    if (!wndData) [[unlikely]] { i::Log(L"Invalid handle was passed to GetWindowName()", i::LogLvl::Warning); return nullptr; }
+    if (!wndData) [[unlikely]] { return nullptr; }
     return wndData->name;
 }
 
@@ -288,7 +288,7 @@ bool f::GetWindowVisibility(WndH handle)
 {
     std::unique_lock<std::mutex> lock(i::GetState()->windowDataMutex);
     i::WindowData* wndData = i::GetWindowData(handle);
-    if (!wndData) [[unlikely]] { i::Log(L"Invalid handle was passed to GetWindowVisibility()", i::LogLvl::Warning); return false; }
+    if (!wndData) [[unlikely]] { return false; }
     return wndData->isVisible;
 }
 
@@ -296,7 +296,7 @@ uint16_t f::GetWindowWidth(WndH handle)
 {
     std::unique_lock<std::mutex> lock(i::GetState()->windowDataMutex);
     i::WindowData* wndData = i::GetWindowData(handle);
-    if (!wndData) [[unlikely]] { i::Log(L"Invalid handle was passed to GetWindowWidth()", i::LogLvl::Warning); return false; }
+    if (!wndData) [[unlikely]] { return false; }
     return wndData->width;
 }
 
@@ -304,7 +304,7 @@ uint16_t f::GetWindowHeight(WndH handle)
 {
     std::unique_lock<std::mutex> lock(i::GetState()->windowDataMutex);
     i::WindowData* wndData = i::GetWindowData(handle);
-    if (!wndData) [[unlikely]] { i::Log(L"Invalid handle was passed to GetWindowHeight()", i::LogLvl::Warning); return false; }
+    if (!wndData) [[unlikely]] { return false; }
     return wndData->height;
 }
 
@@ -312,105 +312,8 @@ std::pair<uint16_t, uint16_t> f::GetWindowDimensions(WndH handle)
 {
     std::unique_lock<std::mutex> lock(i::GetState()->windowDataMutex);
     i::WindowData* wndData = i::GetWindowData(handle);
-    if (!wndData) [[unlikely]] { i::Log(L"Invalid handle was passed to GetWindowDimensions()", i::LogLvl::Warning); return {0, 0}; }
+    if (!wndData) [[unlikely]] { return {0, 0}; }
     return {wndData->width, wndData->height};
-}
-
-int f::GetWindowXPos(WndH handle, WindowPositionRelation wpr)
-{
-    std::unique_lock<std::mutex> lock(i::GetState()->windowDataMutex);
-    i::WindowData* wndData = i::GetWindowData(handle);
-    if (!wndData) [[unlikely]] { i::Log(L"Invalid handle was passed to GetWindowXPos()", i::LogLvl::Warning); return 0; }
-    RECT rect{};
-    GetWindowRect(wndData->window, &rect);
-
-    switch (wpr)
-    {
-        case WpLeft:
-        {
-            lock.unlock();
-            return rect.left;
-        }
-        case WpRight:
-        {
-            lock.unlock();
-            return rect.right;
-        }
-        default:
-        {
-            i::Log(L"Invalid positional identifier was passed to GetWindowXPos()", i::LogLvl::Warning);
-            lock.unlock();
-            return 0;
-        }
-    }
-}
-
-int f::GetWindowYPos(WndH handle, WindowPositionRelation wpr)
-{
-    std::unique_lock<std::mutex> lock(i::GetState()->windowDataMutex);
-    i::WindowData* wndData = i::GetWindowData(handle);
-    if (!wndData) [[unlikely]] { i::Log(L"Invalid handle was passed to GetWindowYPos()", i::LogLvl::Warning); return 0; }
-    RECT rect{};
-    GetWindowRect(wndData->window, &rect);
-
-    switch (wpr)
-    {
-        case WpTop:
-        {
-            lock.unlock();
-            return rect.top;
-        }
-        case WpBottom:
-        {
-            lock.unlock();
-            return rect.bottom;
-        }
-        default:
-        {
-            i::Log(L"Invalid positional identifier was passed to GetWindowYPos()", i::LogLvl::Warning);
-            lock.unlock();
-            return 0;
-        }
-    }
-}
-
-std::pair<int, int> f::GetWindowPosition(WndH handle, WindowPositionRelation wpr)
-{
-    std::unique_lock<std::mutex> lock(i::GetState()->windowDataMutex);
-    i::WindowData* wndData = i::GetWindowData(handle);
-    if (!wndData) [[unlikely]] { i::Log(L"Invalid handle was passed to GetWindowPosition()", i::LogLvl::Warning); return {0, 0}; }
-    RECT rect{};
-    GetWindowRect(wndData->window, &rect);
-    
-    switch (wpr)
-    {
-        case WpTopLeft:
-        {
-            lock.unlock();
-            return { rect.left, rect.top };
-        }
-        case WpTopRight:
-        {
-            lock.unlock();
-            return { rect.right, rect.top };
-        }
-        case WpBottomLeft:
-        {
-            lock.unlock();
-            return { rect.left, rect.bottom };
-        }
-        case WpBottomRight:
-        {
-            lock.unlock();
-            return { rect.right, rect.bottom };
-        }
-        default:
-        {
-            i::Log(L"Invalid positional identifier was passed to GetWindowPosition()", i::LogLvl::Warning);
-            lock.unlock();
-            return {0, 0};
-        }
-    }
 }
 
 int f::GetWindowCount()
@@ -652,4 +555,18 @@ f::WndH f::GetMouseContainerWindow()
 void f::SetWindowVisibility(f::WndH handle, f::WindowVisibility visibility)
 {
     ShowWindow(i::GetWindowData(handle)->window, visibility);
+}
+
+bool f::GetWindowPositions(f::WndH handle, f::Rectangle& wpr)
+{
+    i::WindowData* wndData = i::GetWindowData(handle);
+    if (!wndData) [[unlikely]]
+        return false;
+
+    wpr.bottom      = static_cast<int16_t>(wndData->yPos + wndData->height);
+    wpr.top         = wndData->yPos;
+    wpr.right       = static_cast<int16_t>(wndData->xPos + wndData->width);
+    wpr.left        = wndData->xPos;
+
+    return true;
 }

@@ -4,16 +4,16 @@ Used to specify or change the function to be called when a window is closed.
 ### Definition
 ```C++
 void OnWindowClose(
-    WndH handle, 
-    void(*func)(void)
+    [in] WndH handle, 
+    [in] void(*func)(void)
     );
 ```
 
 ### Parameters
-`WndH handle`:
+`WndH handle`: <br>
 A handle to the window whose function pointer should be changed.
 
-`void(*func)(void)`:
+`void(*func)(void)`: <br>
 A function pointer that will be called when the specified window is closed.
 
 ### Remarks
