@@ -285,11 +285,11 @@ enum ApplicationStyle : uint8_t
 
 struct InitialisationData
 {
-    int iconId, cursorId;
+    const char* pIconPath;
+    const char* pCursorPath;
     uint8_t appStyle;
-} __attribute__((aligned(16)));
+} __attribute__((aligned(32)));
 
-// Window creation data, this describes the window that is supposed to be opened
 struct WindowCreateData
 {
     uint16_t width, height;
@@ -373,7 +373,7 @@ uint16_t GetWindowHeight(WndH handle);
 std::pair<uint16_t, uint16_t> GetWindowDimensions(WndH handle);
 
 // This function can fail if the handle is invalid
-bool GetWindowPositions(WndH handle, Rectangle& wpr);
+bool GetWindowRectangle(WndH handle, Rectangle& wpr);
 
 // Returns the number of open windows
 int GetWindowCount();
@@ -479,12 +479,7 @@ WndH GetMouseContainerWindow();
 // Returns NULL none of the owned windows has focus
 WndH GetWindowWithFocus();
 
-// **UNIMPLEMENTED**
-// Plays a waveform audio file asynchronously
-void PlaySoundAsync(const char* file, bool loop);
-
-// **UNIMPLEMENTED**
-// Plays a waveform audio file synchronously
-void PlaySoundSync(const char* file);
+// TODO: file to byte array
+char* FileToByteArray(size_t* bytes);
 
 } // end namespace f

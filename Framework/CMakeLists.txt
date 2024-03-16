@@ -6,7 +6,10 @@ project(LPAF)
 set(FRAMEWORK_SOURCE
         Framework.cpp
         Internals.cpp
-        Vulkan.cpp)
+        Vulkan.cpp
+        OS_Win32.cpp
+        OS_Linux.cpp
+        OS_MacOS.cpp)
 
 ### END VARIABLES
 

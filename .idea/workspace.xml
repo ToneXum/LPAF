@@ -27,32 +27,16 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="b43a079c-b7ae-41fc-bc1a-f78f46edc6d3" name="Changes" comment="reformat readme.md (again)">
-      <change afterPath="$PROJECT_DIR$/Documentation/External/ApplicationStyle_enum.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Documentation/External/InitialisationData_struct.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Documentation/External/IsKeyPressedOnce_func.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Documentation/External/IsKeyPressed_func.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Documentation/External/IsKeyReleased_func.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Documentation/External/Key_enum.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/inspectionProfiles/Project_Default.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/inspectionProfiles/Project_Default.xml" afterDir="false" />
+    <list default="true" id="b43a079c-b7ae-41fc-bc1a-f78f46edc6d3" name="Changes" comment="more documentation">
+      <change afterPath="$PROJECT_DIR$/Framework/OS_Linux.cpp" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Framework/OS_MacOS.cpp" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Framework/OS_Win32.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Documentation/External/CreateWindowAsync_function.md" beforeDir="false" afterPath="$PROJECT_DIR$/Documentation/External/CreateWindowAsync_func.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Documentation/External/CreateWindowSync_function.md" beforeDir="false" afterPath="$PROJECT_DIR$/Documentation/External/CreateWindowSync_func.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Documentation/External/Initialise_function.md" beforeDir="false" afterPath="$PROJECT_DIR$/Documentation/External/Initialise_func.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Documentation/External/IsValidHandle_function.md" beforeDir="false" afterPath="$PROJECT_DIR$/Documentation/External/IsValidHandle_func.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Documentation/External/OnWindowCloseAttempt_function.md" beforeDir="false" afterPath="$PROJECT_DIR$/Documentation/External/OnWindowCloseAttempt_func.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Documentation/External/OnWindowClose_function.md" beforeDir="false" afterPath="$PROJECT_DIR$/Documentation/External/OnWindowClose_func.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Documentation/External/UnInitialise_function.md" beforeDir="false" afterPath="$PROJECT_DIR$/Documentation/External/UnInitialise_func.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Documentation/External/WindowCreateData_type.md" beforeDir="false" afterPath="$PROJECT_DIR$/Documentation/External/WindowCreateData_type.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Documentation/External/WndH_type.md" beforeDir="false" afterPath="$PROJECT_DIR$/Documentation/External/WndH_type.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Framework/CMakeLists.txt" beforeDir="false" afterPath="$PROJECT_DIR$/Framework/CMakeLists.txt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Framework/Framework.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Framework/Framework.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Framework/Framework.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/Framework/Framework.hpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Framework/Internals.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Framework/Internals.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Framework/Internals.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/Framework/Internals.hpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Tests/Main.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Tests/Main.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Tests/Resource.rc" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Tests/resource.h" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Tests/shader/basic.frag.spv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Tests/shader/basic.vert.spv" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -117,6 +101,7 @@
     <option name="stateVersion" value="1" />
   </component>
   <component name="ProblemsViewState">
+    <option name="groupByToolId" value="true" />
     <option name="selectedTabId" value="CurrentFile" />
   </component>
   <component name="ProjectApplicationVersion">
@@ -217,7 +202,9 @@
       <workItem from="1709749899237" duration="3456000" />
       <workItem from="1709925482326" duration="5861000" />
       <workItem from="1710087615919" duration="5928000" />
-      <workItem from="1710100202108" duration="1649000" />
+      <workItem from="1710100202108" duration="1817000" />
+      <workItem from="1710268413579" duration="2715000" />
+      <workItem from="1710591784206" duration="813000" />
     </task>
     <task id="LOCAL-00001" summary="initial rework">
       <option name="closed" value="true" />
@@ -323,7 +310,15 @@
       <option name="project" value="LOCAL" />
       <updated>1709407750904</updated>
     </task>
-    <option name="localTasksCounter" value="14" />
+    <task id="LOCAL-00014" summary="more documentation">
+      <option name="closed" value="true" />
+      <created>1710101962728</created>
+      <option name="number" value="00014" />
+      <option name="presentableId" value="LOCAL-00014" />
+      <option name="project" value="LOCAL" />
+      <updated>1710101962728</updated>
+    </task>
+    <option name="localTasksCounter" value="15" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -379,7 +374,8 @@
     <MESSAGE value="fix text input" />
     <MESSAGE value="reformat readme.md" />
     <MESSAGE value="reformat readme.md (again)" />
-    <option name="LAST_COMMIT_MESSAGE" value="reformat readme.md (again)" />
+    <MESSAGE value="more documentation" />
+    <option name="LAST_COMMIT_MESSAGE" value="more documentation" />
   </component>
   <component name="XSLT-Support.FileAssociations.UIState">
     <expand />

@@ -20,9 +20,6 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-// About this file:
-// Here are all the implementations that the (framework) user interacts with.
-
 #include <csignal>
 
 #include "Framework.hpp"
@@ -32,39 +29,10 @@ void f::Initialise(const InitialisationData& initializationData)
 {
     // Create thread as early as possible. Since the execution does not start immediately this function will wait for it
     // to do so. In the meantime, it can perform work.
-    i::GetState()->pWindowThread = new std::thread(i::WindowThread);
+    i::GetState()->pWindowThread = new std::thread(i::WindowProcedureThread);
 
     // Get hInstance since the program does not use the winMain entry point
     i::GetState()->win32.instance = GetModuleHandle(nullptr);
-
-    // Check the recourses, if invalid continue anyway
-    if (initializationData.iconId)
-    {
-        i::GetState()->win32.icon = static_cast<HICON>(LoadImageA(
-            i::GetState()->win32.instance, 
-            MAKEINTRESOURCE(initializationData.iconId),
-            IMAGE_ICON, 0, 0, 
-            LR_DEFAULTCOLOR));
-
-        if (!i::GetState()->win32.icon) 
-        { 
-            i::Log(L"Specified recourse Id for an icon was invalid", i::LogLvl::Error);
-        }
-    }
-
-    if (initializationData.cursorId)
-    {
-        i::GetState()->win32.cursor = static_cast<HCURSOR>(LoadImageA(
-            i::GetState()->win32.instance, 
-            MAKEINTRESOURCE(initializationData.cursorId),
-            IMAGE_CURSOR, 0, 0, 
-            LR_DEFAULTCOLOR));
-
-        if (!i::GetState()->win32.cursor) 
-        { 
-            i::Log(L"Specified recourse Id for a mouse was invalid", i::LogLvl::Error);
-        }
-    }
     
     WNDCLASSEXW wndC = {};
 
@@ -557,7 +525,7 @@ void f::SetWindowVisibility(f::WndH handle, f::WindowVisibility visibility)
     ShowWindow(i::GetWindowData(handle)->window, visibility);
 }
 
-bool f::GetWindowPositions(f::WndH handle, f::Rectangle& wpr)
+bool f::GetWindowRectangle(WndH handle, Rectangle& wpr)
 {
     i::WindowData* wndData = i::GetWindowData(handle);
     if (!wndData) [[unlikely]]

@@ -50,10 +50,10 @@
 
 #ifdef _DEBUG
 #ifdef _WINDOWS
-#define DEBUG_BREAK(expr) { if (!(expr)) { DebugBreak(); } }
+#define DEBUG_BREAK DebugBreak();
 #else
 #include <signal.h>
-#define DEBUG_BREAK(expr) { if (!(expr)) { raise(SIGTRAP); } } // Its a trap!
+#define DEBUG_BREAK raise(SIGTRAP); // Its a trap!
 #endif
 #else
 #define DEBUG_BREAK
@@ -68,7 +68,7 @@ namespace i
 // First letter corresponds with the return type the rest indicate arguments
 // Types are abbreviated, B for bool; V for void; I for int; U for unsigned; etc...
 void DoNothingVv();
-bool DoNothingVb();
+bool DoNothingBv();
 
 struct WindowData // additional data associated to each window
 {
@@ -76,7 +76,7 @@ struct WindowData // additional data associated to each window
     HWND window{};
 
     void (*pfOnClose)() = DoNothingVv;
-    bool (*pfOnCloseAttempt)() = DoNothingVb;
+    bool (*pfOnCloseAttempt)() = DoNothingBv;
 
     wchar_t* name = nullptr;
     int16_t xPos = 0, yPos = 0;
@@ -155,18 +155,18 @@ public:
 inline ProgramState* GetState();
 
 // Log level for in::Log(), this will determine the prefix of the message
-enum class LogLvl : uint8_t
+enum LogLvl : uint8_t
 {
-    Info,
-    Debug,
-    Validation,
-    Warning,
-    Error
+    LlInfo,
+    LlDebug,
+    LlValidation,
+    LlWarning,
+    LlError
 };
 
-void WindowThread();
+void WindowProcedureThread();
 
-void CreateNativeWindow(WindowData* wndDt);
+void CreateWin32Window(i::WindowData* wndDt);
 
 // Win32 Error creation
 void CreateWin32Error(int line, int code, const char* func);
