@@ -3,8 +3,6 @@
 int main()
 {
     f::InitialisationData initData{};
-    initData.cursorId   = 0;
-    initData.iconId     = 0;
     initData.appStyle   = f::AsNoCloseButton;
 
     f::Initialise(initData); // Intellisense? Are you good?
@@ -51,9 +49,6 @@ int main()
         }
         if (counter > 0)
             counter++;
-
-        if (f::IsKeyPressedOnce(f::KeyP))
-            f::PlaySoundAsync("", false);
 
         // simulate computation
         f::Halt(16);

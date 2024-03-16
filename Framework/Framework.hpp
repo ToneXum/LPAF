@@ -481,6 +481,6 @@ WndH GetWindowWithFocus();
 
 // Converts a file to a byte array and allocates that on the heap
 // Returns a pointer to that array
-void* FileToByteArray(const char* file, size_t& bytes);
+void* LoadFile(const char* file, size_t& bytes);
 
 } // end namespace f

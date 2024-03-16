@@ -87,7 +87,7 @@ void v::InitialiseVulkan()
     createInf.ppEnabledExtensionNames = i::GetState()->vulkan.extension.data();
 
     VUL_EC(vkCreateInstance(&createInf, nullptr, &i::GetState()->vulkan.vkInstance))
-    i::Log(L"A Vulkan instance was created", i::LogLvl::Info);
+    i::Log(L"A Vulkan instance was created", i::LlInfo);
 
 #ifdef _DEBUG
     VUL_EC(v::p::CreateDebugUtilsMessengerExt(i::GetState()->vulkan.vkInstance,
@@ -198,7 +198,7 @@ VkBool32 VKAPI_CALL v::ValidationDebugCallback(
 {
     if (msgSeverity >= VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT)
     {
-        i::Log(callbackData->pMessage, i::LogLvl::Validation);
+        i::Log(callbackData->pMessage, i::LlValidation);
     }
     return 0U;
 }

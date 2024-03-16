@@ -539,7 +539,7 @@ bool f::GetWindowRectangle(WndH handle, Rectangle& wpr)
     return true;
 }
 
-void* f::FileToByteArray[[nodiscard("memory leak when not freed")]](const char* file, size_t& bytes)
+void* f::LoadFile[[nodiscard("memory leak if not freed")]](const char* file, size_t& bytes)
 {
     std::ifstream infile(file, std::ios_base::binary | std::ios_base::in);
 

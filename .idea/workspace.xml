@@ -27,12 +27,28 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="b43a079c-b7ae-41fc-bc1a-f78f46edc6d3" name="Changes" comment="os specific implementations">
-      <change beforePath="$PROJECT_DIR$/.idea/inspectionProfiles/Project_Default.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/inspectionProfiles/Project_Default.xml" afterDir="false" />
+    <list default="true" id="b43a079c-b7ae-41fc-bc1a-f78f46edc6d3" name="Changes" comment="implement load file to memory">
+      <change afterPath="$PROJECT_DIR$/Documentation/External/LoadFile_func.md" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Documentation/External/ApplicationStyle_enum.md" beforeDir="false" afterPath="$PROJECT_DIR$/Documentation/External/ApplicationStyle_enum.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Documentation/External/CreateWindowAsync_func.md" beforeDir="false" afterPath="$PROJECT_DIR$/Documentation/External/CreateWindowAsync_func.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Documentation/External/CreateWindowSync_func.md" beforeDir="false" afterPath="$PROJECT_DIR$/Documentation/External/CreateWindowSync_func.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Documentation/External/InitialisationData_struct.md" beforeDir="false" afterPath="$PROJECT_DIR$/Documentation/External/InitialisationData_struct.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Documentation/External/Initialise_func.md" beforeDir="false" afterPath="$PROJECT_DIR$/Documentation/External/Initialise_func.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Documentation/External/IsKeyPressedOnce_func.md" beforeDir="false" afterPath="$PROJECT_DIR$/Documentation/External/IsKeyPressedOnce_func.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Documentation/External/IsKeyPressed_func.md" beforeDir="false" afterPath="$PROJECT_DIR$/Documentation/External/IsKeyPressed_func.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Documentation/External/IsKeyReleased_func.md" beforeDir="false" afterPath="$PROJECT_DIR$/Documentation/External/IsKeyReleased_func.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Documentation/External/IsValidHandle_func.md" beforeDir="false" afterPath="$PROJECT_DIR$/Documentation/External/IsValidHandle_func.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Documentation/External/Key_enum.md" beforeDir="false" afterPath="$PROJECT_DIR$/Documentation/External/Key_enum.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Documentation/External/OnWindowCloseAttempt_func.md" beforeDir="false" afterPath="$PROJECT_DIR$/Documentation/External/OnWindowCloseAttempt_func.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Documentation/External/OnWindowClose_func.md" beforeDir="false" afterPath="$PROJECT_DIR$/Documentation/External/OnWindowClose_func.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Documentation/External/UnInitialise_func.md" beforeDir="false" afterPath="$PROJECT_DIR$/Documentation/External/UnInitialise_func.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Documentation/External/WindowCreateData_type.md" beforeDir="false" afterPath="$PROJECT_DIR$/Documentation/External/WindowCreateData_type.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Documentation/External/WndH_type.md" beforeDir="false" afterPath="$PROJECT_DIR$/Documentation/External/WndH_type.md" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Framework/Framework.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Framework/Framework.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Framework/Framework.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/Framework/Framework.hpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Framework/Internals.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/Framework/Internals.hpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Framework/Vulkan.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Framework/Vulkan.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Tests/Main.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Tests/Main.cpp" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -158,6 +174,11 @@
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
       </method>
     </configuration>
+    <configuration default="true" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
     <list>
       <item itemvalue="CMake Application.Framework_Lib" />
       <item itemvalue="CMake Application.Test_Application" />
@@ -200,7 +221,7 @@
       <workItem from="1710087615919" duration="5928000" />
       <workItem from="1710100202108" duration="1817000" />
       <workItem from="1710268413579" duration="2715000" />
-      <workItem from="1710591784206" duration="3857000" />
+      <workItem from="1710591784206" duration="5033000" />
     </task>
     <task id="LOCAL-00001" summary="initial rework">
       <option name="closed" value="true" />
@@ -322,7 +343,15 @@
       <option name="project" value="LOCAL" />
       <updated>1710593706632</updated>
     </task>
-    <option name="localTasksCounter" value="16" />
+    <task id="LOCAL-00016" summary="implement load file to memory">
+      <option name="closed" value="true" />
+      <created>1710596675599</created>
+      <option name="number" value="00016" />
+      <option name="presentableId" value="LOCAL-00016" />
+      <option name="project" value="LOCAL" />
+      <updated>1710596675599</updated>
+    </task>
+    <option name="localTasksCounter" value="17" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -380,7 +409,8 @@
     <MESSAGE value="reformat readme.md (again)" />
     <MESSAGE value="more documentation" />
     <MESSAGE value="os specific implementations" />
-    <option name="LAST_COMMIT_MESSAGE" value="os specific implementations" />
+    <MESSAGE value="implement load file to memory" />
+    <option name="LAST_COMMIT_MESSAGE" value="implement load file to memory" />
   </component>
   <component name="XSLT-Support.FileAssociations.UIState">
     <expand />
