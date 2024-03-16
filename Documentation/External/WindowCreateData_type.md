@@ -1,7 +1,7 @@
 # f::WindowCreateData
 `WindowCreateData` is a structure type for data that you pass to [f::CreateWindowAsync](CreateWindowAsync_func).
 
-### Definition
+## Definition
 ```C++
 struct WindowCreateData
 {
@@ -17,7 +17,7 @@ struct WindowCreateData
 };
 ```
 
-### Members
+## Members
 `std::vector<WndH> dependants`: <br>
 A vector of window handles. When the window is closed, all windows matching the handles will also be closed. This 
 mechanism can be evaded by simply refusing in the underlying `CloseWindowAttempt` function. For more information see the

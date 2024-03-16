@@ -1,12 +1,12 @@
 # f::WndH
 `WndH` is a datatype that acts as a handle to the windows that the user creates.
 
-### Definition
+## Definition
 ```C++
 using WndH = uint16_t;
 ```
 
-### Remarks
+## Remarks
 Because it is defined as an unsigned short, the handle can only reach a value of 65'536. What happens when it overflows
 depends on the architecture. In most cases it would simply wrap which means that the handles will continue at 0. The
 error handling in the window creation functions ([f::CreateWindowAsync](CreateWindowAsync_func) and 

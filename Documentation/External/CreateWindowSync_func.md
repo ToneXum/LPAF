@@ -4,24 +4,24 @@ Requests the creation of a new window on the desktop. You may only call this fun
 you don't care about that, you may use [f::CreateWindowAsync](CreateWindowAsync_func) which does not wait and is
 therefore incredibly cheap.
 
-### Definition
+## Definition
 ```C++
 WndH f::CreateWindowSync(
     [in] const WindowCreateData& windowCreateData
     );
 ```
 
-### Parameters
+## Parameters
 `const WindowCreateData& windowCreateData`: <br>
 A reference to a structure that contains all the information needed to describe the window that is supposed to be 
 opened. See [WindowCreateData](WindowCreateData_type.md) for more.
 
-### Return value
+## Return value
 `CreateWindowSync` returns a `WndH` (basically just a number) which is a handle that the user can use to identify the
 window. When the function fails for whatever reason, a messages is printed to `stdout` and `CreateWindowSync`
 returns 0.
 
-### Remarks
+## Remarks
 This function requests a window to be opened. While the actual process happens asynchronously, this function does wait
 for the window to be created before returning. This is useful when creating a window and immediately (within a few
 milliseconds) starting to working on it. When this does not matter, you might want to use 

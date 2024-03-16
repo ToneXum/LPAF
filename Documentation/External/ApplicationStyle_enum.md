@@ -2,7 +2,7 @@
 An enumeration of flags, used to modify the behaviour of LPAF. Used in the `appStyle` member of 
 [InitialisationData](InitialisationData_struct.md).
 
-### Definition
+## Definition
 ```C++
 enum ApplicationStyle : uint8_t
 {
@@ -11,7 +11,7 @@ enum ApplicationStyle : uint8_t
 };
 ```
 
-### Members
+## Members
 `AsNoIntegratedRenderer`: <br>
 Disables the integrated renderer of LPAF. It won't be started and won't cause any additional overhead when managing the
 application state.

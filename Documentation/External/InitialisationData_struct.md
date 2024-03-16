@@ -1,7 +1,7 @@
 # f::InitialisationData
 A structure used to specify modification in behaviour of your LPAF application.
 
-### Definition
+## Definition
 ```C++
 struct InitialisationData
 {
@@ -10,7 +10,7 @@ struct InitialisationData
 };
 ```
 
-### Members
+## Members
 `int iconId`: <br>
 **DO NOT USE, REWORK OF THIS FEATURE IS IN PROGRESS**
 
