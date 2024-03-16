@@ -27,28 +27,10 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="b43a079c-b7ae-41fc-bc1a-f78f46edc6d3" name="Changes" comment="implement load file to memory">
-      <change afterPath="$PROJECT_DIR$/Documentation/External/LoadFile_func.md" afterDir="false" />
+    <list default="true" id="b43a079c-b7ae-41fc-bc1a-f78f46edc6d3" name="Changes" comment="add LoadFile to doc">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Documentation/External/ApplicationStyle_enum.md" beforeDir="false" afterPath="$PROJECT_DIR$/Documentation/External/ApplicationStyle_enum.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Documentation/External/CreateWindowAsync_func.md" beforeDir="false" afterPath="$PROJECT_DIR$/Documentation/External/CreateWindowAsync_func.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Documentation/External/CreateWindowSync_func.md" beforeDir="false" afterPath="$PROJECT_DIR$/Documentation/External/CreateWindowSync_func.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Documentation/External/InitialisationData_struct.md" beforeDir="false" afterPath="$PROJECT_DIR$/Documentation/External/InitialisationData_struct.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Documentation/External/Initialise_func.md" beforeDir="false" afterPath="$PROJECT_DIR$/Documentation/External/Initialise_func.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Documentation/External/IsKeyPressedOnce_func.md" beforeDir="false" afterPath="$PROJECT_DIR$/Documentation/External/IsKeyPressedOnce_func.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Documentation/External/IsKeyPressed_func.md" beforeDir="false" afterPath="$PROJECT_DIR$/Documentation/External/IsKeyPressed_func.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Documentation/External/IsKeyReleased_func.md" beforeDir="false" afterPath="$PROJECT_DIR$/Documentation/External/IsKeyReleased_func.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Documentation/External/IsValidHandle_func.md" beforeDir="false" afterPath="$PROJECT_DIR$/Documentation/External/IsValidHandle_func.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Documentation/External/Key_enum.md" beforeDir="false" afterPath="$PROJECT_DIR$/Documentation/External/Key_enum.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Documentation/External/OnWindowCloseAttempt_func.md" beforeDir="false" afterPath="$PROJECT_DIR$/Documentation/External/OnWindowCloseAttempt_func.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Documentation/External/OnWindowClose_func.md" beforeDir="false" afterPath="$PROJECT_DIR$/Documentation/External/OnWindowClose_func.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Documentation/External/UnInitialise_func.md" beforeDir="false" afterPath="$PROJECT_DIR$/Documentation/External/UnInitialise_func.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Documentation/External/WindowCreateData_type.md" beforeDir="false" afterPath="$PROJECT_DIR$/Documentation/External/WindowCreateData_type.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Documentation/External/WndH_type.md" beforeDir="false" afterPath="$PROJECT_DIR$/Documentation/External/WndH_type.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Framework/Framework.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Framework/Framework.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Framework/Framework.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/Framework/Framework.hpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Framework/Vulkan.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Framework/Vulkan.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Tests/Main.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Tests/Main.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Framework/CMakeLists.txt" beforeDir="false" afterPath="$PROJECT_DIR$/Framework/CMakeLists.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Framework/OS_Win32.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Framework/OS_Win32.cpp" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -151,7 +133,7 @@
     "node.js.selected.package.tslint": "(autodetect)",
     "nodejs_package_manager_path": "npm",
     "run.code.analysis.last.selected.profile": "pProject Default",
-    "settings.editor.selected.configurable": "reference.settingsdialog.IDE.editor.colors.C/C++/Objective-C",
+    "settings.editor.selected.configurable": "CMakeSettings",
     "structure.view.defaults.are.configured": "true",
     "vue.rearranger.settings.migration": "true"
   }
@@ -221,7 +203,7 @@
       <workItem from="1710087615919" duration="5928000" />
       <workItem from="1710100202108" duration="1817000" />
       <workItem from="1710268413579" duration="2715000" />
-      <workItem from="1710591784206" duration="5033000" />
+      <workItem from="1710591784206" duration="9639000" />
     </task>
     <task id="LOCAL-00001" summary="initial rework">
       <option name="closed" value="true" />
@@ -351,7 +333,31 @@
       <option name="project" value="LOCAL" />
       <updated>1710596675599</updated>
     </task>
-    <option name="localTasksCounter" value="17" />
+    <task id="LOCAL-00017" summary="rename LoadFile, fix log level, update test">
+      <option name="closed" value="true" />
+      <created>1710598241082</created>
+      <option name="number" value="00017" />
+      <option name="presentableId" value="LOCAL-00017" />
+      <option name="project" value="LOCAL" />
+      <updated>1710598241082</updated>
+    </task>
+    <task id="LOCAL-00018" summary="subtitles are now H2">
+      <option name="closed" value="true" />
+      <created>1710598287164</created>
+      <option name="number" value="00018" />
+      <option name="presentableId" value="LOCAL-00018" />
+      <option name="project" value="LOCAL" />
+      <updated>1710598287164</updated>
+    </task>
+    <task id="LOCAL-00019" summary="add LoadFile to doc">
+      <option name="closed" value="true" />
+      <created>1710598307562</created>
+      <option name="number" value="00019" />
+      <option name="presentableId" value="LOCAL-00019" />
+      <option name="project" value="LOCAL" />
+      <updated>1710598307562</updated>
+    </task>
+    <option name="localTasksCounter" value="20" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -410,7 +416,10 @@
     <MESSAGE value="more documentation" />
     <MESSAGE value="os specific implementations" />
     <MESSAGE value="implement load file to memory" />
-    <option name="LAST_COMMIT_MESSAGE" value="implement load file to memory" />
+    <MESSAGE value="rename LoadFile, fix log level, update test" />
+    <MESSAGE value="subtitles are now H2" />
+    <MESSAGE value="add LoadFile to doc" />
+    <option name="LAST_COMMIT_MESSAGE" value="add LoadFile to doc" />
   </component>
   <component name="XSLT-Support.FileAssociations.UIState">
     <expand />

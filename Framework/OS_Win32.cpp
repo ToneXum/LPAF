@@ -22,7 +22,6 @@
 
 #include "Internals.hpp"
 
-#ifdef _WINDOWS
 #ifdef _DEBUG
 void i::CreateWin32Error(int line, int code, const char* func)
 {
@@ -147,11 +146,9 @@ LRESULT i::WindowProc(HWND window, UINT message, WPARAM wParam, LPARAM lParam) /
             i::CreateWin32Window(reinterpret_cast<WindowData*>(lParam));
             break;
         }
-            // Custom messages
-            ///////////////////////////////////
+        // End custom messages
 
-            ///////////////////////////////////
-            // Closing the window
+        // Closing the window
         case WM_CLOSE: // closing of a window has been requested
         {
             if (GetWindowData(window)->pfOnCloseAttempt()) // go ahead and close the window if return is true
@@ -174,11 +171,9 @@ LRESULT i::WindowProc(HWND window, UINT message, WPARAM wParam, LPARAM lParam) /
 
             return 0;
         }
-            // Closing the window
-            ///////////////////////////////////
+        // End closing the window
 
-            ///////////////////////////////////
-            // Keyboard and text input
+        // Keyboard and text input
         case WM_KEYDOWN:
         {
             if (!(lParam & 0x40000000))
@@ -227,11 +222,9 @@ LRESULT i::WindowProc(HWND window, UINT message, WPARAM wParam, LPARAM lParam) /
             }
             break;
         }
-            // Keyboard and text input
-            ///////////////////////////////////
+        // End keyboard and text input
 
-            ///////////////////////////////////
-            // Mouse input
+        // Mouse input
         case WM_MOUSEMOVE:
         {
             i::GetState()->mouse.xPos = GET_X_LPARAM(lParam);
@@ -321,11 +314,9 @@ LRESULT i::WindowProc(HWND window, UINT message, WPARAM wParam, LPARAM lParam) /
             GetWindowData(window)->hasMouseInClientArea = false;
             break;
         }
-            // Mouse input
-            ///////////////////////////////////
+        // End mouse input
 
-            ///////////////////////////////////
-            // Focus gain and loss
+        // Focus gain and loss
         case WM_SETFOCUS:
         {
             WindowData* wndData = i::GetWindowData(window);
@@ -346,13 +337,11 @@ LRESULT i::WindowProc(HWND window, UINT message, WPARAM wParam, LPARAM lParam) /
             i::GetState()->keyStates.reset();
             break;
         }
-            // Focus gain and loss
-            ///////////////////////////////////
+        // End focus gain and loss
 
-            // Yes Clang-Tidy, I know
+        // Yes Clang-Tidy, I know
         default: break;
     }
 
     return DefWindowProcW(window, message, wParam, lParam);
 }
-#endif // _WINDOWS
