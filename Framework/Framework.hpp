@@ -479,7 +479,8 @@ WndH GetMouseContainerWindow();
 // Returns NULL none of the owned windows has focus
 WndH GetWindowWithFocus();
 
-// TODO: file to byte array
-char* FileToByteArray(size_t* bytes);
+// Converts a file to a byte array and allocates that on the heap
+// Returns a pointer to that array
+void* FileToByteArray(const char* file, size_t& bytes);
 
 } // end namespace f

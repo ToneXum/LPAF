@@ -20,7 +20,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#include <csignal>
+#include <fstream>
 
 #include "Framework.hpp"
 #include "Internals.hpp"
@@ -58,7 +58,7 @@ void f::Initialise(const InitialisationData& initializationData)
     i::GetState()->isInitialised = true;
 
     v::InitialiseVulkan();
-    i::Log(L"Framework was successfully initialised", i::LogLvl::Info);
+    i::Log(L"Framework was successfully initialised", i::LlInfo);
 }
 
 void f::UnInitialise()
@@ -73,16 +73,16 @@ void f::UnInitialise()
 
     v::UnInitializeVulkan();
 
-    i::Log(L"Framework was successfully uninitialised", i::LogLvl::Info);
+    i::Log(L"Framework was successfully uninitialised", i::LlInfo);
 }
 
 // Whoops
 #undef CreateWindow
 f::WndH f::CreateWindowAsync(const f::WindowCreateData& wndCrtData)
 {
-    if (!i::GetState()->isInitialised) { i::Log(L"CreateWindowAsync() was called before initialisation", i::LogLvl::Error); return 0; } // init was not called
-    if (!wndCrtData.pName) { i::Log(L"Nullptr was passed to a required parameter at CreateWindowAsync()", i::LogLvl::Error); return 0; } // name is nullptr
-    if ((wndCrtData.height <= 0) || (wndCrtData.width <= 0)) { i::Log(L"Invalid height or width amount for window creation", i::LogLvl::Error); return 0; }
+    if (!i::GetState()->isInitialised) { i::Log(L"CreateWindowAsync() was called before initialisation", i::LlError); return 0; } // init was not called
+    if (!wndCrtData.pName) { i::Log(L"Nullptr was passed to a required parameter at CreateWindowAsync()", i::LlError); return 0; } // name is nullptr
+    if ((wndCrtData.height <= 0) || (wndCrtData.width <= 0)) { i::Log(L"Invalid height or width amount for window creation", i::LlError); return 0; }
 
     auto* wndData = new i::WindowData;
 
@@ -215,7 +215,7 @@ int f::MessageBox(WndH owner, const wchar_t* title, const wchar_t* msg, uint16_t
 
     int result = MessageBoxW(ownerData ? ownerData->window : nullptr, msg, title, rawFlags);
     if (result == 0)
-        i::Log(L"Invalid set of flags where passed to MessageBox()", i::LogLvl::Error);
+        i::Log(L"Invalid set of flags where passed to MessageBox()", i::LlError);
 #undef MB_OK
     switch (result)
     {
@@ -537,4 +537,31 @@ bool f::GetWindowRectangle(WndH handle, Rectangle& wpr)
     wpr.left        = wndData->xPos;
 
     return true;
+}
+
+void* f::FileToByteArray[[nodiscard("memory leak when not freed")]](const char* file, size_t& bytes)
+{
+    std::ifstream infile(file, std::ios_base::binary | std::ios_base::in);
+
+    if (!infile.fail())
+    {
+        // determine size of file
+        infile.seekg(0, std::ios::end);
+        bytes = infile.tellg();
+        infile.seekg(0, std::ios::beg);
+
+        auto* buffer = new char[bytes];
+
+        infile.read(buffer, static_cast<int64_t>(bytes));
+
+        infile.close();
+        return buffer;
+    }
+
+    // failed to access specified file
+    // either access was denied or file does not exist
+    std::ostringstream msg;
+    msg << "Failed to open " << file;
+    i::Log(msg.str().c_str(), i::LlError);
+    return nullptr;
 }

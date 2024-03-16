@@ -52,7 +52,7 @@
 #ifdef _WINDOWS
 #define DEBUG_BREAK DebugBreak();
 #else
-#include <signal.h>
+#include <csignal>
 #define DEBUG_BREAK raise(SIGTRAP); // Its a trap!
 #endif
 #else
