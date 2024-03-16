@@ -24,34 +24,24 @@ To view progress on updates, features and bug fixes you can check out the [Kanba
 For even more information like announcements, polls and Q&A you can visit the [Discussions](https://github.com/ToneXum/LPAF/discussions)
 
 ### Milestones
-✔️ -> Done and working<br>
-⭕️ -> Partially working or still being worked on<br>
-❌ -> Not implemented or not working<br>
-
 - Basic features ⭕
-  - Windows ✔️
-  - MacOS ❌
-  - Linux / Unix ❌
+  - Windows ✔️ (done)
+  - MacOS ❌ ($soon^{TM}$)
+  - Linux / Unix ❌ ($soon^{TM}$)
 - Somewhat stable release ❌
-  - Windows ⭕
-  - MacOS ❌
-  - Linux / Unix ❌
-- Entrypoint for integrated renderer ✔️
-  - Windows ✔️
-  - MacOS ✔️
-  - Linux / Unix ✔️
+  - Windows ⭕ (partially)
+  - MacOS ❌ ($soon^{TM}$)
+  - Linux / Unix ❌ ($soon^{TM}$)
+- Entrypoint for integrated renderer ✔️ (done)
 - Full rendering implementation ❌
-  - Windows ❌
-  - MacOS ❌
-  - Linux / Unix ❌
 - Networking ❌
-  - Windows ❌
-  - MacOS ❌
-  - Linux / Unix ❌
+  - Windows ❌ ($soon^{TM}$)
+  - MacOS ❌ ($soon^{TM}$)
+  - Linux / Unix ❌ ($soon^{TM}$)
 - Sound ❌
-  - Windows ❌
-  - MacOS ❌
-  - Linux / Unix ❌
+  - Windows ❌ ($soon^{TM}$)
+  - MacOS ❌ ($soon^{TM}$)
+  - Linux / Unix ❌ ($soon^{TM}$)
 
 ## Contact
 For any inquiries you can send an E-Mail to tonexum@national.shitposting.agency (Yes, I'm not joking. Checked every few 
