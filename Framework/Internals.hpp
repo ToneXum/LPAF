@@ -23,8 +23,14 @@
 #pragma once
 
 #ifdef _WINDOWS
+#ifndef WIN32_LEAN_AND_MEAN
+#define WIN32_LEAN_AND_MEAN // prevent Windows.h from including winsock-1.1
+#endif
+
 #include <Windows.h>
 #include <Windowsx.h>
+#include <winsock2.h>
+#include <ws2tcpip.h>
 #include <xaudio2.h>
 
 #undef ERROR

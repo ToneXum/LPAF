@@ -9,5 +9,5 @@ void Initialise(
 ```
 
 ## Parameters
-`const f::InitialisationData& initData`: <br>
-A reference to an instance of [f::InitialisationData](InitialisationData_struct.md).
+`const f::FrameworkInitData& initData`: <br>
+A reference to an instance of [f::FrameworkInitData](FrameworkInitData_struct).

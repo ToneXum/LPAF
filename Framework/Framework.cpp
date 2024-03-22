@@ -25,7 +25,7 @@
 #include "Framework.hpp"
 #include "Internals.hpp"
 
-void f::Initialise(const InitialisationData& initializationData)
+void f::Initialise(const f::FrameworkInitData& initialisationData)
 {
     // Create thread as early as possible. Since the execution does not start immediately this function will wait for it
     // to do so. In the meantime, it can perform work.
@@ -33,7 +33,7 @@ void f::Initialise(const InitialisationData& initializationData)
 
     // Get hInstance since the program does not use the winMain entry point
     i::GetState()->win32.instance = GetModuleHandle(nullptr);
-    
+
     WNDCLASSEXW wndC = {};
 
     wndC.cbClsExtra       = 0;
@@ -53,7 +53,7 @@ void f::Initialise(const InitialisationData& initializationData)
 
     // Wait for the window thread to start its execution if it has not already
     std::unique_lock<std::mutex> lock(i::GetState()->windowThreadMutex);
-    i::GetState()->windowThreadConditionVar.wait(lock, [] {return i::GetState()->windowThreadIsRunning; });
+    i::GetState()->windowThreadConditionVar.wait(lock, []() -> bool { return i::GetState()->windowThreadIsRunning; });
 
     i::GetState()->isInitialised = true;
 
@@ -72,17 +72,19 @@ void f::UnInitialise()
     WIN32_EC(UnregisterClassW(i::GetState()->win32.pClassName, i::GetState()->win32.instance))
 
     v::UnInitializeVulkan();
+    delete i::GetState();
 
     i::Log(L"Framework was successfully uninitialised", i::LlInfo);
 }
 
-// Whoops
-#undef CreateWindow
 f::WndH f::CreateWindowAsync(const f::WindowCreateData& wndCrtData)
 {
-    if (!i::GetState()->isInitialised) { i::Log(L"CreateWindowAsync() was called before initialisation", i::LlError); return 0; } // init was not called
-    if (!wndCrtData.pName) { i::Log(L"Nullptr was passed to a required parameter at CreateWindowAsync()", i::LlError); return 0; } // name is nullptr
-    if ((wndCrtData.height <= 0) || (wndCrtData.width <= 0)) { i::Log(L"Invalid height or width amount for window creation", i::LlError); return 0; }
+    if (!i::GetState()->isInitialised) { i::Log(L"CreateWindowAsync() was called before initialisation", i::LlError);
+        return 0; } // init was not called
+    if (!wndCrtData.pName) { i::Log(L"Nullptr was passed to a required parameter at CreateWindowAsync()", i::LlError);
+        return 0; } // name is nullptr
+    if ((wndCrtData.height <= 0) || (wndCrtData.width <= 0)) { i::Log(L"Invalid height or width amount for window "
+                                                                      "creation", i::LlError); return 0; }
 
     auto* wndData = new i::WindowData;
 
@@ -175,7 +177,6 @@ void f::CloseAllWindowsForce()
 }
 
 #undef MessageBox
-#undef IGNORE
 int f::MessageBox(WndH owner, const wchar_t* title, const wchar_t* msg, uint16_t flags)
 {
     // return null if the window is not found, so I don't care
@@ -231,7 +232,6 @@ int f::MessageBox(WndH owner, const wchar_t* title, const wchar_t* msg, uint16_t
         default:            return MrCancel; // should never reach this
     }
 }
-#define IGNORE 0
 
 void f::OnWindowCloseAttempt(WndH handle, bool(*func)())
 {
@@ -564,4 +564,12 @@ void* f::LoadFile[[nodiscard("memory leak if not freed")]](const char* file, siz
     msg << "Failed to open " << file;
     i::Log(msg.str().c_str(), i::LlError);
     return nullptr;
+}
+
+bool f::InitialiseNetworking(const f::NetworkingInitData& networkingInitData)
+{
+    //WSADATA winSockData{};
+    //WSAStartup(MAKEWORD(2, 2), &winSockData);
+
+    return false;
 }

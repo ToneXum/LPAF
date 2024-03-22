@@ -190,8 +190,8 @@ void i::Log(const char* msg, LogLvl logLvl)
 
 i::ProgramState* i::GetState()
 {
+    // leak is fine; data persists through the whole runtime
     static i::ProgramState* state{new i::ProgramState};
-    return state;
 }
 
 i::ProgramState::ProgramState()

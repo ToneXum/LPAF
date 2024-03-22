@@ -273,7 +273,7 @@ enum WindowVisibility : uint8_t
     WvActivate, // activate
     WvMinimize, // minimize and deactivate
     WvMinimizeNoActivate, // the same as WvMinimize?
-    WvActivateNoActivate, // XD
+    WvActivateNoActivate, // I have no clue what this does
     WvRestore // restore from minimize and activate
 };
 
@@ -283,7 +283,7 @@ enum ApplicationStyle : uint8_t
     AsNoCloseButton             = 0b10,
 };
 
-struct InitialisationData
+struct FrameworkInitData
 {
     const char* pIconPath;
     const char* pCursorPath;
@@ -314,8 +314,13 @@ struct MouseInfo
     WndH containingWindow;
 } __attribute__((aligned(16)));
 
+struct NetworkingInitData
+{
+
+};
+
 // Start the entire framework up, so it can be used.
-void Initialise(const InitialisationData& initialisationData);
+void Initialise(const FrameworkInitData& initialisationData);
 
 // Shutdown, cleanup.
 void UnInitialise();
@@ -483,4 +488,6 @@ WndH GetWindowWithFocus();
 // Returns a pointer to that array
 void* LoadFile(const char* file, size_t& bytes);
 
+// Start up networking functionality
+bool InitialiseNetworking(const f::NetworkingInitData& networkingInitData);
 } // end namespace f

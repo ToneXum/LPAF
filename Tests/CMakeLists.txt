@@ -19,7 +19,7 @@ if (DEBUG)
     set(CMAKE_CXX_FLAGS -O0)
 
     link_directories("../cmake-build-debug/Framework")
-    link_libraries("FrameworkWin64Debug.lib" "vulkan-1.lib")
+    link_libraries("lpaf.lib" "vulkan-1.lib")
     add_executable(Test_Application ${APPLICATION_SOURCE})
 endif (DEBUG)
 
@@ -28,6 +28,9 @@ if (NOT_DEBUG)
     set(CMAKE_CXX_FLAGS -O3)
 
     link_directories("../cmake-build-release/Framework")
-    link_libraries("FrameworkWin64.lib" "vulkan-1.lib")
+    link_libraries("lpaf.lib" "vulkan-1.lib")
     add_executable(Test_Application WIN32 ${APPLICATION_SOURCE})
 endif (NOT_DEBUG)
+
+set_target_properties(Test_Application PROPERTIES
+        RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}" )

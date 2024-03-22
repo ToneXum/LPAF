@@ -6,11 +6,8 @@
 # Output directory
 cmake-build-**
 
-# Finished builds
-.done
-
-# Library mergers
-.mergers**
-
 # What are you doing here?
 desktop.ini
+
+# third party static libraries
+.lib**

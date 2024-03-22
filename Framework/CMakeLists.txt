@@ -16,7 +16,7 @@ set(FRAMEWORK_SOURCE
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_FLAGS -Wall)
 set(CMAKE_STATIC_LIBRARY_PREFIX "")
-set(OUT_NAME "Framework")
+set(OUT_NAME "lpaf")
 
 include_directories("$ENV{VULKAN_SDK}/Include")
 
@@ -25,7 +25,7 @@ if (DEBUG)
     add_definitions(-D _DEBUG)
     set(CMAKE_CXX_FLAGS -O0)
     add_library(Framework_Lib STATIC ${FRAMEWORK_SOURCE})
-    string(APPEND ${OUT_NAME} "Debug")
+    string(APPEND ${OUT_NAME} "Deb")
 endif (DEBUG)
 
 # Optimised release build
@@ -38,19 +38,19 @@ endif (NOT_DEBUG)
 # Platform dependant definitions
 if (WIN32)
     add_definitions(-D _WINDOWS)
-    string(APPEND ${OUT_NAME} "Win64")
+    string(APPEND ${OUT_NAME} "Win")
     set(FILE_SUFFIX ".lib")
 endif ()
 
 if (LINUX)
     add_definitions(-D _LINUX)
-    string(APPEND ${OUT_NAME} "Linux")
+    string(APPEND ${OUT_NAME} "Lin")
     set(FILE_SUFFIX ".a")
 endif ()
 
 if (UNIX AND APPLE)
     add_definitions(-D _MACOS)
-    string(APPEND ${OUT_NAME} "MacOS")
+    string(APPEND ${OUT_NAME} "Mac")
     set(FILE_SUFFIX ".a")
 endif ()
 

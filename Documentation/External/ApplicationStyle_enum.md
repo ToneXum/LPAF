@@ -1,6 +1,6 @@
 # f::ApplicationStyle
 An enumeration of flags, used to modify the behaviour of LPAF. Used in the `appStyle` member of 
-[InitialisationData](InitialisationData_struct.md).
+[FrameworkInitData](FrameworkInitData_struct).
 
 ## Definition
 ```C++

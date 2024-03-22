@@ -27,10 +27,20 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="b43a079c-b7ae-41fc-bc1a-f78f46edc6d3" name="Changes" comment="add LoadFile to doc">
+    <list default="true" id="b43a079c-b7ae-41fc-bc1a-f78f46edc6d3" name="Changes" comment="clean up build config">
+      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Documentation/External/ApplicationStyle_enum.md" beforeDir="false" afterPath="$PROJECT_DIR$/Documentation/External/ApplicationStyle_enum.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Documentation/External/InitialisationData_struct.md" beforeDir="false" afterPath="$PROJECT_DIR$/Documentation/External/InitialisationData_struct.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Documentation/External/Initialise_func.md" beforeDir="false" afterPath="$PROJECT_DIR$/Documentation/External/Initialise_func.md" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Framework/CMakeLists.txt" beforeDir="false" afterPath="$PROJECT_DIR$/Framework/CMakeLists.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Framework/Framework.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Framework/Framework.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Framework/Framework.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/Framework/Framework.hpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Framework/Internals.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Framework/Internals.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Framework/Internals.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/Framework/Internals.hpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Framework/OS_Win32.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Framework/OS_Win32.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Tests/CMakeLists.txt" beforeDir="false" afterPath="$PROJECT_DIR$/Tests/CMakeLists.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Tests/Main.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Tests/Main.cpp" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -72,9 +82,9 @@
   }
 }</component>
   <component name="GitHubPullRequestState">{
-  &quot;prStates&quot;: [
-  ]
+  &quot;prStates&quot;: []
 }</component>
+  <component name="GitLabMergeRequestsSettings">{}</component>
   <component name="GithubProjectSettings">
     <option name="branchProtectionPatterns">
       <list>
@@ -95,7 +105,6 @@
     <option name="stateVersion" value="1" />
   </component>
   <component name="ProblemsViewState">
-    <option name="groupByToolId" value="true" />
     <option name="selectedTabId" value="CurrentFile" />
   </component>
   <component name="ProjectApplicationVersion">
@@ -146,17 +155,17 @@
     </key>
   </component>
   <component name="RunManager" selected="CMake Application.Framework_Lib">
+    <configuration default="true" type="CLionExternalRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true">
+      <method v="2">
+        <option name="CLION.EXTERNAL.BUILD" enabled="true" />
+      </method>
+    </configuration>
     <configuration name="Framework_Lib" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="LPAF" TARGET_NAME="Framework_Lib" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="LPAF" RUN_TARGET_NAME="Test_Application">
       <method v="2">
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
       </method>
     </configuration>
     <configuration name="Test_Application" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="true" EMULATE_TERMINAL="false" WORKING_DIR="file://$PROJECT_DIR$/.runtime" PASS_PARENT_ENVS_2="true" PROJECT_NAME="LPAF" TARGET_NAME="Test_Application" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="LPAF" RUN_TARGET_NAME="Test_Application">
-      <method v="2">
-        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
-      </method>
-    </configuration>
-    <configuration default="true" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true">
       <method v="2">
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
       </method>
@@ -203,7 +212,10 @@
       <workItem from="1710087615919" duration="5928000" />
       <workItem from="1710100202108" duration="1817000" />
       <workItem from="1710268413579" duration="2715000" />
-      <workItem from="1710591784206" duration="9639000" />
+      <workItem from="1710591784206" duration="10286000" />
+      <workItem from="1711041539810" duration="4744000" />
+      <workItem from="1711117139534" duration="3807000" />
+      <workItem from="1711125986658" duration="1990000" />
     </task>
     <task id="LOCAL-00001" summary="initial rework">
       <option name="closed" value="true" />
@@ -357,7 +369,15 @@
       <option name="project" value="LOCAL" />
       <updated>1710598307562</updated>
     </task>
-    <option name="localTasksCounter" value="20" />
+    <task id="LOCAL-00020" summary="clean up build config">
+      <option name="closed" value="true" />
+      <created>1710613932000</created>
+      <option name="number" value="00020" />
+      <option name="presentableId" value="LOCAL-00020" />
+      <option name="project" value="LOCAL" />
+      <updated>1710613932000</updated>
+    </task>
+    <option name="localTasksCounter" value="21" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -419,7 +439,8 @@
     <MESSAGE value="rename LoadFile, fix log level, update test" />
     <MESSAGE value="subtitles are now H2" />
     <MESSAGE value="add LoadFile to doc" />
-    <option name="LAST_COMMIT_MESSAGE" value="add LoadFile to doc" />
+    <MESSAGE value="clean up build config" />
+    <option name="LAST_COMMIT_MESSAGE" value="clean up build config" />
   </component>
   <component name="XSLT-Support.FileAssociations.UIState">
     <expand />

@@ -1,9 +1,9 @@
-# f::InitialisationData
+# f::FrameworkInitData
 A structure used to specify modification in behaviour of your LPAF application.
 
 ## Definition
 ```C++
-struct InitialisationData
+struct FrameworkInitData
 {
     [in] int iconId, cursorId;
     [in] uint8_t appStyle;

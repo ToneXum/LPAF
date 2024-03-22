@@ -178,7 +178,6 @@ LRESULT i::WindowProc(HWND window, UINT message, WPARAM wParam, LPARAM lParam) /
         {
             if (!(lParam & 0x40000000))
             {
-                i::Log("Key state was updated", i::LlInfo);
                 i::GetState()->keyStates.set(wParam);
             }
             break;
@@ -192,7 +191,6 @@ LRESULT i::WindowProc(HWND window, UINT message, WPARAM wParam, LPARAM lParam) /
         {
             if (!(lParam & 0x40000000))
             {
-                i::Log("Key state was updated", i::LlInfo);
                 i::GetState()->keyStates.set(wParam);
             }
             break;

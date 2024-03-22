@@ -2,10 +2,11 @@
 
 int main()
 {
-    f::InitialisationData initData{};
+    f::FrameworkInitData initData{};
     initData.appStyle   = f::AsNoCloseButton;
-
     f::Initialise(initData); // Intellisense? Are you good?
+
+    f::NetworkingInitData netInitData{};
 
     f::WindowCreateData cdt{};
     cdt.pName = L"Dependant"; cdt.height = 500; cdt.width = 500;
