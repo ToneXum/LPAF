@@ -490,4 +490,7 @@ void* LoadFile(const char* file, size_t& bytes);
 
 // Start up networking functionality
 bool InitialiseNetworking(const f::NetworkingInitData& networkingInitData);
+
+// Shut down networking functionality
+bool UnInitialiseNetworking();
 } // end namespace f

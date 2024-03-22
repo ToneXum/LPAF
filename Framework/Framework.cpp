@@ -50,7 +50,7 @@ void f::Initialise(const f::FrameworkInitData& initialisationData)
     wndC.lpfnWndProc      = i::WindowProc;
     wndC.lpszClassName    = i::GetState()->win32.pClassName;
     wndC.lpszMenuName     = nullptr;
-    wndC.style            = 0;
+    wndC.style            = 69;
 
     WIN32_EC(RegisterClassExW(&wndC))
 
@@ -577,8 +577,41 @@ void* f::LoadFile[[nodiscard("memory leak if not freed")]](const char* file, siz
 
 bool f::InitialiseNetworking(const f::NetworkingInitData& networkingInitData)
 {
-    //WSADATA winSockData{};
-    //WSAStartup(MAKEWORD(2, 2), &winSockData);
+    WSADATA winSockData{};
+    int err = WSAStartup(MAKEWORD(2, 2), &winSockData);
 
-    return false;
+    switch (err)
+    {
+        case 0: // no error
+            break;
+        case WSAVERNOTSUPPORTED:
+        {
+            i::Log("Winsock 2.2 is not supported on this system", i::LlError);
+            return false;
+        }
+        case WSASYSNOTREADY:
+        {
+            i::Log("The Winsock networking subsystem is not available for use", i::LlError);
+            return false;
+        }
+        case WSAEPROCLIM:
+        {
+            i::Log("Too many instances of Winsock 2.2 are running, procedure limit was reached", i::LlError);
+            return false;
+        }
+        default:
+        {
+            i::Log("An error was produced by Winsock starting", i::LlError); // *should* never reach
+            return false;
+        }
+    }
+
+    return true;
+}
+
+bool f::UnInitialiseNetworking()
+{
+    WSA_EC(WSACleanup());
+
+    return true;
 }

@@ -22,7 +22,6 @@ include_directories("$ENV{VULKAN_SDK}/Include")
 
 # Debug build
 if (DEBUG)
-    add_definitions(-D _DEBUG)
     set(CMAKE_CXX_FLAGS -O0)
     add_library(Framework_Lib STATIC ${FRAMEWORK_SOURCE})
     string(APPEND ${OUT_NAME} "Deb")
@@ -30,7 +29,6 @@ endif (DEBUG)
 
 # Optimised release build
 if (NOT_DEBUG)
-    add_definitions(-D _NDEBUG)
     set(CMAKE_CXX_FLAGS -O3)
     add_library(Framework_Lib STATIC ${FRAMEWORK_SOURCE})
 endif (NOT_DEBUG)

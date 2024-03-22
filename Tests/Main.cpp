@@ -7,6 +7,7 @@ int main()
     f::Initialise(initData);
 
     f::NetworkingInitData netInitData{};
+    //f::InitialiseNetworking(netInitData);
 
     f::WindowCreateData cdt{};
     cdt.pName = L"Dependant"; cdt.height = 500; cdt.width = 500;
@@ -55,6 +56,7 @@ int main()
         f::Halt(16);
     }
 
+    f::UnInitialiseNetworking();
     f::UnInitialise();
     return 0;
 }

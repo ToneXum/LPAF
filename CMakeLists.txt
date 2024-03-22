@@ -8,6 +8,13 @@ set(ENV{VULKAN_SDK} "../../.SKD/Vulkan")
 
 ### END CONFIGURATION
 
+if (DEBUG)
+    add_definitions(-D _DEBUG)
+endif ()
+if (NOT_DEBUG)
+    add_definitions(-D NDEBUG)
+endif ()
+
 # Actual framework
 add_subdirectory("Framework")
 
