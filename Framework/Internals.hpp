@@ -48,8 +48,15 @@
 
 // Error check for Win32 API calls
 #define WIN32_EC(x) { if (!(x)) { i::CreateWin32Error(__LINE__, GetLastError(), __func__); } }
+
 // Error check for Win32 API calls but the return value is saved
 #define WIN32_EC_RET(var, func) { var = func; if (!var) { i::CreateWin32Error(__LINE__, GetLastError(), __func__); } }
+
+// Error check for Winsock API calls
+#define WSA_EC(expr) { if (expr) { i::CreateWinsockError(__LINE__, WSAGetLastError(), __func__); } }
+
+// Error check for Winsock API calls but the return value is saved
+#define WSA_EC_RET(var, expr) { var = expr; if (!(var)) { i::CreateWinsockError(__LINE__, WSAGetLastError(), __func__); } }
 
 // Manual error creation with automatic additional information
 #define FRAMEWORK_ERR(msg) { i::CreateManualError(__LINE__, __func__, msg); }
@@ -176,6 +183,9 @@ void CreateWin32Window(i::WindowData* wndDt);
 
 // Win32 Error creation
 void CreateWin32Error(int line, int code, const char* func);
+
+// Winsock error creation
+void CreateWinsockError(int line, int code, const char* func);
 
 // Manual and instant error creation
 void CreateManualError(int line, const char* func, const char* msg);

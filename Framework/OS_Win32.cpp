@@ -25,7 +25,6 @@
 #ifdef _DEBUG
 void i::CreateWin32Error(int line, int code, const char* func)
 {
-    //int e = GetLastError();
     std::ostringstream msg;
     char* errorMessage = nullptr;
 
@@ -34,14 +33,18 @@ void i::CreateWin32Error(int line, int code, const char* func)
             nullptr,
             code,
             MAKELANGID(LANG_ENGLISH, SUBLANG_ENGLISH_US),
-            static_cast<LPSTR>(errorMessage),
+            reinterpret_cast<LPSTR>(&errorMessage),
             0,
             nullptr
     );
 
-    msg << "A Win32 API call resulted in fatal error " << code << " at line " << line << " in " << func << ".\n\n";
-    msg << errorMessage << "\n";
+    msg << "A Win32 API call resulted in fatal error " << code << " at line " << line << " in " << func << "().\n\n";
+
+    if (errorMessage != nullptr) { msg << errorMessage << "\n"; }
+    else { msg << "MESSAGE FORMAT FAILED WITH CODE " << GetLastError() << "\n\n"; }
+
     msg << "This is an internal error likely caused by the framework itself, the application must quit now.\n";
+    msg << std::flush;
 
     MessageBoxA(nullptr, msg.str().c_str(), "Internal Error!", MB_ICONERROR | MB_TASKMODAL | MB_OK);
     LocalFree(static_cast<LPSTR>(errorMessage));
@@ -68,6 +71,36 @@ void i::CreateWin32Error(int line, int c, const char* func)
     std::exit(-1);
 }
 #endif // NDEBUG
+
+void i::CreateWinsockError(int line, int code, const char* func)
+{
+    std::ostringstream msg;
+    char* errorMessage = nullptr;
+
+    FormatMessageA(
+            FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
+            nullptr,
+            code,
+            MAKELANGID(LANG_ENGLISH, SUBLANG_ENGLISH_US),
+            reinterpret_cast<LPSTR>(&errorMessage),
+            0,
+            nullptr
+    );
+
+    msg << "A Winsock API call resulted in fatal error " << code << " at line " << line << " in " << func << "().\n\n";
+
+    if (errorMessage != nullptr) { msg << errorMessage << "\n"; }
+    else { msg << "MESSAGE FORMAT FAILED WITH CODE " << GetLastError() << "\n\n"; }
+
+    msg << "This is an internal error likely caused by the framework itself, the application must quit now.\n";
+    msg << std::flush;
+
+    MessageBoxA(nullptr, msg.str().c_str(), "Internal Error!", MB_ICONERROR | MB_TASKMODAL | MB_OK);
+    LocalFree(static_cast<LPSTR>(errorMessage));
+
+    DeAlloc();
+    std::exit(-1);
+}
 
 void i::WindowProcedureThread()
 {
