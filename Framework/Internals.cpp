@@ -110,7 +110,7 @@ void i::Log(const wchar_t* msg, LogLvl logLvl)
     std::time_t currentTime = std::chrono::system_clock::to_time_t(now);
 
     i::GetState()->loggerMutex.lock();
-    std::cout << "[" << std::put_time(std::localtime(&currentTime), "%d.%m.%Y %H:%M:%S") << "]";
+    std::cout << "[" << std::put_time(std::localtime(&currentTime), "%d.%m. %H:%M:%S") << "]";
 
     switch (logLvl)
     {
@@ -153,7 +153,7 @@ void i::Log(const char* msg, LogLvl logLvl)
     std::time_t currentTime = std::chrono::system_clock::to_time_t(now);
 
     i::GetState()->loggerMutex.lock();
-    std::cout << "[" << std::put_time(std::localtime(&currentTime), "%d.%m.%Y %H:%M:%S") << "]";
+    std::cout << "[" << std::put_time(std::localtime(&currentTime), "%d.%m. %H:%M:%S") << "]";
 
     switch (logLvl)
     {
@@ -192,6 +192,7 @@ i::ProgramState* i::GetState()
 {
     // leak is fine; data persists through the whole runtime
     static i::ProgramState* state{new i::ProgramState};
+    return state;
 }
 
 i::ProgramState::ProgramState()

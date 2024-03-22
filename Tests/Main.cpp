@@ -4,7 +4,7 @@ int main()
 {
     f::FrameworkInitData initData{};
     initData.appStyle   = f::AsNoCloseButton;
-    f::Initialise(initData); // Intellisense? Are you good?
+    f::Initialise(initData);
 
     f::NetworkingInitData netInitData{};
 

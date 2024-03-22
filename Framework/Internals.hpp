@@ -158,7 +158,7 @@ public:
 };
 
 // Gets pointer to state
-inline ProgramState* GetState();
+ProgramState* GetState();
 
 // Log level for in::Log(), this will determine the prefix of the message
 enum LogLvl : uint8_t

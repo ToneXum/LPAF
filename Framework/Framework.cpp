@@ -20,7 +20,10 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
+#include <chrono>
+#include <format>
 #include <fstream>
+#include <iostream>
 
 #include "Framework.hpp"
 #include "Internals.hpp"
@@ -59,6 +62,12 @@ void f::Initialise(const f::FrameworkInitData& initialisationData)
 
     v::InitialiseVulkan();
     i::Log(L"Framework was successfully initialised", i::LlInfo);
+
+    // Specify the year the program is running in; Saves space on the timestamp for logged messages
+    // Surely the thing won't run through new year... right?
+    std::wostringstream timeMsg;
+    timeMsg << "The current year is " << std::format("{:%Y}", std::chrono::system_clock::now()).c_str();
+    i::Log(timeMsg.str().c_str(), i::LlInfo);
 }
 
 void f::UnInitialise()

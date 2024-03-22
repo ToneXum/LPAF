@@ -11,3 +11,10 @@ desktop.ini
 
 # third party static libraries
 .lib**
+
+# Binaries
+*.exe
+*.a
+*.so
+*.lib
+*.dll
