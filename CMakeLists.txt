@@ -15,6 +15,10 @@ if (NOT_DEBUG)
     add_definitions(-D NDEBUG)
 endif ()
 
+if (WIN32)
+    enable_language("RC")
+endif ()
+
 # Actual framework
 add_subdirectory("Framework")
 

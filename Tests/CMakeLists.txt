@@ -4,7 +4,8 @@ project(LPAF)
 ### VARIABLES
 
 set(APPLICATION_SOURCE
-        Main.cpp)
+        Main.cpp
+        res/res.rc )
 
 ### END VARIABLES
 

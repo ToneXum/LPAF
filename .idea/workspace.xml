@@ -27,13 +27,17 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="b43a079c-b7ae-41fc-bc1a-f78f46edc6d3" name="Changes" comment="fix linking and logging issues">
+    <list default="true" id="b43a079c-b7ae-41fc-bc1a-f78f46edc6d3" name="Changes" comment="fix error handling">
+      <change afterPath="$PROJECT_DIR$/Documentation/Internal/FRAMEWORK_ERR_macro.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Documentation/Internal/WIN32_EC_RET_macro.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Documentation/Internal/WIN32_EC_macro.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Documentation/Internal/WSA_EC_RET_macro.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Documentation/Internal/WSA_EC_macro.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Tests/res/app.ico" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Tests/res/res.rc" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/CMakeLists.txt" beforeDir="false" afterPath="$PROJECT_DIR$/CMakeLists.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Documentation/Guides/Getting_Started.md" beforeDir="false" afterPath="$PROJECT_DIR$/Documentation/Guides/Getting_Started.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Framework/CMakeLists.txt" beforeDir="false" afterPath="$PROJECT_DIR$/Framework/CMakeLists.txt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Framework/Framework.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Framework/Framework.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Framework/Framework.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/Framework/Framework.hpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Framework/Internals.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/Framework/Internals.hpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Framework/OS_Win32.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Framework/OS_Win32.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Tests/CMakeLists.txt" beforeDir="false" afterPath="$PROJECT_DIR$/Tests/CMakeLists.txt" afterDir="false" />
@@ -114,15 +118,18 @@
   &quot;associatedIndex&quot;: 1
 }</component>
   <component name="ProjectId" id="2cpKJZHdXdQaCuFCyzCqYz8oIfk" />
-  <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
+  <component name="ProjectLevelVcsManager" settingsEditedManually="true">
+    <ConfirmationsSetting value="2" id="Add" />
+  </component>
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
   <component name="PropertiesComponent"><![CDATA[{
   "keyToString": {
+    "ASKED_ADD_EXTERNAL_FILES": "true",
     "ASKED_MARK_IGNORED_FILES_AS_EXCLUDED": "true",
-    "CMake Application.Framework_Lib.executor": "Run",
+    "CMake Application.Framework_Lib.executor": "Debug",
     "CMake Application.Test_Application.executor": "Run",
     "RunOnceActivity.OpenProjectViewOnStart": "true",
     "RunOnceActivity.ShowReadmeOnStart": "true",
@@ -153,17 +160,17 @@
     </key>
   </component>
   <component name="RunManager" selected="CMake Application.Framework_Lib">
+    <configuration default="true" type="CLionExternalRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true">
+      <method v="2">
+        <option name="CLION.EXTERNAL.BUILD" enabled="true" />
+      </method>
+    </configuration>
     <configuration name="Framework_Lib" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="LPAF" TARGET_NAME="Framework_Lib" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="LPAF" RUN_TARGET_NAME="Test_Application">
       <method v="2">
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
       </method>
     </configuration>
     <configuration name="Test_Application" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="true" EMULATE_TERMINAL="false" WORKING_DIR="file://$PROJECT_DIR$/.runtime" PASS_PARENT_ENVS_2="true" PROJECT_NAME="LPAF" TARGET_NAME="Test_Application" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="LPAF" RUN_TARGET_NAME="Test_Application">
-      <method v="2">
-        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
-      </method>
-    </configuration>
-    <configuration default="true" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true">
       <method v="2">
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
       </method>
@@ -214,7 +221,8 @@
       <workItem from="1711041539810" duration="4744000" />
       <workItem from="1711117139534" duration="3807000" />
       <workItem from="1711125986658" duration="9977000" />
-      <workItem from="1711138965295" duration="6638000" />
+      <workItem from="1711138965295" duration="10198000" />
+      <workItem from="1711193136988" duration="1077000" />
     </task>
     <task id="LOCAL-00001" summary="initial rework">
       <option name="closed" value="true" />
@@ -392,7 +400,23 @@
       <option name="project" value="LOCAL" />
       <updated>1711138270100</updated>
     </task>
-    <option name="localTasksCounter" value="23" />
+    <task id="LOCAL-00023" summary="basic networking">
+      <option name="closed" value="true" />
+      <created>1711146145503</created>
+      <option name="number" value="00023" />
+      <option name="presentableId" value="LOCAL-00023" />
+      <option name="project" value="LOCAL" />
+      <updated>1711146145503</updated>
+    </task>
+    <task id="LOCAL-00024" summary="fix error handling">
+      <option name="closed" value="true" />
+      <created>1711146163000</created>
+      <option name="number" value="00024" />
+      <option name="presentableId" value="LOCAL-00024" />
+      <option name="project" value="LOCAL" />
+      <updated>1711146163000</updated>
+    </task>
+    <option name="localTasksCounter" value="25" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -435,6 +459,7 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
+    <option name="ADD_EXTERNAL_FILES_SILENTLY" value="true" />
     <ignored-roots>
       <path value="$PROJECT_DIR$/Framework" />
     </ignored-roots>
@@ -457,7 +482,20 @@
     <MESSAGE value="clean up build config" />
     <MESSAGE value="rename, clean up, refactor" />
     <MESSAGE value="fix linking and logging issues" />
-    <option name="LAST_COMMIT_MESSAGE" value="fix linking and logging issues" />
+    <MESSAGE value="basic networking" />
+    <MESSAGE value="fix error handling" />
+    <option name="LAST_COMMIT_MESSAGE" value="fix error handling" />
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
+          <url>file://$PROJECT_DIR$/Tests/Main.cpp</url>
+          <line>6</line>
+          <option name="timeStamp" value="3" />
+        </line-breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
   </component>
   <component name="XSLT-Support.FileAssociations.UIState">
     <expand />
