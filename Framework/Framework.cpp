@@ -30,12 +30,15 @@
 
 void f::Initialise(const f::FrameworkInitData& initialisationData)
 {
+    // M A X I M U M  C A C H E  E X P L I O T A T I O N
+    i::ProgramState* progState = i::GetState();
+
     // Create thread as early as possible. Since the execution does not start immediately this function will wait for it
     // to do so. In the meantime, it can perform work.
-    i::GetState()->pWindowThread = new std::thread(i::WindowProcedureThread);
+    progState->pWindowThread = new std::thread(i::WindowProcedureThread);
 
     // Get hInstance since the program does not use the winMain entry point
-    i::GetState()->win32.instance = GetModuleHandle(nullptr);
+    progState->win32.instance = GetModuleHandle(nullptr);
 
     WNDCLASSEXW wndC = {};
 
@@ -43,22 +46,22 @@ void f::Initialise(const f::FrameworkInitData& initialisationData)
     wndC.cbSize           = sizeof(WNDCLASSEXW);
     wndC.cbWndExtra       = 0;
     wndC.hbrBackground    = nullptr;
-    wndC.hCursor          = i::GetState()->win32.cursor;
-    wndC.hIcon            = i::GetState()->win32.icon;
-    wndC.hIconSm          = i::GetState()->win32.icon;
-    wndC.hInstance        = i::GetState()->win32.instance;
+    wndC.hCursor          = progState->win32.cursor;
+    wndC.hIcon            = progState->win32.icon;
+    wndC.hIconSm          = progState->win32.icon;
+    wndC.hInstance        = progState->win32.instance;
     wndC.lpfnWndProc      = i::WindowProc;
     wndC.lpszClassName    = i::GetState()->win32.pClassName;
     wndC.lpszMenuName     = nullptr;
-    wndC.style            = 69;
+    wndC.style            = 0;
 
-    WIN32_EC(RegisterClassExW(&wndC))
+    WIN32_EC(RegisterClassExW(&wndC), 1, ATOM)
 
     // Wait for the window thread to start its execution if it has not already
-    std::unique_lock<std::mutex> lock(i::GetState()->windowThreadMutex);
-    i::GetState()->windowThreadConditionVar.wait(lock, []() -> bool { return i::GetState()->windowThreadIsRunning; });
+    std::unique_lock<std::mutex> lock(progState->windowThreadMutex);
+    progState->windowThreadConditionVar.wait(lock, [progState]() -> bool { return progState->windowThreadIsRunning; });
 
-    i::GetState()->isInitialised = true;
+    progState->isInitialised = true;
 
     v::InitialiseVulkan();
     i::Log(L"Framework was successfully initialised", i::LlInfo);
@@ -78,7 +81,7 @@ void f::UnInitialise()
     std::unique_lock<std::mutex> lock(i::GetState()->windowThreadMutex);
     i::GetState()->windowThreadConditionVar.wait(lock, []{ return !i::GetState()->windowThreadIsRunning; });
 
-    WIN32_EC(UnregisterClassW(i::GetState()->win32.pClassName, i::GetState()->win32.instance))
+    WIN32_EC(UnregisterClassW(i::GetState()->win32.pClassName, i::GetState()->win32.instance), 1, WINBOOL)
 
     v::UnInitializeVulkan();
     delete i::GetState();
@@ -123,7 +126,7 @@ f::WndH f::CreateWindowAsync(const f::WindowCreateData& wndCrtData)
             WM_CREATE_WINDOW_REQ,
             reinterpret_cast<WPARAM>(nullptr),
             reinterpret_cast<LPARAM>(wndData)
-            )
+            ), 1, WINBOOL
     )
 
     return wndData->id;
@@ -141,7 +144,7 @@ void f::CloseWindow(const WndH handle)
         WM_CLOSE,
         reinterpret_cast<WPARAM>(nullptr),
         reinterpret_cast<LPARAM>(nullptr)
-    ))
+    ), 1, WINBOOL)
 }
 
 void f::CloseWindowForce(const WndH handle)
@@ -156,7 +159,7 @@ void f::CloseWindowForce(const WndH handle)
         WM_DESTROY,
         reinterpret_cast<WPARAM>(nullptr),
         reinterpret_cast<LPARAM>(nullptr)
-    ))
+    ), 1, WINBOOL)
 }
 
 void f::CloseAllWindows()
@@ -168,7 +171,7 @@ void f::CloseAllWindows()
             WM_CLOSE,
             reinterpret_cast<WPARAM>(nullptr),
             reinterpret_cast<LPARAM>(nullptr)
-        ))
+        ), 1, WINBOOL)
     }
 }
 
@@ -181,7 +184,7 @@ void f::CloseAllWindowsForce()
                 WM_DESTROY,
                 reinterpret_cast<WPARAM>(nullptr),
                 reinterpret_cast<LPARAM>(nullptr)
-        ))
+        ), 1, WINBOOL)
     }
 }
 
@@ -611,7 +614,7 @@ bool f::InitialiseNetworking(const f::NetworkingInitData& networkingInitData)
 
 bool f::UnInitialiseNetworking()
 {
-    WSA_EC(WSACleanup());
+    WSA_EC(WSACleanup(), 0, int);
 
     return true;
 }

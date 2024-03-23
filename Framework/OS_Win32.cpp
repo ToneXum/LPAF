@@ -148,7 +148,7 @@ void i::CreateWin32Window(i::WindowData* wndDt)
             nullptr,
             i::GetState()->win32.instance,
             nullptr
-    ))
+    ), 1)
 
     ShowWindow(wndDt->window, 1);
 

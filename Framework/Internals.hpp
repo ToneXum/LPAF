@@ -46,17 +46,38 @@
 #include "Vulkan.hpp"
 #include "Framework.hpp"
 
-// Error check for Win32 API calls
-#define WIN32_EC(x) { if (!(x)) { i::CreateWin32Error(__LINE__, GetLastError(), __func__); } }
+// Error check for Win32 API calls.
+// Yes I know it's unreadable, check the doc.
+#define WIN32_EC(expr, suc, type) { \
+type res = expr; \
+if (((res) && (suc == 0)) || (!(res) && (suc != 0))) \
+{                             \
+    i::CreateWin32Error(__LINE__, GetLastError(), __func__); \
+} }
 
 // Error check for Win32 API calls but the return value is saved
-#define WIN32_EC_RET(var, func) { var = func; if (!var) { i::CreateWin32Error(__LINE__, GetLastError(), __func__); } }
+#define WIN32_EC_RET(var, expr, suc) { \
+var = expr;                            \
+if (((var) && (suc == 0)) || (!(var) && (suc != 0))) \
+{                                      \
+    i::CreateWin32Error(__LINE__, GetLastError(), __func__); \
+} }
 
 // Error check for Winsock API calls
-#define WSA_EC(expr) { if (expr) { i::CreateWinsockError(__LINE__, WSAGetLastError(), __func__); } }
+#define WSA_EC(expr, suc, type) { \
+type res = expr;                  \
+if (((res) && (suc == 0)) || (!(res) && (suc != 0))) \
+{                                 \
+    i::CreateWinsockError(__LINE__, WSAGetLastError(), __func__); \
+} }
 
 // Error check for Winsock API calls but the return value is saved
-#define WSA_EC_RET(var, expr) { var = expr; if (!(var)) { i::CreateWinsockError(__LINE__, WSAGetLastError(), __func__); } }
+#define WSA_EC_RET(var, expr) { \
+var = expr;                     \
+if (((var) && (suc == 0)) || (!(var) && (suc != 0))) \
+{                               \
+    i::CreateWinsockError(__LINE__, WSAGetLastError(), __func__); \
+} }
 
 // Manual error creation with automatic additional information
 #define FRAMEWORK_ERR(msg) { i::CreateManualError(__LINE__, __func__, msg); }
@@ -73,7 +94,7 @@
 #endif
 
 // Custom Win32 messages
-#define WM_CREATE_WINDOW_REQ         (WM_USER + 1)
+#define WM_CREATE_WINDOW_REQ         (WM_USER + 1) // window creation request; sent by CreateWindowSync / -Async
 
 namespace i
 {
@@ -115,7 +136,7 @@ public:
     std::map<f::WndH, WindowData*> identifiersToData;
     std::map<HWND, WindowData*> handlesToData;
 
-    const wchar_t* pClassName = L"LPAF Window Class";
+    const wchar_t* pClassName = L"LPAF Window Manager Class";
     HINSTANCE instance{}; // handle to window class
     HICON icon{};
     HCURSOR cursor{};

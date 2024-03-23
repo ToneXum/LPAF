@@ -7,7 +7,7 @@ int main()
     f::Initialise(initData);
 
     f::NetworkingInitData netInitData{};
-    //f::InitialiseNetworking(netInitData);
+    f::InitialiseNetworking(netInitData);
 
     f::WindowCreateData cdt{};
     cdt.pName = L"Dependant"; cdt.height = 500; cdt.width = 500;
@@ -22,7 +22,7 @@ int main()
     while (f::Running())
     {
         f::ChangeWindowName(dependant, f::GetTextInput());
-        
+
         if (f::IsKeyPressedOnce(f::KeyEnter))
         {
             if (f::GetTextInputState())
