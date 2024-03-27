@@ -98,19 +98,30 @@ if (((var) && (suc == 0)) || (!(var) && (suc != 0))) \
 
 namespace i
 {
-// Functions that do nothing
-// First letter corresponds with the return type the rest indicate arguments
-// Types are abbreviated, B for bool; V for void; I for int; U for unsigned; etc...
-void DoNothingVv();
-bool DoNothingBv();
+// Log level for in::Log(), this will determine the prefix of the message
+enum LogLvl : uint8_t
+{
+    LlInfo,
+    LlDebug,
+    LlValidation,
+    LlWarning,
+    LlError,
+    LlBench
+};
+
+enum InitFlags : uint8_t
+{
+    IfFramework = 0b1,
+    IfNetwork   = 0b10
+};
 
 struct WindowData // additional data associated to each window
 {
     std::vector<HWND> dependants; // handles to windows that depend on this one
     HWND window{};
 
-    void (*pfOnClose)() = DoNothingVv;
-    bool (*pfOnCloseAttempt)() = DoNothingBv;
+    void (*pfOnClose)();
+    bool (*pfOnCloseAttempt)();
 
     wchar_t* name = nullptr;
     int16_t xPos = 0, yPos = 0;
@@ -179,24 +190,30 @@ public:
     wchar_t* textInput;
 
     int16_t windowCount = 0, windowsOpened = 0;
+    uint8_t initialisationState = 0; // set of flags indicating what parts of LPAF are running
     bool isRunning = true; // becomes false when no window is open anymore
-    bool isInitialised = false; // becomes true when initialise is called
     bool textInputEnabled = false;
     bool windowThreadIsRunning = false;
 };
 
+class ServerSocket
+{
+
+};
+
+class ClientSocket
+{
+
+};
+
+// Functions that do nothing
+// First letter corresponds with the return type the rest indicate arguments
+// Types are abbreviated, B for bool; V for void; I for int; U for unsigned; etc...
+void DoNothingVv();
+bool DoNothingBv(); // returns true
+
 // Gets pointer to state
 ProgramState* GetState();
-
-// Log level for in::Log(), this will determine the prefix of the message
-enum LogLvl : uint8_t
-{
-    LlInfo,
-    LlDebug,
-    LlValidation,
-    LlWarning,
-    LlError
-};
 
 void WindowProcedureThread();
 

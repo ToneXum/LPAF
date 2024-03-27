@@ -33,6 +33,13 @@ void f::Initialise(const f::FrameworkInitData& initialisationData)
     // M A X I M U M  C A C H E  E X P L I O T A T I O N
     i::ProgramState* progState = i::GetState();
 
+    // Check for first time call
+    if (progState->initialisationState & i::IfFramework)
+    {
+        i::Log("Initialisation was aborted, do not call f::Initialise more than once!", i::LlWarning);
+        return;
+    }
+
     // Create thread as early as possible. Since the execution does not start immediately this function will wait for it
     // to do so. In the meantime, it can perform work.
     progState->pWindowThread = new std::thread(i::WindowProcedureThread);
@@ -51,7 +58,7 @@ void f::Initialise(const f::FrameworkInitData& initialisationData)
     wndC.hIconSm          = progState->win32.icon;
     wndC.hInstance        = progState->win32.instance;
     wndC.lpfnWndProc      = i::WindowProc;
-    wndC.lpszClassName    = i::GetState()->win32.pClassName;
+    wndC.lpszClassName    = progState->win32.pClassName;
     wndC.lpszMenuName     = nullptr;
     wndC.style            = 0;
 
@@ -61,16 +68,18 @@ void f::Initialise(const f::FrameworkInitData& initialisationData)
     std::unique_lock<std::mutex> lock(progState->windowThreadMutex);
     progState->windowThreadConditionVar.wait(lock, [progState]() -> bool { return progState->windowThreadIsRunning; });
 
-    progState->isInitialised = true;
+    progState->initialisationState |= i::IfFramework;
 
-    v::InitialiseVulkan();
+    if (!(initialisationData.appStyle & f::AsNoIntegratedRenderer))
+        v::InitialiseVulkan();
+
     i::Log(L"Framework was successfully initialised", i::LlInfo);
 
     // Specify the year the program is running in; Saves space on the timestamp for logged messages
     // Surely the thing won't run through new year... right?
     std::wostringstream timeMsg;
     timeMsg << "The current year is " << std::format("{:%Y}", std::chrono::system_clock::now()).c_str();
-    i::Log(timeMsg.str().c_str(), i::LlInfo);
+    i::Log(timeMsg.str().c_str(), i::LlDebug);
 }
 
 void f::UnInitialise()
@@ -91,17 +100,29 @@ void f::UnInitialise()
 
 f::WndH f::CreateWindowAsync(const f::WindowCreateData& wndCrtData)
 {
-    if (!i::GetState()->isInitialised) { i::Log(L"CreateWindowAsync() was called before initialisation", i::LlError);
-        return 0; } // init was not called
-    if (!wndCrtData.pName) { i::Log(L"Nullptr was passed to a required parameter at CreateWindowAsync()", i::LlError);
-        return 0; } // name is nullptr
-    if ((wndCrtData.height <= 0) || (wndCrtData.width <= 0)) { i::Log(L"Invalid height or width amount for window "
-                                                                      "creation", i::LlError); return 0; }
+    // M A X I M U M  C A C H E  E X P L I O T A T I O N
+    i::ProgramState* progState = i::GetState();
+
+    if (!(progState->initialisationState & i::IfFramework)) // init was not called
+    {
+        i::Log(L"CreateWindowAsync() was called before initialisation", i::LlError);
+        return 0;
+    }
+    if (!wndCrtData.pName) // name is nullptr
+    {
+        i::Log(L"Nullptr was passed to a required parameter at CreateWindowAsync()", i::LlError);
+        return 0;
+    }
+    if ((wndCrtData.height <= 0) || (wndCrtData.width <= 0))
+    {
+        i::Log(L"Invalid height or width amount for window creation", i::LlError);
+        return 0;
+    }
 
     auto* wndData = new i::WindowData;
 
-    i::GetState()->windowCount += 1;
-    i::GetState()->windowsOpened += 1;
+    progState->windowCount += 1;
+    progState->windowsOpened += 1;
 
     wndData->name       = const_cast<wchar_t*>(wndCrtData.pName);
     wndData->width      = wndCrtData.width;
@@ -111,7 +132,9 @@ f::WndH f::CreateWindowAsync(const f::WindowCreateData& wndCrtData)
     wndData->isValid    = true;
     wndData->hasFocus   = true;
     wndData->hasMouseInClientArea = false;
-    wndData->id         = i::GetState()->windowsOpened;
+    wndData->id         = progState->windowsOpened;
+    wndData->pfOnClose  = i::DoNothingVv;
+    wndData->pfOnCloseAttempt = i::DoNothingBv;
     
     if (!wndCrtData.dependants.empty())
     {
@@ -122,7 +145,7 @@ f::WndH f::CreateWindowAsync(const f::WindowCreateData& wndCrtData)
     }
 
     WIN32_EC(PostThreadMessageW(
-            i::GetState()->win32.nativeThreadId,
+            progState->win32.nativeThreadId,
             WM_CREATE_WINDOW_REQ,
             reinterpret_cast<WPARAM>(nullptr),
             reinterpret_cast<LPARAM>(wndData)
@@ -396,14 +419,15 @@ bool f::GetTextInputState()
 f::MouseInfo f::GetMouseInfo()
 {
     MouseInfo msInfo = {};
+    i::ProgramState* progState = i::GetState();
 
-    msInfo.left     = i::GetState()->mouse.leftButton;
-    msInfo.right    = i::GetState()->mouse.rightButton;
-    msInfo.middle   = i::GetState()->mouse.middleButton;
-    msInfo.x1       = i::GetState()->mouse.x1Button;
-    msInfo.x2       = i::GetState()->mouse.x2Button;
-    msInfo.xPos     = i::GetState()->mouse.xPos;
-    msInfo.yPos     = i::GetState()->mouse.yPos;
+    msInfo.left     = progState->mouse.leftButton;
+    msInfo.right    = progState->mouse.rightButton;
+    msInfo.middle   = progState->mouse.middleButton;
+    msInfo.x1       = progState->mouse.x1Button;
+    msInfo.x2       = progState->mouse.x2Button;
+    msInfo.xPos     = progState->mouse.xPos;
+    msInfo.yPos     = progState->mouse.yPos;
     msInfo.containingWindow = f::GetMouseContainerWindow();
 
     return msInfo;
@@ -585,7 +609,7 @@ bool f::InitialiseNetworking(const f::NetworkingInitData& networkingInitData)
 
     switch (err)
     {
-        case 0: // no error
+        case 0: [[likely]] // no error
             break;
         case WSAVERNOTSUPPORTED:
         {
@@ -609,12 +633,94 @@ bool f::InitialiseNetworking(const f::NetworkingInitData& networkingInitData)
         }
     }
 
+    i::GetState()->initialisationState |= i::IfNetwork;
+
+    std::ostringstream msg;
+    msg << "Winsock 2.2 was requested, got " << winSockData.szDescription << " which is now: ";
+    msg << winSockData.szSystemStatus; // running... I hope
+    i::Log(msg.str().c_str(), i::LlInfo);
+
     return true;
 }
 
-bool f::UnInitialiseNetworking()
+void f::UnInitialiseNetworking()
 {
-    WSA_EC(WSACleanup(), 0, int);
+    if (i::GetState()->initialisationState & i::IfNetwork)
+    {
+        WSA_EC(WSACleanup(), 0, int);
+    }
+    else
+    {
+        i::Log("Tried to shutdown Winsock which was not started, shutdown was aborted", i::LlError);
+    }
+}
 
-    return true;
+f::SckH f::CreateSocket(const SocketCreateInfo& socketCreateInfo)
+{
+    // addressInfo is not a pointer
+    addrinfoexW* pResult{}, connectionHints{};
+    unsigned int ipNameSpace = 0;
+
+    switch (socketCreateInfo.ipFamily)
+    {
+        case f::IaIPv4:
+        {
+            connectionHints.ai_family = AF_INET;
+            ipNameSpace = NS_DNS;
+            break;
+        }
+        case f::IaIPv6:
+        {
+            connectionHints.ai_family = AF_INET6;
+            ipNameSpace = NS_DNS;
+            break;
+        }
+        case f::IaBluetooth:
+        {
+            connectionHints.ai_family = AF_BTH;
+            ipNameSpace = NS_BTH;
+            break;
+        }
+    }
+
+    switch (socketCreateInfo.internetProtocol)
+    {
+        case f::IpTransmissionControlProtocol:
+        {
+            connectionHints.ai_protocol = IPPROTO_TCP;
+            connectionHints.ai_socktype = SOCK_STREAM;
+            break;
+        }
+        case f::IpUserDatagramProtocol:
+        {
+            connectionHints.ai_protocol = IPPROTO_UDP;
+            connectionHints.ai_socktype = SOCK_DGRAM;
+            break;
+        }
+    }
+
+    // resolves domain name to ip
+    WSA_EC(GetAddrInfoExW(
+            socketCreateInfo.hostName,
+            socketCreateInfo.port,
+            ipNameSpace,
+            nullptr,
+            &connectionHints,
+            &pResult,
+            nullptr,
+            nullptr,
+            nullptr,
+            nullptr
+            ), 0, int);
+
+    SOCKET socketObj = socket(pResult->ai_family, pResult-> ai_socktype, pResult->ai_protocol);
+
+    if (socketObj == INVALID_SOCKET)
+    {
+        FreeAddrInfoExW(pResult);
+        i::CreateWinsockError(__LINE__, WSAGetLastError(), __func__);
+    }
+
+    static uint16_t sockedId{0};
+    return ++sockedId; // yes, there is a difference
 }

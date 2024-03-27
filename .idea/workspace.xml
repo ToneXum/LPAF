@@ -27,20 +27,71 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="b43a079c-b7ae-41fc-bc1a-f78f46edc6d3" name="Changes" comment="fix error handling">
-      <change afterPath="$PROJECT_DIR$/Documentation/Internal/FRAMEWORK_ERR_macro.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Documentation/Internal/WIN32_EC_RET_macro.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Documentation/Internal/WIN32_EC_macro.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Documentation/Internal/WSA_EC_RET_macro.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Documentation/Internal/WSA_EC_macro.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Tests/res/app.ico" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Tests/res/res.rc" afterDir="false" />
+    <list default="true" id="b43a079c-b7ae-41fc-bc1a-f78f46edc6d3" name="Changes" comment="more flexible error handling">
+      <change afterPath="$PROJECT_DIR$/vtune/Framework/Framework.vtuneproj" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vtune/Framework/r000hs/.norun" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vtune/Framework/r000hs/config/analysis_type.cfg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vtune/Framework/r000hs/config/collection.cfg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vtune/Framework/r000hs/config/context_values.cfg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vtune/Framework/r000hs/config/log.cfg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vtune/Framework/r000hs/config/owner" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vtune/Framework/r000hs/config/runss.options" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vtune/Framework/r000hs/config/state.cfg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vtune/Framework/r000hs/data.0/2492-972.0-11824.0.th" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vtune/Framework/r000hs/data.0/2492-972.0-11824.0.th.aux" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vtune/Framework/r000hs/data.0/2492-972.0-12048.0.th" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vtune/Framework/r000hs/data.0/2492-972.0-12048.0.th.aux" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vtune/Framework/r000hs/data.0/2492-972.0-12360.0.th" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vtune/Framework/r000hs/data.0/2492-972.0-12360.0.th.aux" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vtune/Framework/r000hs/data.0/2492-972.0-3780.0.th" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vtune/Framework/r000hs/data.0/2492-972.0-3780.0.th.aux" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vtune/Framework/r000hs/data.0/2492-972.0-3852.0.th" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vtune/Framework/r000hs/data.0/2492-972.0-3852.0.th.aux" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vtune/Framework/r000hs/data.0/2492-972.0-4792.0.th" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vtune/Framework/r000hs/data.0/2492-972.0-4792.0.th.aux" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vtune/Framework/r000hs/data.0/2492-972.0-7516.0.th" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vtune/Framework/r000hs/data.0/2492-972.0-7516.0.th.aux" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vtune/Framework/r000hs/data.0/2492-972.0-8264.0.th" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vtune/Framework/r000hs/data.0/2492-972.0-8264.0.th.aux" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vtune/Framework/r000hs/data.0/2492-972.0.trace" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vtune/Framework/r000hs/data.0/2492-972.0.trace.aux" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vtune/Framework/r000hs/data.0/972-12088.0-3132.0.th" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vtune/Framework/r000hs/data.0/972-12088.0-3132.0.th.aux" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vtune/Framework/r000hs/data.0/972-12088.0-8800.0.th" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vtune/Framework/r000hs/data.0/972-12088.0-8800.0.th.aux" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vtune/Framework/r000hs/data.0/972-12088.0.trace" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vtune/Framework/r000hs/data.0/972-12088.0.trace.aux" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vtune/Framework/r000hs/data.0/pytrace-12088-0xb5eeb0e3.log" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vtune/Framework/r000hs/data.0/pytrace-972-0xb092913e.log" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vtune/Framework/r000hs/data.0/systemcollector-8684-BCIH.sc" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vtune/Framework/r000hs/log/mrtehelpers-2024.03.24-12h35m29s.8684.log" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vtune/Framework/r000hs/log/perfrun-2024.03.24-12h35m29s.8684.log" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vtune/Framework/r000hs/r000hs.vtune" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vtune/Framework/r000hs/sqlite-db/_cache_grouper_data4_dd_thread/container.metadata" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vtune/Framework/r000hs/sqlite-db/_cache_grouper_data4_dd_thread/grouper/0" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vtune/Framework/r000hs/sqlite-db/_cache_grouper_data4_dd_thread/grouper/mapping.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vtune/Framework/r000hs/sqlite-db/_cache_grouper_data4_global_data_grouper/container.metadata" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vtune/Framework/r000hs/sqlite-db/_cache_grouper_data4_global_data_grouper/grouper/0" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vtune/Framework/r000hs/sqlite-db/_cache_grouper_data4_global_data_grouper/grouper/mapping.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vtune/Framework/r000hs/sqlite-db/_cache_grouper_data4_global_time_interval_metrics/container.metadata" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vtune/Framework/r000hs/sqlite-db/_cache_grouper_data4_global_time_interval_metrics/grouper/0" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vtune/Framework/r000hs/sqlite-db/_cache_grouper_data4_global_time_interval_metrics/grouper/mapping.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vtune/Framework/r000hs/sqlite-db/_cache_grouper_data4_sched_and_counter_metrics/container.metadata" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vtune/Framework/r000hs/sqlite-db/dicer.db" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vtune/Framework/r000hs/sqlite-db/grouper.metadata" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vtune/Framework/r000hs/sqlite-db/timelinedb/dbint-22134/aggregated/0/0" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vtune/Framework/r000hs/sqlite-db/timelinedb/dbint-22134/aggregated/0/mapping.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vtune/Framework/r000hs/sqlite-db/timelinedb/dbint-9869/instance/0/0" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vtune/Framework/r000hs/sqlite-db/timelinedb/dbint-9869/instance/0/mapping.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vtune/Framework/r000hs/sqlite-db/timelinedb/directory.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vtune/Framework/r000hs/sqlite-db/timelinedb/groupings_dbint-22134.dat" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vtune/Framework/r000hs/sqlite-db/timelinedb/groupings_dbint-9869.dat" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/CMakeLists.txt" beforeDir="false" afterPath="$PROJECT_DIR$/CMakeLists.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Documentation/Guides/Getting_Started.md" beforeDir="false" afterPath="$PROJECT_DIR$/Documentation/Guides/Getting_Started.md" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Framework/Framework.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Framework/Framework.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Framework/Framework.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/Framework/Framework.hpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Framework/Internals.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Framework/Internals.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Framework/Internals.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/Framework/Internals.hpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Framework/OS_Win32.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Framework/OS_Win32.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Tests/CMakeLists.txt" beforeDir="false" afterPath="$PROJECT_DIR$/Tests/CMakeLists.txt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Tests/Main.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Tests/Main.cpp" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -160,11 +211,6 @@
     </key>
   </component>
   <component name="RunManager" selected="CMake Application.Framework_Lib">
-    <configuration default="true" type="CLionExternalRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true">
-      <method v="2">
-        <option name="CLION.EXTERNAL.BUILD" enabled="true" />
-      </method>
-    </configuration>
     <configuration name="Framework_Lib" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="LPAF" TARGET_NAME="Framework_Lib" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="LPAF" RUN_TARGET_NAME="Test_Application">
       <method v="2">
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
@@ -223,6 +269,9 @@
       <workItem from="1711125986658" duration="9977000" />
       <workItem from="1711138965295" duration="10198000" />
       <workItem from="1711193136988" duration="1077000" />
+      <workItem from="1711218411971" duration="11535000" />
+      <workItem from="1711278002671" duration="6637000" />
+      <workItem from="1711553136986" duration="5371000" />
     </task>
     <task id="LOCAL-00001" summary="initial rework">
       <option name="closed" value="true" />
@@ -416,7 +465,31 @@
       <option name="project" value="LOCAL" />
       <updated>1711146163000</updated>
     </task>
-    <option name="localTasksCounter" value="25" />
+    <task id="LOCAL-00025" summary="first internal documentation">
+      <option name="closed" value="true" />
+      <created>1711218794472</created>
+      <option name="number" value="00025" />
+      <option name="presentableId" value="LOCAL-00025" />
+      <option name="project" value="LOCAL" />
+      <updated>1711218794472</updated>
+    </task>
+    <task id="LOCAL-00026" summary="custom resource script">
+      <option name="closed" value="true" />
+      <created>1711218842445</created>
+      <option name="number" value="00026" />
+      <option name="presentableId" value="LOCAL-00026" />
+      <option name="project" value="LOCAL" />
+      <updated>1711218842445</updated>
+    </task>
+    <task id="LOCAL-00027" summary="more flexible error handling">
+      <option name="closed" value="true" />
+      <created>1711221363657</created>
+      <option name="number" value="00027" />
+      <option name="presentableId" value="LOCAL-00027" />
+      <option name="project" value="LOCAL" />
+      <updated>1711221363657</updated>
+    </task>
+    <option name="localTasksCounter" value="28" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -484,15 +557,18 @@
     <MESSAGE value="fix linking and logging issues" />
     <MESSAGE value="basic networking" />
     <MESSAGE value="fix error handling" />
-    <option name="LAST_COMMIT_MESSAGE" value="fix error handling" />
+    <MESSAGE value="first internal documentation" />
+    <MESSAGE value="custom resource script" />
+    <MESSAGE value="more flexible error handling" />
+    <option name="LAST_COMMIT_MESSAGE" value="more flexible error handling" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
       <breakpoints>
         <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
           <url>file://$PROJECT_DIR$/Tests/Main.cpp</url>
-          <line>6</line>
-          <option name="timeStamp" value="3" />
+          <line>24</line>
+          <option name="timeStamp" value="5" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>

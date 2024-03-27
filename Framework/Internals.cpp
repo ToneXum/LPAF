@@ -50,12 +50,19 @@ void i::CreateManualError(int line, const char* func, const char* msg)
 
 void i::DeAlloc()
 {
-    for (std::pair<HWND, WindowData*> pair : i::GetState()->win32.handlesToData)
+    i::ProgramState* progState = i::GetState();
+    for (std::pair<HWND, WindowData*> pair : progState->win32.handlesToData)
     {
         delete pair.second;
     }
-    i::GetState()->win32.handlesToData.clear();
-    i::GetState()->win32.identifiersToData.clear();
+
+    progState->win32.handlesToData.clear();
+    progState->win32.identifiersToData.clear();
+
+    f::UnInitialise();
+
+    if (progState->initialisationState & i::IfNetwork)
+        f::UnInitialiseNetworking();
 }
 
 void i::DoNothingVv()

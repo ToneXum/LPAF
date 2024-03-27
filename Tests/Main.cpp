@@ -3,7 +3,7 @@
 int main()
 {
     f::FrameworkInitData initData{};
-    initData.appStyle   = f::AsNoCloseButton;
+    initData.appStyle   = f::AsNoIntegratedRenderer;
     f::Initialise(initData);
 
     f::NetworkingInitData netInitData{};
@@ -16,9 +16,17 @@ int main()
     cdt.pName = L"Uninvited guest";
     f::WndH whoInvitedThisGuy = f::CreateWindowAsync(cdt);
 
-    uint8_t counter = 0;
+    f::SocketCreateInfo socketCreateInfo{};
+    socketCreateInfo.ipFamily       = f::IaIPv4;
+    socketCreateInfo.port           = L"80";
+    socketCreateInfo.hostName       = L"google.com"; // google.com
+    socketCreateInfo.internetProtocol = f::IpTransmissionControlProtocol;
 
+    f::SckH socket = f::CreateSocket(socketCreateInfo);
+
+    uint8_t counter = 0;
     f::SetTextInputState(true);
+
     while (f::Running())
     {
         f::ChangeWindowName(dependant, f::GetTextInput());

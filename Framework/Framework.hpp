@@ -32,6 +32,9 @@ namespace f // a one letter namespace name...
 // Handle to identify a window with
 using WndH = uint16_t;
 
+// Socket handles
+using SckH = uint16_t;
+
 // Key identifiers you can pass to IsKeyPressed or IsKeyPressedOnce
 enum Key : uint8_t
 {
@@ -283,6 +286,26 @@ enum ApplicationStyle : uint8_t
     AsNoCloseButton             = 0b10,
 };
 
+enum InternetAddressFamily : uint8_t
+{
+    IaIPv4,
+    IaIPv6,
+    IaBluetooth
+};
+
+enum InternetProtocol : uint8_t
+{
+    IpTransmissionControlProtocol, // TCP
+    IpUserDatagramProtocol, // UDP
+};
+
+enum SocketType : uint8_t
+{
+    StStream, // use TCP
+    StDatagram, // use UDP
+    StRaw // allows manipulated IPv4 headers
+};
+
 struct FrameworkInitData
 {
     const char* pIconPath;
@@ -318,6 +341,14 @@ struct NetworkingInitData
 {
 
 };
+
+struct SocketCreateInfo
+{
+    const wchar_t* hostName;
+    const wchar_t* port;
+    InternetAddressFamily ipFamily;
+    InternetProtocol internetProtocol;
+} __attribute__((aligned(32)));
 
 // Start the entire framework up, so it can be used.
 void Initialise(const FrameworkInitData& initialisationData);
@@ -422,6 +453,9 @@ bool IsAnyKeyPressed();
 // Enables / disables the text input field.
 void SetTextInputState(bool state, bool clear = true);
 
+// TODO: cursor-like behaviour for text input
+// Similar to string streams from the STL
+
 // Returns a pointer to the text input field.
 const wchar_t* GetTextInput();
 
@@ -492,5 +526,8 @@ void* LoadFile(const char* file, size_t& bytes);
 bool InitialiseNetworking(const f::NetworkingInitData& networkingInitData);
 
 // Shut down networking functionality
-bool UnInitialiseNetworking();
+void UnInitialiseNetworking();
+
+// Creates a socket
+f::SckH CreateSocket(const SocketCreateInfo& socketCreateInfo);
 } // end namespace f

@@ -9,4 +9,4 @@ LPAF requires the following minimum versions for a specific OS
 - a functioning CPU
 
 You can expect LPAF to use the following resources:
-- 9 mb of RAM (take that Java)
+- 35 mb of RAM (take that Java)
