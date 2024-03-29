@@ -35,7 +35,7 @@ For even more information like announcements, polls and Q&A you can visit the [D
 - Entrypoint for integrated renderer ✔️ (done)
 - Full rendering implementation ❌
 - Networking ❌
-  - Windows ❌ ($soon^{TM}$)
+  - Windows ⭕ (partially)
   - MacOS ❌ ($soon^{TM}$)
   - Linux / Unix ❌ ($soon^{TM}$)
 - Sound ❌
