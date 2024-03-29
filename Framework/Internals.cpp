@@ -99,6 +99,7 @@ void i::EraseWindowData(HWND hWnd)
 {
     std::unique_lock<std::mutex> lock(i::GetState()->windowDataMutex);
 
+    // TODO: make this not use an iterator
     auto res = i::GetState()->win32.handlesToData.find(hWnd); // find data to be erased
 
     std::wostringstream msg;
@@ -146,6 +147,11 @@ void i::Log(const wchar_t* msg, LogLvl logLvl)
             std::cout << "[Valid]: ";
             break;
         }
+        case LlBench:
+        {
+            std::cout << "[Bench]: ";
+            break;
+        }
     }
 
     std::wcout << msg << "\n" << std::flush;
@@ -188,6 +194,11 @@ void i::Log(const char* msg, LogLvl logLvl)
         {
             std::cout << "[Valid]: ";
         }
+        case LlBench:
+        {
+            std::cout << "[Bench]: ";
+            break;
+        }
     }
 
     std::cout << msg << "\n" << std::flush;
@@ -195,10 +206,19 @@ void i::Log(const char* msg, LogLvl logLvl)
 #endif // _DEBUG
 }
 
-i::ProgramState* i::GetState()
+i::ProgramState* i::GetState(bool dealloc)
 {
-    // leak is fine; data persists through the whole runtime
     static i::ProgramState* state{new i::ProgramState};
+    if (dealloc)
+        delete state;
+    return state;
+}
+
+i::NetworkState* i::GetNetworkState(bool dealloc)
+{
+    static NetworkState* state{new i::NetworkState};
+    if (dealloc)
+        delete state;
     return state;
 }
 
@@ -208,3 +228,8 @@ i::ProgramState::ProgramState()
 
 i::ProgramState::~ProgramState()
 { delete[] textInput; }
+
+i::Socket::~Socket()
+{
+    FreeAddrInfoExW(nativeAddressInformation);
+}

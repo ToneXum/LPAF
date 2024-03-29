@@ -48,36 +48,20 @@
 
 // Error check for Win32 API calls.
 // Yes I know it's unreadable, check the doc.
-#define WIN32_EC(expr, suc, type) { \
-type res = expr; \
-if (((res) && (suc == 0)) || (!(res) && (suc != 0))) \
-{                             \
-    i::CreateWin32Error(__LINE__, GetLastError(), __func__); \
-} }
+#define WIN32_EC(expr, suc, type) { type res = expr; if (((res) && (suc == 0)) || (!(res) && (suc != 0))) \
+{ i::CreateWin32Error(__LINE__, GetLastError(), __func__); } }
 
 // Error check for Win32 API calls but the return value is saved
-#define WIN32_EC_RET(var, expr, suc) { \
-var = expr;                            \
-if (((var) && (suc == 0)) || (!(var) && (suc != 0))) \
-{                                      \
-    i::CreateWin32Error(__LINE__, GetLastError(), __func__); \
-} }
+#define WIN32_EC_RET(var, expr, suc) { var = expr; if (((var) && (suc == 0)) || (!(var) && (suc != 0))) \
+{ i::CreateWin32Error(__LINE__, GetLastError(), __func__); } }
 
 // Error check for Winsock API calls
-#define WSA_EC(expr, suc, type) { \
-type res = expr;                  \
-if (((res) && (suc == 0)) || (!(res) && (suc != 0))) \
-{                                 \
-    i::CreateWinsockError(__LINE__, WSAGetLastError(), __func__); \
-} }
+#define WSA_EC(expr, suc, type) { type res = expr; if (((res) && (suc == 0)) || (!(res) && (suc != 0))) \
+{ i::CreateWinsockError(__LINE__, WSAGetLastError(), __func__); } }
 
 // Error check for Winsock API calls but the return value is saved
-#define WSA_EC_RET(var, expr) { \
-var = expr;                     \
-if (((var) && (suc == 0)) || (!(var) && (suc != 0))) \
-{                               \
-    i::CreateWinsockError(__LINE__, WSAGetLastError(), __func__); \
-} }
+#define WSA_EC_RET(var, expr) { var = expr; if (((var) && (suc == 0)) || (!(var) && (suc != 0))) \
+{ i::CreateWinsockError(__LINE__, WSAGetLastError(), __func__); } }
 
 // Manual error creation with automatic additional information
 #define FRAMEWORK_ERR(msg) { i::CreateManualError(__LINE__, __func__, msg); }
@@ -85,7 +69,7 @@ if (((var) && (suc == 0)) || (!(var) && (suc != 0))) \
 #ifdef _DEBUG
 #ifdef _WINDOWS
 #define DEBUG_BREAK DebugBreak();
-#else
+#else // anything else than windows should be POSIX compliant
 #include <csignal>
 #define DEBUG_BREAK raise(SIGTRAP); // Its a trap!
 #endif
@@ -112,7 +96,8 @@ enum LogLvl : uint8_t
 enum InitFlags : uint8_t
 {
     IfFramework = 0b1,
-    IfNetwork   = 0b10
+    IfNetwork   = 0b10,
+    IfRenderer  = 0b100
 };
 
 struct WindowData // additional data associated to each window
@@ -196,14 +181,30 @@ public:
     bool windowThreadIsRunning = false;
 };
 
-class ServerSocket
+struct Socket
 {
+    Socket() = default;
+    ~Socket();
 
-};
+    f::SocketCreateInfo socketCreateInfo;
+    addrinfoexW* nativeAddressInformation;
+    SOCKET nativeSocket;
+} __attribute__((aligned(64)));
 
-class ClientSocket
+class NetworkState
 {
+public:
+    NetworkState() = default;
+    ~NetworkState() = default;
 
+    NetworkState(const NetworkState&) = delete;
+    NetworkState(const NetworkState&&) = delete;
+    NetworkState operator=(const NetworkState&) = delete;
+    NetworkState operator=(const NetworkState&&) = delete;
+
+    std::map<f::SockH, Socket*> socketMap;
+
+    uint16_t socketsCreated{}, connectedSockets{}, existingSockets{};
 };
 
 // Functions that do nothing
@@ -213,7 +214,10 @@ void DoNothingVv();
 bool DoNothingBv(); // returns true
 
 // Gets pointer to state
-ProgramState* GetState();
+ProgramState* GetState(bool dealloc = false);
+
+// Gets pointer to network state
+NetworkState* GetNetworkState(bool dealloc = false);
 
 void WindowProcedureThread();
 

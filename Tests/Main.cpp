@@ -19,13 +19,22 @@ int main()
     f::SocketCreateInfo socketCreateInfo{};
     socketCreateInfo.ipFamily       = f::IaIPv4;
     socketCreateInfo.port           = L"80";
-    socketCreateInfo.hostName       = L"google.com"; // google.com
+    socketCreateInfo.hostName       = L"www.example.com";
     socketCreateInfo.internetProtocol = f::IpTransmissionControlProtocol;
 
-    f::SckH socket = f::CreateSocket(socketCreateInfo);
+    f::SockH socket = f::CreateSocket(socketCreateInfo);
+    f::ConnectSocket(socket);
+
+    const char httpRequest[] = "GET / HTTP/1.1\r\nHost: www.example.com\r\n\r\n";
+    f::Send(socket, httpRequest, sizeof(httpRequest)); // I did it again, no wonder only 8 bytes get sent XD
+
+    char buffer[4096]{};
+    f::Receive(socket, buffer, sizeof(buffer));
 
     uint8_t counter = 0;
     f::SetTextInputState(true);
+
+    goto bruh;
 
     while (f::Running())
     {
@@ -63,6 +72,9 @@ int main()
         // simulate computation
         f::Halt(16);
     }
+    bruh:
+
+    f::DestroySocket(socket);
 
     f::UnInitialiseNetworking();
     f::UnInitialise();

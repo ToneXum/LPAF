@@ -105,7 +105,9 @@ void v::InitialiseVulkan()
     // choose first device, don't care about anything else
     i::GetState()->vulkan.physicalDevice = v::ChooseBestPhysicalDevice(devices);
     if (i::GetState()->vulkan.physicalDevice == nullptr)
-        FRAMEWORK_ERR("There is no GPU installed in this machine that matches the requirements.")
+        FRAMEWORK_ERR("There is no GPU installed in this machine that matches the requirements.");
+
+    i::GetState()->initialisationState |= i::IfRenderer;
 }
 
 void v::UnInitializeVulkan()

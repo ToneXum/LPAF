@@ -33,7 +33,7 @@ namespace f // a one letter namespace name...
 using WndH = uint16_t;
 
 // Socket handles
-using SckH = uint16_t;
+using SockH = uint16_t;
 
 // Key identifiers you can pass to IsKeyPressed or IsKeyPressedOnce
 enum Key : uint8_t
@@ -522,12 +522,31 @@ WndH GetWindowWithFocus();
 // Returns a pointer to that array
 void* LoadFile(const char* file, size_t& bytes);
 
+// Writes memory to a file
+// Returns the amount of bytes written
+size_t WriteFile(const char* data, size_t& size);
+
 // Start up networking functionality
 bool InitialiseNetworking(const f::NetworkingInitData& networkingInitData);
 
 // Shut down networking functionality
 void UnInitialiseNetworking();
 
+// TODO: more robust error handling for networking
+
 // Creates a socket
-f::SckH CreateSocket(const SocketCreateInfo& socketCreateInfo);
+f::SockH CreateSocket(const SocketCreateInfo& socketCreateInfo);
+
+// Open a connection using a socket
+bool ConnectSocket(f::SockH socket);
+
+// Close socket connection
+bool DisconnectSocket(f::SockH socket);
+
+// Send data over a socket
+bool Send(f::SockH socket, const char* data, uint32_t size);
+
+bool Receive(f::SockH socket, char* buffer, uint32_t size);
+
+bool DestroySocket(f::SockH);
 } // end namespace f

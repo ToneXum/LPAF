@@ -86,14 +86,18 @@ void f::UnInitialise()
 {
     f::CloseAllWindowsForce();
 
+    i::ProgramState* progState = i::GetState();
+
     // As soon as all windows are closed (aka the manager thread is not running anymore), execution will continue
     std::unique_lock<std::mutex> lock(i::GetState()->windowThreadMutex);
-    i::GetState()->windowThreadConditionVar.wait(lock, []{ return !i::GetState()->windowThreadIsRunning; });
+    progState->windowThreadConditionVar.wait(lock, [progState]() -> bool{ return !progState->windowThreadIsRunning; });
 
-    WIN32_EC(UnregisterClassW(i::GetState()->win32.pClassName, i::GetState()->win32.instance), 1, WINBOOL)
+    WIN32_EC(UnregisterClassW(progState->win32.pClassName, progState->win32.instance), 1, WINBOOL)
 
-    v::UnInitializeVulkan();
-    delete i::GetState();
+    if (progState->initialisationState & i::IfRenderer)
+        v::UnInitializeVulkan();
+
+    delete progState;
 
     i::Log(L"Framework was successfully uninitialised", i::LlInfo);
 }
@@ -119,7 +123,7 @@ f::WndH f::CreateWindowAsync(const f::WindowCreateData& wndCrtData)
         return 0;
     }
 
-    auto* wndData = new i::WindowData;
+    i::WindowData* wndData = new i::WindowData;
 
     progState->windowCount += 1;
     progState->windowsOpened += 1;
@@ -586,7 +590,7 @@ void* f::LoadFile[[nodiscard("memory leak if not freed")]](const char* file, siz
         bytes = infile.tellg();
         infile.seekg(0, std::ios::beg);
 
-        auto* buffer = new char[bytes];
+        char* buffer = new char[bytes];
 
         infile.read(buffer, static_cast<int64_t>(bytes));
 
@@ -655,7 +659,7 @@ void f::UnInitialiseNetworking()
     }
 }
 
-f::SckH f::CreateSocket(const SocketCreateInfo& socketCreateInfo)
+f::SockH f::CreateSocket(const SocketCreateInfo& socketCreateInfo)
 {
     // addressInfo is not a pointer
     addrinfoexW* pResult{}, connectionHints{};
@@ -700,7 +704,7 @@ f::SckH f::CreateSocket(const SocketCreateInfo& socketCreateInfo)
     }
 
     // resolves domain name to ip
-    WSA_EC(GetAddrInfoExW(
+    int res = GetAddrInfoExW(
             socketCreateInfo.hostName,
             socketCreateInfo.port,
             ipNameSpace,
@@ -711,7 +715,38 @@ f::SckH f::CreateSocket(const SocketCreateInfo& socketCreateInfo)
             nullptr,
             nullptr,
             nullptr
-            ), 0, int);
+            );
+
+    switch (res)
+    {
+        case 0: [[likely]]
+        {
+            break;
+        }
+        case WSAHOST_NOT_FOUND:
+        {
+            std::wostringstream msg;
+            msg << L"Host " << socketCreateInfo.hostName << " at port " << socketCreateInfo.port;
+            msg << L" could not be resolved, is the address valid?";
+            i::Log(msg.str().c_str(), i::LlError);
+            return 0;
+        }
+        case WSA_NOT_ENOUGH_MEMORY:
+        {
+            i::Log("Memory allocation for address information failed", i::LlError);
+            return 0;
+        }
+        case WSATRY_AGAIN:
+        {
+            i::Log("Winsock does not feel like resolving an address today, try again later", i::LlError);
+            return 0;
+        }
+        default:
+        {
+            i::CreateWinsockError(__LINE__, WSAGetLastError(), __func__);
+            break;
+        }
+    }
 
     SOCKET socketObj = socket(pResult->ai_family, pResult-> ai_socktype, pResult->ai_protocol);
 
@@ -721,6 +756,122 @@ f::SckH f::CreateSocket(const SocketCreateInfo& socketCreateInfo)
         i::CreateWinsockError(__LINE__, WSAGetLastError(), __func__);
     }
 
-    static uint16_t sockedId{0};
-    return ++sockedId; // yes, there is a difference
+    i::NetworkState* netState = i::GetNetworkState();
+    i::Socket* intSocket = new i::Socket;
+    intSocket->socketCreateInfo         = socketCreateInfo;
+    intSocket->nativeAddressInformation = pResult;
+    intSocket->nativeSocket             = socketObj;
+    netState->socketMap.insert({++netState->socketsCreated, intSocket});
+
+    std::ostringstream msg;
+    msg << "Socket " << netState->socketsCreated << " was created";
+    i::Log(msg.str().c_str(), i::LlInfo);
+
+    return netState->socketsCreated;
+}
+
+bool f::ConnectSocket(f::SockH socket)
+{
+    i::Socket* intSocket = i::GetNetworkState()->socketMap[socket];
+
+    addrinfoexW* curAddressInfo = intSocket->nativeAddressInformation;
+    while (true)
+    {
+        // vibe check
+        switch (connect(intSocket->nativeSocket,
+                        curAddressInfo->ai_addr,
+                        static_cast<int>(curAddressInfo->ai_addrlen)
+        ))
+        {
+            case WSAECONNREFUSED:
+            {
+                std::wostringstream msg;
+                msg << "The connection to " << intSocket->socketCreateInfo.hostName << " was refused";
+                i::Log(msg.str().c_str(), i::LlError);
+                break;
+            }
+            case WSAENETUNREACH:
+            {
+                std::wostringstream msg;
+                msg << "Can not reach host " << intSocket->socketCreateInfo.hostName;
+                i::Log(msg.str().c_str(), i::LlError);
+                break;
+            }
+            case WSAETIMEDOUT:
+            {
+                std::wostringstream msg;
+                msg << "A connection to " << intSocket->socketCreateInfo.hostName << " timed out";
+                i::Log(msg.str().c_str(), i::LlError);
+                break;
+            }
+            default:
+                break;
+            case 0: // no error
+                goto exitLoop;
+        }
+
+        if (curAddressInfo->ai_next != nullptr)
+        {
+            // proceed to next node
+            curAddressInfo = curAddressInfo->ai_next;
+        }
+        else // ran out of nodes and no connection is made
+        {
+            i::CreateWinsockError(__LINE__, WSAGetLastError(), __func__);
+        }
+    }
+
+    // I get that is a bad practice, but it actually simplifies things here
+exitLoop:
+    std::wostringstream msg;
+    msg << "Socket " << socket << " was bound and has performed a handshake with ";
+    msg << intSocket->socketCreateInfo.hostName;
+    i::Log(msg.str().c_str(), i::LlDebug);
+
+    return true;
+}
+
+bool f::Send(f::SockH socket, const char* data, uint32_t size)
+{
+    i::Socket* intSocket = i::GetNetworkState()->socketMap[socket];
+
+    if (send(intSocket->nativeSocket, data, static_cast<int>(size), 0) == SOCKET_ERROR) [[unlikely]]
+        i::CreateWinsockError(__LINE__, WSAGetLastError(), __func__);
+
+    std::ostringstream msg;
+    msg << "Sent " << size << " bytes over socket " << socket;
+    i::Log(msg.str().c_str(), i::LlDebug);
+
+    return true;
+}
+
+bool f::Receive(f::SockH socket, char* buffer, uint32_t size)
+{
+    i::Socket* intSocket = i::GetNetworkState()->socketMap[socket];
+
+    int received = recv(intSocket->nativeSocket, buffer, static_cast<int>(size), 0);
+
+    if (received == SOCKET_ERROR) [[unlikely]]
+        i::CreateWinsockError(__LINE__, WSAGetLastError(), __func__);
+
+    std::ostringstream msg;
+    msg << "Received " << received << " bytes over socket " << socket;
+    i::Log(msg.str().c_str(), i::LlDebug);
+
+    return true;
+}
+
+bool f::DestroySocket(f::SockH socket)
+{
+    i::Socket* intSock = i::GetNetworkState()->socketMap[socket];
+    WSA_EC(closesocket(intSock->nativeSocket), 0, int);
+
+    delete intSock;
+    i::GetNetworkState()->socketMap.erase(socket);
+
+    std::ostringstream msg;
+    msg << "Socket " << socket << " was closed and destroyed";
+    i::Log(msg.str().c_str(), i::LlDebug);
+
+    return true;
 }
