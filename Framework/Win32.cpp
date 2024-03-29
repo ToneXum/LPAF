@@ -132,6 +132,8 @@ void i::WindowProcedureThread()
 
     i::GetState()->windowThreadIsRunning = false;
     i::GetState()->windowThreadConditionVar.notify_one();
+
+    i::Log("Window manager thread has stopped", i::LlInfo);
 }
 
 void i::CreateWin32Window(i::WindowData* wndDt)
