@@ -54,6 +54,7 @@ void i::CreateWin32Error(int line, int code, const char* func)
 }
 #endif // _DEBUG
 
+// TODO: rework this garbage
 #ifdef NDEBUG
 void i::CreateWin32Error(int line, int c, const char* func)
 {
@@ -104,16 +105,19 @@ void i::CreateWinsockError(int line, int code, const char* func)
 
 void i::WindowProcedureThread()
 {
-    i::GetState()->win32.nativeThreadId = GetCurrentThreadId();
+    // may cause volatility issues
+    i::ProgramState* progState = i::GetState();
+
+    progState->win32.nativeThreadId = GetCurrentThreadId();
 
     std::wostringstream startMsg;
     startMsg << L"The window manager thread was started";
-    i::Log(startMsg.str().c_str(), i::LlDebug);
+    i::Log(startMsg.str().c_str(), i::LlInfo);
 
-    std::unique_lock<std::mutex> lock(i::GetState()->windowThreadMutex);
-    i::GetState()->windowThreadIsRunning = true;
+    std::unique_lock<std::mutex> lock(progState->windowThreadMutex);
+    progState->windowThreadIsRunning = true;
     lock.unlock();
-    i::GetState()->windowThreadConditionVar.notify_one();
+    progState->windowThreadConditionVar.notify_one();
 
     // message pump for the window
     MSG msg{};
@@ -130,8 +134,10 @@ void i::WindowProcedureThread()
         }
     }
 
-    i::GetState()->windowThreadIsRunning = false;
-    i::GetState()->windowThreadConditionVar.notify_one();
+    lock.lock();
+    progState->windowThreadIsRunning = false;
+    lock.unlock();
+    progState->windowThreadConditionVar.notify_one();
 
     i::Log("Window manager thread has stopped", i::LlInfo);
 }
@@ -157,14 +163,15 @@ void i::CreateWin32Window(i::WindowData* wndDt)
     // ran out of range
     if (wndDt->id == SHRT_MAX)
     {
-        i::Log(L"Handle out of range, window was opened but no handle could be created. You somehow opened 32767 "
+        i::Log(L"Handle out of range, window was opened but no handle could be created. You somehow opened 65.536 "
                "windows...", i::LlError);
+        DestroyWindow(wndDt->window);
         return;
     }
 
     std::wostringstream oss;
-    oss << L"Window " << wndDt->window << " was created and received a handle of " << wndDt->id;
-    i::Log(oss.str().c_str(), i::LlDebug);
+    oss << L"Window " << wndDt->id << " was created with native handle " << wndDt->window;
+    i::Log(oss.str().c_str(), i::LlInfo);
 
     i::GetState()->win32.identifiersToData.insert({wndDt->id, wndDt});
     i::GetState()->win32.handlesToData.insert({wndDt->window, wndDt});
@@ -174,11 +181,24 @@ LRESULT i::WindowProc(HWND window, UINT message, WPARAM wParam, LPARAM lParam) /
 {
     switch (message)
     {
-        ///////////////////////////////////
         // Custom messages
-        case WM_CREATE_WINDOW_REQ:
+        case CWM_CREATE_WINDOW_REQ:
         {
-            i::CreateWin32Window(reinterpret_cast<WindowData*>(lParam));
+            i::CreateWin32Window(reinterpret_cast<WindowData*>(lParam)); // NOLINT(*-no-int-to-ptr) shh... shut it
+            break;
+        }
+        case CWM_DESTROY_WINDOW:
+        {
+            DestroyWindow(reinterpret_cast<HWND>(wParam)); // NOLINT(*-no-int-to-ptr)
+        }
+        case CWM_DESTROY_ALL_WINDOWS:
+        {
+            i::ProgramState* progState = i::GetState();
+            while (!progState->win32.handlesToData.empty())
+            {
+                auto first = progState->win32.handlesToData.begin();
+                WIN32_EC(DestroyWindow(first->first), 1, WINBOOL);
+            }
             break;
         }
         // End custom messages
@@ -187,7 +207,7 @@ LRESULT i::WindowProc(HWND window, UINT message, WPARAM wParam, LPARAM lParam) /
         case WM_CLOSE: // closing of a window has been requested
         {
             if (GetWindowData(window)->pfOnCloseAttempt()) // go ahead and close the window if return is true
-                DestroyWindow(window);
+                WIN32_EC(DestroyWindow(window), 1, WINBOOL);
             return 0;
         }
         case WM_DESTROY: // closing a window was ordered and confirmed
@@ -196,6 +216,11 @@ LRESULT i::WindowProc(HWND window, UINT message, WPARAM wParam, LPARAM lParam) /
             wnd->pfOnClose();
             wnd->isValid = false;
             i::GetState()->windowCount -= 1;
+
+            std::ostringstream msg;
+            msg << "Window " << wnd->id << " was closed";
+            i::Log(msg.str().c_str(), i::LlInfo);
+
             i::EraseWindowData(window);
 
             if (i::GetState()->windowCount == 0) // quit program if last window remaining is closed

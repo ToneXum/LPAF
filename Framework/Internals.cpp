@@ -103,7 +103,7 @@ void i::EraseWindowData(HWND hWnd)
     auto res = i::GetState()->win32.handlesToData.find(hWnd); // find data to be erased
 
     std::wostringstream msg;
-    msg << "Window data for " << res->first << " who's handle is " << res->second->id << " was deleted";
+    msg << "Data for Window " << res->second->id << " was deleted";
     i::Log(msg.str().c_str(), i::LlDebug);
 
     i::GetState()->win32.identifiersToData.erase(res->second->id); // erase data from the id map using the id

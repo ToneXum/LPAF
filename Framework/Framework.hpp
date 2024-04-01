@@ -356,9 +356,13 @@ void Initialise(const FrameworkInitData& initialisationData);
 // Shutdown, cleanup.
 void UnInitialise();
 
+// TODO: restartable window manager
+void RestartWindowManager();
+
 // Create a new window
 WndH CreateWindowAsync(const f::WindowCreateData& windowCreateData);
 
+// TODO: implement this
 WndH CreateWindowSync(const f::WindowCreateData& windowCreateData);
 
 // Attempts to close a window
@@ -537,10 +541,10 @@ void UnInitialiseNetworking();
 // Creates a socket
 f::SockH CreateSocket(const SocketCreateInfo& socketCreateInfo);
 
-// Open a connection using a socket
+// Do a TCP handshake
 bool ConnectSocket(f::SockH socket);
 
-// Close socket connection
+// Do a TCP finish
 bool DisconnectSocket(f::SockH socket);
 
 // Send data over a socket

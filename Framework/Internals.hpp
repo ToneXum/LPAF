@@ -78,7 +78,10 @@
 #endif
 
 // Custom Win32 messages
-#define WM_CREATE_WINDOW_REQ         (WM_USER + 1) // window creation request; sent by CreateWindowSync / -Async
+#define CWM_USER_BASE               (WM_USER + 0)
+#define CWM_CREATE_WINDOW_REQ       (WM_USER + 1) // window creation request; sent by CreateWindowSync / -Async
+#define CWM_DESTROY_WINDOW          (WM_USER + 2) // sent by CloseWindowForce()
+#define CWM_DESTROY_ALL_WINDOWS     (WM_USER + 3) // sent by CloseAllWindowsForce()
 
 namespace i
 {

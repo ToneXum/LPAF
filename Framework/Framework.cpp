@@ -89,17 +89,17 @@ void f::UnInitialise()
     i::ProgramState* progState = i::GetState();
 
     // As soon as all windows are closed (aka the manager thread is not running anymore), execution will continue
-    std::unique_lock<std::mutex> lock(i::GetState()->windowThreadMutex);
-    progState->windowThreadConditionVar.wait(lock, [progState]() -> bool{ return !progState->windowThreadIsRunning; });
+    std::unique_lock<std::mutex> lock(progState->windowThreadMutex);
+    progState->windowThreadConditionVar.wait(lock, [progState]() -> bool { return !progState->windowThreadIsRunning; });
 
     WIN32_EC(UnregisterClassW(progState->win32.pClassName, progState->win32.instance), 1, WINBOOL)
 
     if (progState->initialisationState & i::IfRenderer)
         v::UnInitializeVulkan();
 
-    delete progState;
-
     i::Log(L"Framework was successfully uninitialised", i::LlInfo);
+
+    delete progState;
 }
 
 f::WndH f::CreateWindowAsync(const f::WindowCreateData& wndCrtData)
@@ -150,7 +150,7 @@ f::WndH f::CreateWindowAsync(const f::WindowCreateData& wndCrtData)
 
     WIN32_EC(PostThreadMessageW(
             progState->win32.nativeThreadId,
-            WM_CREATE_WINDOW_REQ,
+            CWM_CREATE_WINDOW_REQ,
             reinterpret_cast<WPARAM>(nullptr),
             reinterpret_cast<LPARAM>(wndData)
             ), 1, WINBOOL
@@ -181,10 +181,10 @@ void f::CloseWindowForce(const WndH handle)
     if (!windowData) // window does not exist
         return;
 
-    WIN32_EC(PostMessageA(
-        windowData->window,
-        WM_DESTROY,
-        reinterpret_cast<WPARAM>(nullptr),
+    WIN32_EC(PostThreadMessageW(
+        i::GetState()->win32.nativeThreadId,
+        CWM_DESTROY_WINDOW,
+        reinterpret_cast<WPARAM>(windowData->window),
         reinterpret_cast<LPARAM>(nullptr)
     ), 1, WINBOOL)
 }
@@ -204,15 +204,14 @@ void f::CloseAllWindows()
 
 void f::CloseAllWindowsForce()
 {
-    for (std::pair<f::WndH, i::WindowData*>&& dataPair : i::GetState()->win32.identifiersToData)
-    {
-        WIN32_EC(PostMessageA(
-                dataPair.second->window,
-                WM_DESTROY,
-                reinterpret_cast<WPARAM>(nullptr),
-                reinterpret_cast<LPARAM>(nullptr)
-        ), 1, WINBOOL)
-    }
+    i::ProgramState* progState = i::GetState();
+
+    WIN32_EC(PostThreadMessageW(
+            progState->win32.nativeThreadId,
+            CWM_DESTROY_ALL_WINDOWS,
+            reinterpret_cast<WPARAM>(nullptr),
+            reinterpret_cast<LPARAM>(nullptr)
+    ), 1, WINBOOL)
 }
 
 #undef MessageBox
@@ -786,14 +785,16 @@ bool f::ConnectSocket(f::SockH socket)
             case WSAECONNREFUSED:
             {
                 std::wostringstream msg;
-                msg << "The connection to " << intSocket->socketCreateInfo.hostName << " was refused";
+                msg << intSocket->socketCreateInfo.hostName << " has refused a connection over port ";
+                msg << intSocket->socketCreateInfo.port;
                 i::Log(msg.str().c_str(), i::LlError);
                 break;
             }
             case WSAENETUNREACH:
             {
                 std::wostringstream msg;
-                msg << "Can not reach host " << intSocket->socketCreateInfo.hostName;
+                msg << "Can not reach " << intSocket->socketCreateInfo.hostName << ", are you connected to the "
+                                                                                   "internet?"; // wtf is this?
                 i::Log(msg.str().c_str(), i::LlError);
                 break;
             }
@@ -807,7 +808,7 @@ bool f::ConnectSocket(f::SockH socket)
             default:
                 break;
             case 0: // no error
-                goto exitLoop;
+                goto exitLoop; // Today on bad C++: How to break a loop from inside a switch case
         }
 
         if (curAddressInfo->ai_next != nullptr)
@@ -821,12 +822,13 @@ bool f::ConnectSocket(f::SockH socket)
         }
     }
 
-    // I get that is a bad practice, but it actually simplifies things here
+    // I get that it's a bad practice, but it actually simplifies things here
 exitLoop:
+
     std::wostringstream msg;
-    msg << "Socket " << socket << " was bound and has performed a handshake with ";
+    msg << "Socket " << socket << " performed a TCP handshake with ";
     msg << intSocket->socketCreateInfo.hostName;
-    i::Log(msg.str().c_str(), i::LlDebug);
+    i::Log(msg.str().c_str(), i::LlInfo);
 
     return true;
 }
@@ -871,7 +873,7 @@ bool f::DestroySocket(f::SockH socket)
 
     std::ostringstream msg;
     msg << "Socket " << socket << " was closed and destroyed";
-    i::Log(msg.str().c_str(), i::LlDebug);
+    i::Log(msg.str().c_str(), i::LlInfo);
 
     return true;
 }
