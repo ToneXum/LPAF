@@ -27,12 +27,12 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="b43a079c-b7ae-41fc-bc1a-f78f46edc6d3" name="Changes" comment="fix window closing utilities, little optimisation, fix UnInitialise">
+    <list default="true" id="b43a079c-b7ae-41fc-bc1a-f78f46edc6d3" name="Changes" comment="larger error coverage for networking errors">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Framework/Framework.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Framework/Framework.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Framework/Internals.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Framework/Internals.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Framework/Framework.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/Framework/Framework.hpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Framework/Internals.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/Framework/Internals.hpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Framework/Win32.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Framework/Win32.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Tests/Main.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Tests/Main.cpp" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -214,7 +214,7 @@
       <workItem from="1711553136986" duration="19208000" />
       <workItem from="1711618511466" duration="18777000" />
       <workItem from="1711714363024" duration="6419000" />
-      <workItem from="1711969595182" duration="18095000" />
+      <workItem from="1711969595182" duration="20293000" />
     </task>
     <task id="LOCAL-00001" summary="initial rework">
       <option name="closed" value="true" />
@@ -472,7 +472,15 @@
       <option name="project" value="LOCAL" />
       <updated>1711999731079</updated>
     </task>
-    <option name="localTasksCounter" value="33" />
+    <task id="LOCAL-00033" summary="larger error coverage for networking errors">
+      <option name="closed" value="true" />
+      <created>1712006614076</created>
+      <option name="number" value="00033" />
+      <option name="presentableId" value="LOCAL-00033" />
+      <option name="project" value="LOCAL" />
+      <updated>1712006614076</updated>
+    </task>
+    <option name="localTasksCounter" value="34" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -519,7 +527,6 @@
     <ignored-roots>
       <path value="$PROJECT_DIR$/Framework" />
     </ignored-roots>
-    <MESSAGE value="improve timestamps on log messages" />
     <MESSAGE value="slight documentation expansion" />
     <MESSAGE value="fix file extensions in doc links" />
     <MESSAGE value="fix text input" />
@@ -544,7 +551,8 @@
     <MESSAGE value="update readme.md" />
     <MESSAGE value="implement data streams over sockets, fix socket creation, rearrange definitions" />
     <MESSAGE value="fix window closing utilities, little optimisation, fix UnInitialise" />
-    <option name="LAST_COMMIT_MESSAGE" value="fix window closing utilities, little optimisation, fix UnInitialise" />
+    <MESSAGE value="larger error coverage for networking errors" />
+    <option name="LAST_COMMIT_MESSAGE" value="larger error coverage for networking errors" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

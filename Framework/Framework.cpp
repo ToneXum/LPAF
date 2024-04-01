@@ -605,7 +605,7 @@ void* f::LoadFile[[nodiscard("memory leak if not freed")]](const char* file, siz
     return nullptr;
 }
 
-bool f::InitialiseNetworking(const f::NetworkingInitData& networkingInitData)
+bool f::InitialiseNetworking()
 {
     WSADATA winSockData{};
     int err = WSAStartup(MAKEWORD(2, 2), &winSockData);
@@ -766,6 +766,7 @@ f::SockH f::CreateSocket(const SocketCreateInfo& socketCreateInfo)
     intSocket->socketCreateInfo         = socketCreateInfo;
     intSocket->nativeAddressInformation = pResult;
     intSocket->nativeSocket             = socketObj;
+    intSocket->status                   = f::SsDisconnected;
     netState->socketMap.insert({++netState->socketsCreated, intSocket});
 
     std::ostringstream msg;
@@ -836,6 +837,7 @@ exitLoop:
     msg << intSocket->socketCreateInfo.hostName;
     i::Log(msg.str().c_str(), i::LlInfo);
 
+    intSocket->status = f::SsConnected;
     return true;
 }
 
@@ -855,6 +857,7 @@ bool f::Send(f::SockH socket, const char* data, uint32_t size)
                                                                       "connected to the internet you must re-connect "
                                                                       "this socket";
                 i::Log(msg.str().c_str(), i::LlError);
+                intSocket->status = f::SsDisconnected;
                 return false;
             }
             case WSAECONNRESET:
@@ -864,6 +867,7 @@ bool f::Send(f::SockH socket, const char* data, uint32_t size)
                                                                       "UDP connection then the last datagram could not "
                                                                       "be received by this socket";
                 i::Log(msg.str().c_str(), i::LlError);
+                intSocket->status = f::SsDisconnected;
                 return false;
             }
             case WSAENOTCONN:
@@ -872,6 +876,8 @@ bool f::Send(f::SockH socket, const char* data, uint32_t size)
                 msg << "Tried sending data over socket " << socket << " but a connection to a remote host was not "
                                                                       "established";
                 i::Log(msg.str().c_str(), i::LlInfo);
+                intSocket->status = f::SsDisconnected;
+                return false;
             }
             case WSAECONNABORTED:
             {
@@ -879,6 +885,8 @@ bool f::Send(f::SockH socket, const char* data, uint32_t size)
                 msg << "Tried sending data over socket " << socket << " but the connection was aborted due to a "
                                                                       "failure";
                 i::Log(msg.str().c_str(), i::LlInfo);
+                intSocket->status = f::SsDisconnected;
+                return false;
             }
             default:
                 i::CreateWinsockError(__LINE__, error, __func__);
@@ -964,4 +972,17 @@ bool f::DestroySocket(f::SockH socket)
     i::Log(msg.str().c_str(), i::LlInfo);
 
     return true;
+}
+
+f::SocketStatus f::GetSocketStatus(f::SockH socket)
+{
+    try
+    {
+        return i::GetNetworkState()->socketMap.at(socket)->status;
+    }
+    catch (const std::out_of_range&)
+    {
+        i::Log("Tried to retrieve status of a socket that does not exist", i::LlError);
+        return f::SsUnusable;
+    }
 }

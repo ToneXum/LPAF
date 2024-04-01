@@ -306,6 +306,13 @@ enum SocketType : uint8_t
     StRaw // allows manipulated IPv4 headers
 };
 
+enum SocketStatus : uint8_t
+{
+    SsConnected,
+    SsDisconnected,
+    SsUnusable
+};
+
 struct FrameworkInitData
 {
     const char* pIconPath;
@@ -336,11 +343,6 @@ struct MouseInfo
     bool left, right, middle, x1, x2;
     WndH containingWindow;
 } __attribute__((aligned(16)));
-
-struct NetworkingInitData
-{
-
-};
 
 struct SocketCreateInfo
 {
@@ -531,7 +533,7 @@ void* LoadFile(const char* file, size_t& bytes);
 size_t WriteFile(const char* data, size_t& size);
 
 // Start up networking functionality
-bool InitialiseNetworking(const f::NetworkingInitData& networkingInitData);
+bool InitialiseNetworking();
 
 // Shut down networking functionality
 void UnInitialiseNetworking();
@@ -551,4 +553,6 @@ bool Send(f::SockH socket, const char* data, uint32_t size);
 bool Receive(f::SockH socket, char* buffer, uint32_t size);
 
 bool DestroySocket(f::SockH);
+
+SocketStatus GetSocketStatus(f::SockH socket);
 } // end namespace f

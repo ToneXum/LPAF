@@ -192,6 +192,7 @@ struct Socket
     f::SocketCreateInfo socketCreateInfo;
     addrinfoexW* nativeAddressInformation;
     SOCKET nativeSocket;
+    f::SocketStatus status;
 } __attribute__((aligned(64)));
 
 class NetworkState
