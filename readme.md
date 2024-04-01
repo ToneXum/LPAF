@@ -1,6 +1,19 @@
 **This project is still far, far from finished and cannot possibly be used for production.**
 
 # LPAF
+
+<p align="center">
+  <img alt="Static Badge" src="https://img.shields.io/badge/Using-Badges-purple">
+  <img alt="Static Badge" src="https://img.shields.io/badge/Made%20with-Crayons-green">
+  <img alt="Static Badge" src="https://img.shields.io/badge/Built%20with-Love-red">
+  <img alt="Static Badge" src="https://img.shields.io/badge/Powered%20by-Electricity-yellow">
+</p>
+<p align="center">
+  <img alt="Static Badge" src="https://img.shields.io/badge/Documentation-almost%20none-orange">
+  <img alt="Static Badge" src="https://img.shields.io/badge/Code%20coverage-horrible-crimson">
+  <img alt="Static Badge" src="https://img.shields.io/badge/Trust%20me-Im%20still%20working%20on%20it-white">
+</p>
+
 The **L**ightweigt and **P**erfomant **A**pplication **F**ramwork is really just what the name says, a framework for 
 development of performance-critical application.
 
