@@ -51,13 +51,13 @@ void i::CreateManualError(int line, const char* func, const char* msg)
 void i::DeAlloc()
 {
     i::ProgramState* progState = i::GetState();
-    for (std::pair<HWND, WindowData*> pair : progState->win32.handlesToData)
+    for (std::pair<HWND, WindowData*> pair : progState->win32.nativeHandleMap)
     {
         delete pair.second;
     }
 
-    progState->win32.handlesToData.clear();
-    progState->win32.identifiersToData.clear();
+    progState->win32.nativeHandleMap.clear();
+    progState->win32.handleMap.clear();
 
     f::UnInitialise();
 
@@ -73,9 +73,9 @@ bool i::DoNothingBv()
 
 i::WindowData* i::GetWindowData(HWND handle)
 {
-    auto found = i::GetState()->win32.handlesToData.find(handle);
+    auto found = i::GetState()->win32.nativeHandleMap.find(handle);
 
-    if (found != i::GetState()->win32.handlesToData.end())
+    if (found != i::GetState()->win32.nativeHandleMap.end())
     {
         return found->second;
     }
@@ -85,9 +85,9 @@ i::WindowData* i::GetWindowData(HWND handle)
 
 i::WindowData* i::GetWindowData(f::WndH handle)
 {
-    auto found = i::GetState()->win32.identifiersToData.find(handle);
+    auto found = i::GetState()->win32.handleMap.find(handle);
 
-    if (found != i::GetState()->win32.identifiersToData.end())
+    if (found != i::GetState()->win32.handleMap.end())
     {
         return found->second;
     }
@@ -99,16 +99,15 @@ void i::EraseWindowData(HWND hWnd)
 {
     std::unique_lock<std::mutex> lock(i::GetState()->windowDataMutex);
 
-    // TODO: make this not use an iterator
-    auto res = i::GetState()->win32.handlesToData.find(hWnd); // find data to be erased
+    auto res = i::GetState()->win32.nativeHandleMap.find(hWnd); // find data to be erased
 
     std::wostringstream msg;
     msg << "Data for Window " << res->second->id << " was deleted";
     i::Log(msg.str().c_str(), i::LlDebug);
 
-    i::GetState()->win32.identifiersToData.erase(res->second->id); // erase data from the id map using the id
+    i::GetState()->win32.handleMap.erase(res->second->id); // erase data from the id map using the id
     delete res->second; // free window data
-    i::GetState()->win32.handlesToData.erase(res); // erase data from handle map using the iterator
+    i::GetState()->win32.nativeHandleMap.erase(res); // erase data from handle map using the iterator
 }
 
 void i::Log(const wchar_t* msg, LogLvl logLvl)

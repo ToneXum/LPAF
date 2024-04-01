@@ -173,8 +173,8 @@ void i::CreateWin32Window(i::WindowData* wndDt)
     oss << L"Window " << wndDt->id << " was created with native handle " << wndDt->window;
     i::Log(oss.str().c_str(), i::LlInfo);
 
-    i::GetState()->win32.identifiersToData.insert({wndDt->id, wndDt});
-    i::GetState()->win32.handlesToData.insert({wndDt->window, wndDt});
+    i::GetState()->win32.handleMap.insert({wndDt->id, wndDt});
+    i::GetState()->win32.nativeHandleMap.insert({wndDt->window, wndDt});
 }
 
 LRESULT i::WindowProc(HWND window, UINT message, WPARAM wParam, LPARAM lParam) // NOLINT(*-function-cognitive-complexity)
@@ -194,9 +194,9 @@ LRESULT i::WindowProc(HWND window, UINT message, WPARAM wParam, LPARAM lParam) /
         case CWM_DESTROY_ALL_WINDOWS:
         {
             i::ProgramState* progState = i::GetState();
-            while (!progState->win32.handlesToData.empty())
+            while (!progState->win32.nativeHandleMap.empty())
             {
-                auto first = progState->win32.handlesToData.begin();
+                auto first = progState->win32.nativeHandleMap.begin();
                 WIN32_EC(DestroyWindow(first->first), 1, WINBOOL);
             }
             break;

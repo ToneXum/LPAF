@@ -536,8 +536,6 @@ bool InitialiseNetworking(const f::NetworkingInitData& networkingInitData);
 // Shut down networking functionality
 void UnInitialiseNetworking();
 
-// TODO: more robust error handling for networking
-
 // Creates a socket
 f::SockH CreateSocket(const SocketCreateInfo& socketCreateInfo);
 

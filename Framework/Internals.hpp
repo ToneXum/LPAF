@@ -132,8 +132,8 @@ public:
     Win32State operator=(const Win32State&) = delete;
     Win32State operator=(const Win32State&&) = delete;
 
-    std::map<f::WndH, WindowData*> identifiersToData;
-    std::map<HWND, WindowData*> handlesToData;
+    std::map<f::WndH, WindowData*> handleMap;
+    std::map<HWND, WindowData*> nativeHandleMap;
 
     const wchar_t* pClassName = L"LPAF Window Manager Class";
     HINSTANCE instance{}; // handle to window class

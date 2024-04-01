@@ -27,10 +27,9 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="b43a079c-b7ae-41fc-bc1a-f78f46edc6d3" name="Changes" comment="implement data streams over sockets, fix socket creation, rearrange definitions">
+    <list default="true" id="b43a079c-b7ae-41fc-bc1a-f78f46edc6d3" name="Changes" comment="fix window closing utilities, little optimisation, fix UnInitialise">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Framework/Framework.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Framework/Framework.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Framework/Framework.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/Framework/Framework.hpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Framework/Internals.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Framework/Internals.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Framework/Internals.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/Framework/Internals.hpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Framework/Win32.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Framework/Win32.cpp" afterDir="false" />
@@ -215,7 +214,7 @@
       <workItem from="1711553136986" duration="19208000" />
       <workItem from="1711618511466" duration="18777000" />
       <workItem from="1711714363024" duration="6419000" />
-      <workItem from="1711969595182" duration="11035000" />
+      <workItem from="1711969595182" duration="18095000" />
     </task>
     <task id="LOCAL-00001" summary="initial rework">
       <option name="closed" value="true" />
@@ -465,7 +464,15 @@
       <option name="project" value="LOCAL" />
       <updated>1711715123206</updated>
     </task>
-    <option name="localTasksCounter" value="32" />
+    <task id="LOCAL-00032" summary="fix window closing utilities, little optimisation, fix UnInitialise">
+      <option name="closed" value="true" />
+      <created>1711999731079</created>
+      <option name="number" value="00032" />
+      <option name="presentableId" value="LOCAL-00032" />
+      <option name="project" value="LOCAL" />
+      <updated>1711999731079</updated>
+    </task>
+    <option name="localTasksCounter" value="33" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -512,7 +519,6 @@
     <ignored-roots>
       <path value="$PROJECT_DIR$/Framework" />
     </ignored-roots>
-    <MESSAGE value="edit image embed in readme.md" />
     <MESSAGE value="improve timestamps on log messages" />
     <MESSAGE value="slight documentation expansion" />
     <MESSAGE value="fix file extensions in doc links" />
@@ -537,17 +543,11 @@
     <MESSAGE value="rename files for OS dependant implementations" />
     <MESSAGE value="update readme.md" />
     <MESSAGE value="implement data streams over sockets, fix socket creation, rearrange definitions" />
-    <option name="LAST_COMMIT_MESSAGE" value="implement data streams over sockets, fix socket creation, rearrange definitions" />
+    <MESSAGE value="fix window closing utilities, little optimisation, fix UnInitialise" />
+    <option name="LAST_COMMIT_MESSAGE" value="fix window closing utilities, little optimisation, fix UnInitialise" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
-      <breakpoints>
-        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
-          <url>file://$PROJECT_DIR$/Framework/Win32.cpp</url>
-          <line>141</line>
-          <option name="timeStamp" value="9" />
-        </line-breakpoint>
-      </breakpoints>
       <default-breakpoints>
         <breakpoint enabled="true" type="CidrExceptionBreakpoint" />
       </default-breakpoints>

@@ -191,7 +191,7 @@ void f::CloseWindowForce(const WndH handle)
 
 void f::CloseAllWindows()
 {
-    for (std::pair<f::WndH, i::WindowData*>&& dataPair : i::GetState()->win32.identifiersToData)
+    for (std::pair<f::WndH, i::WindowData*>&& dataPair : i::GetState()->win32.handleMap)
     {
         WIN32_EC(PostMessageA(
             dataPair.second->window,
@@ -547,7 +547,7 @@ bool f::WindowContainsMouse(WndH handle)
 f::WndH f::GetMouseContainerWindow()
 {
     std::unique_lock<std::mutex> lock(i::GetState()->windowDataMutex);
-    for (std::pair<WndH, i::WindowData*> pair : i::GetState()->win32.identifiersToData)
+    for (std::pair<WndH, i::WindowData*> pair : i::GetState()->win32.handleMap)
     {
         if (pair.second->hasMouseInClientArea)
         {
@@ -650,16 +650,22 @@ void f::UnInitialiseNetworking()
 {
     if (i::GetState()->initialisationState & i::IfNetwork)
     {
-        WSA_EC(WSACleanup(), 0, int);
+        WSA_EC(WSACleanup(), 0, int)
     }
     else
     {
-        i::Log("Tried to shutdown Winsock which was not started, shutdown was aborted", i::LlError);
+        i::Log("Tried to shutdown networking subsystem which was not started, shutdown was aborted", i::LlError);
     }
 }
 
 f::SockH f::CreateSocket(const SocketCreateInfo& socketCreateInfo)
 {
+    if (!(i::GetState()->initialisationState & i::IfNetwork)) [[unlikely]]
+    {
+        i::Log("Tried to create a socket but networking subsystem was not started", i::LlError);
+        return 0;
+    }
+
     // addressInfo is not a pointer
     addrinfoexW* pResult{}, connectionHints{};
     unsigned int ipNameSpace = 0;
@@ -732,12 +738,12 @@ f::SockH f::CreateSocket(const SocketCreateInfo& socketCreateInfo)
         }
         case WSA_NOT_ENOUGH_MEMORY:
         {
-            i::Log("Memory allocation for address information failed", i::LlError);
+            i::Log("Memory allocation for address information failed, you may be out of memory", i::LlError);
             return 0;
         }
         case WSATRY_AGAIN:
         {
-            i::Log("Winsock does not feel like resolving an address today, try again later", i::LlError);
+            i::Log("Winsock does not feel like resolving an address today, please try again", i::LlError);
             return 0;
         }
         default:
@@ -771,7 +777,7 @@ f::SockH f::CreateSocket(const SocketCreateInfo& socketCreateInfo)
 
 bool f::ConnectSocket(f::SockH socket)
 {
-    i::Socket* intSocket = i::GetNetworkState()->socketMap[socket];
+    i::Socket* intSocket = i::GetNetworkState()->socketMap.at(socket);
 
     addrinfoexW* curAddressInfo = intSocket->nativeAddressInformation;
     while (true)
@@ -806,7 +812,7 @@ bool f::ConnectSocket(f::SockH socket)
                 break;
             }
             default:
-                break;
+                break; // error handling is below
             case 0: // no error
                 goto exitLoop; // Today on bad C++: How to break a loop from inside a switch case
         }
@@ -835,10 +841,49 @@ exitLoop:
 
 bool f::Send(f::SockH socket, const char* data, uint32_t size)
 {
-    i::Socket* intSocket = i::GetNetworkState()->socketMap[socket];
+    i::Socket* intSocket = i::GetNetworkState()->socketMap.at(socket);
 
     if (send(intSocket->nativeSocket, data, static_cast<int>(size), 0) == SOCKET_ERROR) [[unlikely]]
-        i::CreateWinsockError(__LINE__, WSAGetLastError(), __func__);
+    {
+        int error = WSAGetLastError();
+        switch (error)
+        {
+            case WSAETIMEDOUT:
+            {
+                std::ostringstream msg;
+                msg << "Tried sending data over socket " << socket << " but its connection was dropped; If you are "
+                                                                      "connected to the internet you must re-connect "
+                                                                      "this socket";
+                i::Log(msg.str().c_str(), i::LlError);
+                return false;
+            }
+            case WSAECONNRESET:
+            {
+                std::ostringstream msg;
+                msg << "Tried sending data over socket " << socket << " but its connection was reset; If this is a "
+                                                                      "UDP connection then the last datagram could not "
+                                                                      "be received by this socket";
+                i::Log(msg.str().c_str(), i::LlError);
+                return false;
+            }
+            case WSAENOTCONN:
+            {
+                std::ostringstream msg;
+                msg << "Tried sending data over socket " << socket << " but a connection to a remote host was not "
+                                                                      "established";
+                i::Log(msg.str().c_str(), i::LlInfo);
+            }
+            case WSAECONNABORTED:
+            {
+                std::ostringstream msg;
+                msg << "Tried sending data over socket " << socket << " but the connection was aborted due to a "
+                                                                      "failure";
+                i::Log(msg.str().c_str(), i::LlInfo);
+            }
+            default:
+                i::CreateWinsockError(__LINE__, error, __func__);
+        }
+    }
 
     std::ostringstream msg;
     msg << "Sent " << size << " bytes over socket " << socket;
@@ -849,12 +894,33 @@ bool f::Send(f::SockH socket, const char* data, uint32_t size)
 
 bool f::Receive(f::SockH socket, char* buffer, uint32_t size)
 {
-    i::Socket* intSocket = i::GetNetworkState()->socketMap[socket];
+    i::Socket* intSocket{};
+    try
+    {
+        intSocket = i::GetNetworkState()->socketMap.at(socket);
+    }
+    catch (const std::out_of_range&) // element is not in map -> socket does not exist
+    {
+        std::ostringstream msg;
+        msg << "Tried receiving data over socket " << socket << " which does not exist";
+        i::Log(msg.str().c_str(), i::LlInfo);
+        return false;
+    }
 
     int received = recv(intSocket->nativeSocket, buffer, static_cast<int>(size), 0);
 
     if (received == SOCKET_ERROR) [[unlikely]]
+    {
         i::CreateWinsockError(__LINE__, WSAGetLastError(), __func__);
+        return false;
+    }
+    else if (received == 0)
+    {
+        std::ostringstream msg;
+        msg << "Tried receiving data over socket " << socket << " but the connection was closed";
+        i::Log(msg.str().c_str(), i::LlError);
+        return false;
+    }
 
     std::ostringstream msg;
     msg << "Received " << received << " bytes over socket " << socket;
@@ -865,8 +931,30 @@ bool f::Receive(f::SockH socket, char* buffer, uint32_t size)
 
 bool f::DestroySocket(f::SockH socket)
 {
-    i::Socket* intSock = i::GetNetworkState()->socketMap[socket];
-    WSA_EC(closesocket(intSock->nativeSocket), 0, int);
+    i::Socket* intSock{};
+    try
+    {
+        intSock = i::GetNetworkState()->socketMap.at(socket);
+    }
+    catch (const std::out_of_range&) // element is not in map -> socket does not exist
+    {
+        std::ostringstream msg;
+        msg << "Tried destroying socket " << socket << " which does not exist; You can't smash walls that don't stand";
+        i::Log(msg.str().c_str(), i::LlInfo);
+        return false;
+    }
+
+    if (closesocket(intSock->nativeSocket) == SOCKET_ERROR)
+    {
+        int error = WSAGetLastError();
+
+        if (error == WSANOTINITIALISED)
+        {
+            i::Log("Tried destroying a socket but the networking subsystem was not started", i::LlError);
+            return false;
+        }
+        i::CreateWinsockError(__LINE__, error, __func__);
+    }
 
     delete intSock;
     i::GetNetworkState()->socketMap.erase(socket);
