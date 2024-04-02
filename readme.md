@@ -3,23 +3,20 @@
 # LPAF
 
 <p align="center">
-  <img alt="Static Badge" src="https://img.shields.io/badge/Using-Badges-purple">
-  <img alt="Static Badge" src="https://img.shields.io/badge/Made%20with-Crayons-green">
-  <img alt="Static Badge" src="https://img.shields.io/badge/Built%20with-Love-red">
-  <img alt="Static Badge" src="https://img.shields.io/badge/Powered%20by-Electricity-yellow">
-</p>
-<p align="center">
   <img alt="Static Badge" src="https://img.shields.io/badge/Documentation-Almost%20none-orange">
   <img alt="Static Badge" src="https://img.shields.io/badge/Code%20coverage-Horrible-crimson">
   <img alt="Static Badge" src="https://img.shields.io/badge/Trust%20me-Im%20still%20working%20on%20it-white">
 </p>
 <p align="center">
-  <img alt="Static Badge" src="https://img.shields.io/badge/lines%20of%20code-2402-teal">
   <img alt="GitHub Issues or Pull Requests" src="https://img.shields.io/github/issues/ToneXum/LPAF">
   <img alt="GitHub Issues or Pull Requests" src="https://img.shields.io/github/issues-closed/ToneXum/LPAF">
   <img alt="GitHub Issues or Pull Requests" src="https://img.shields.io/github/issues-pr/ToneXum/LPAF">
   <img alt="GitHub Issues or Pull Requests" src="https://img.shields.io/github/issues-pr-closed/ToneXum/LPAF">
   <img alt="GitHub Downloads (all assets, all releases)" src="https://img.shields.io/github/downloads/ToneXum/LPAF/total">
+</p>
+<p align="center">
+  <img alt="GitHub repo size" src="https://img.shields.io/github/repo-size/ToneXum/LPAF">
+
 </p>
 
 The **L**ightweigt and **P**erfomant **A**pplication **F**ramwork is really just what the name says, a framework for 
