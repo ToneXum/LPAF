@@ -37,10 +37,6 @@ higher-level engines where **everything** is abstracted away.
 ## Documentation and Information
 You can find documentation and guides in the `Documentation/` directory in this repository (work in progress, be warned).
 
-To view progress on updates, features and bug fixes you can check out the [Kanban Board](https://github.com/users/ToneXum/projects/1).
-
-For even more information like announcements, polls and Q&A you can visit the [Discussions](https://github.com/ToneXum/LPAF/discussions)
-
 ### Milestones
 - Basic features ⭕
   - Windows ✔️ (done)
@@ -52,7 +48,7 @@ For even more information like announcements, polls and Q&A you can visit the [D
   - Linux / Unix ❌ ($soon^{TM}$)
 - Entrypoint for integrated renderer ✔️ (done)
 - Full rendering implementation ❌
-- Networking ❌
+- Networking ⭕
   - Windows ✔️ (done)
   - MacOS ❌ ($soon^{TM}$)
   - Linux / Unix ❌ ($soon^{TM}$)
