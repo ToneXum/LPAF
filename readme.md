@@ -1,6 +1,24 @@
 **This project is still far, far from finished and cannot possibly be used for production.**
 
 # LPAF
+
+<p align="center">
+  <img alt="Static Badge" src="https://img.shields.io/badge/Documentation-Almost%20none-orange">
+  <img alt="Static Badge" src="https://img.shields.io/badge/Code%20coverage-Horrible-crimson">
+  <img alt="Static Badge" src="https://img.shields.io/badge/Trust%20me-Im%20still%20working%20on%20it-white">
+</p>
+<p align="center">
+  <img alt="GitHub Issues or Pull Requests" src="https://img.shields.io/github/issues/ToneXum/LPAF">
+  <img alt="GitHub Issues or Pull Requests" src="https://img.shields.io/github/issues-closed/ToneXum/LPAF">
+  <img alt="GitHub Issues or Pull Requests" src="https://img.shields.io/github/issues-pr/ToneXum/LPAF">
+  <img alt="GitHub Issues or Pull Requests" src="https://img.shields.io/github/issues-pr-closed/ToneXum/LPAF">
+  <img alt="GitHub Downloads (all assets, all releases)" src="https://img.shields.io/github/downloads/ToneXum/LPAF/total">
+</p>
+<p align="center">
+  <img alt="GitHub repo size" src="https://img.shields.io/github/repo-size/ToneXum/LPAF">
+
+</p>
+
 The **L**ightweigt and **P**erfomant **A**pplication **F**ramwork is really just what the name says, a framework for 
 development of performance-critical application.
 
@@ -19,10 +37,6 @@ higher-level engines where **everything** is abstracted away.
 ## Documentation and Information
 You can find documentation and guides in the `Documentation/` directory in this repository (work in progress, be warned).
 
-To view progress on updates, features and bug fixes you can check out the [Kanban Board](https://github.com/users/ToneXum/projects/1).
-
-For even more information like announcements, polls and Q&A you can visit the [Discussions](https://github.com/ToneXum/LPAF/discussions)
-
 ### Milestones
 - Basic features ⭕
   - Windows ✔️ (done)
@@ -34,7 +48,7 @@ For even more information like announcements, polls and Q&A you can visit the [D
   - Linux / Unix ❌ ($soon^{TM}$)
 - Entrypoint for integrated renderer ✔️ (done)
 - Full rendering implementation ❌
-- Networking ❌
+- Networking ⭕
   - Windows ✔️ (done)
   - MacOS ❌ ($soon^{TM}$)
   - Linux / Unix ❌ ($soon^{TM}$)
