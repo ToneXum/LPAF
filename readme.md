@@ -17,7 +17,7 @@
 </p>
 <p align="center">
   <img alt="GitHub repo size" src="https://img.shields.io/github/repo-size/ToneXum/LPAF">
-  <img alt="Lines of code" src="https://tokei.rs/b1/github/ToneXum/LPAF?category=code">
+  <img alt="Lines of code" src="https://tokei.rs/b1/github/ToneXum/LPAF?category=code&style=flat">
 </p>
 
 The **L**ightweigt and **P**erfomant **A**pplication **F**ramwork is really just what the name says, a framework for 
