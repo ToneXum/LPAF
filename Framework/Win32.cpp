@@ -47,7 +47,7 @@ void i::CreateWin32Error(int line, int code, const char* func)
     msg << std::flush;
 
     MessageBoxA(nullptr, msg.str().c_str(), "Internal Error!", MB_ICONERROR | MB_TASKMODAL | MB_OK);
-    LocalFree(static_cast<LPSTR>(errorMessage));
+    LocalFree(errorMessage);
 
     DeAlloc();
     std::exit(-1);
@@ -97,7 +97,7 @@ void i::CreateWinsockError(int line, int code, const char* func)
     msg << std::flush;
 
     MessageBoxA(nullptr, msg.str().c_str(), "Internal Error!", MB_ICONERROR | MB_TASKMODAL | MB_OK);
-    LocalFree(static_cast<LPSTR>(errorMessage));
+    LocalFree(errorMessage);
 
     DeAlloc();
     std::exit(-1);
@@ -108,13 +108,13 @@ void i::WindowProcedureThread()
     // may cause volatility issues
     i::ProgramState* progState = i::GetState();
 
-    progState->win32.nativeThreadId = GetCurrentThreadId();
+    progState->win32->nativeThreadId = GetCurrentThreadId();
 
     std::wostringstream startMsg;
     startMsg << L"The window manager thread was started";
     i::Log(startMsg.str().c_str(), i::LlInfo);
 
-    std::unique_lock<std::mutex> lock(progState->windowThreadMutex);
+    std::unique_lock lock(progState->windowThreadMutex);
     progState->windowThreadIsRunning = true;
     lock.unlock();
     progState->windowThreadConditionVar.notify_one();
@@ -146,7 +146,7 @@ void i::CreateWin32Window(i::WindowData* wndDt)
 {
     WIN32_EC_RET(wndDt->window, CreateWindowExW(
             0,
-            i::GetState()->win32.pClassName,
+            i::GetState()->win32->pClassName,
             wndDt->name,
             WS_MINIMIZEBOX | WS_CAPTION | WS_SYSMENU,
             // man do I love ternary expressions :)
@@ -154,17 +154,19 @@ void i::CreateWin32Window(i::WindowData* wndDt)
             wndDt->width, wndDt->height,
             nullptr,
             nullptr,
-            i::GetState()->win32.instance,
+            i::GetState()->win32->instance,
             nullptr
     ), 1)
 
     ShowWindow(wndDt->window, 1);
 
+    auto sharedPtr = std::make_shared<i::WindowData>(*wndDt);
+
     // ran out of range
     if (wndDt->id == SHRT_MAX)
     {
         i::Log(L"Handle out of range, window was opened but no handle could be created. You somehow opened 65.536 "
-               "windows...", i::LlError);
+               L"windows...", i::LlError);
         DestroyWindow(wndDt->window);
         return;
     }
@@ -173,8 +175,8 @@ void i::CreateWin32Window(i::WindowData* wndDt)
     oss << L"Window " << wndDt->id << " was created with native handle " << wndDt->window;
     i::Log(oss.str().c_str(), i::LlInfo);
 
-    i::GetState()->win32.handleMap.insert({wndDt->id, wndDt});
-    i::GetState()->win32.nativeHandleMap.insert({wndDt->window, wndDt});
+    i::GetState()->win32->handleMap.try_emplace(wndDt->id, sharedPtr);
+    i::GetState()->win32->nativeHandleMap.try_emplace(wndDt->window, sharedPtr);
 }
 
 LRESULT i::WindowProc(HWND window, UINT message, WPARAM wParam, LPARAM lParam) // NOLINT(*-function-cognitive-complexity)
@@ -194,10 +196,10 @@ LRESULT i::WindowProc(HWND window, UINT message, WPARAM wParam, LPARAM lParam) /
         case CWM_DESTROY_ALL_WINDOWS:
         {
             i::ProgramState* progState = i::GetState();
-            while (!progState->win32.nativeHandleMap.empty())
+            while (!progState->win32->nativeHandleMap.empty())
             {
-                auto first = progState->win32.nativeHandleMap.begin();
-                WIN32_EC(DestroyWindow(first->first), 1, WINBOOL);
+                auto first = progState->win32->nativeHandleMap.begin();
+                WIN32_EC(DestroyWindow(first->first), 1, WINBOOL)
             }
             break;
         }
@@ -207,7 +209,7 @@ LRESULT i::WindowProc(HWND window, UINT message, WPARAM wParam, LPARAM lParam) /
         case WM_CLOSE: // closing of a window has been requested
         {
             if (GetWindowData(window)->pfOnCloseAttempt()) // go ahead and close the window if return is true
-                WIN32_EC(DestroyWindow(window), 1, WINBOOL);
+                WIN32_EC(DestroyWindow(window), 1, WINBOOL)
             return 0;
         }
         case WM_DESTROY: // closing a window was ordered and confirmed
@@ -266,14 +268,14 @@ LRESULT i::WindowProc(HWND window, UINT message, WPARAM wParam, LPARAM lParam) /
             {
                 if (wParam != 0x0008) // key is not backspace
                 {
-                    auto* pText = i::GetState()->textInput;
+                    wchar_t* pText = i::GetState()->textInput;
                     size_t textLength = std::wcslen(pText);
-                    if (textLength == 100000) break;
+                    if (textLength == i::kTextInputSize) break;
                     pText[textLength] = static_cast<wchar_t>(wParam);
                 }
                 else // key is backspace
                 {
-                    auto* pText = i::GetState()->textInput;
+                    wchar_t* pText = i::GetState()->textInput;
                     size_t textLength = std::wcslen(pText);
                     pText[textLength - 1] = 0;
                 }
@@ -326,8 +328,7 @@ LRESULT i::WindowProc(HWND window, UINT message, WPARAM wParam, LPARAM lParam) /
         }
         case WM_XBUTTONDOWN:
         {
-            int button = HIWORD(wParam);
-            switch (button)
+            switch (int button = HIWORD(wParam))
             {
                 case 1:
                 {
@@ -345,8 +346,7 @@ LRESULT i::WindowProc(HWND window, UINT message, WPARAM wParam, LPARAM lParam) /
         }
         case WM_XBUTTONUP:
         {
-            int button = HIWORD(wParam);
-            switch (button)
+            switch (int button = HIWORD(wParam))
             {
                 case 1:
                 {
@@ -377,8 +377,7 @@ LRESULT i::WindowProc(HWND window, UINT message, WPARAM wParam, LPARAM lParam) /
         // Focus gain and loss
         case WM_SETFOCUS:
         {
-            WindowData* wndData = i::GetWindowData(window);
-            if (wndData)
+            if (WindowData* wndData = i::GetWindowData(window))
             {
                 wndData->hasFocus = true;
             }
@@ -387,8 +386,7 @@ LRESULT i::WindowProc(HWND window, UINT message, WPARAM wParam, LPARAM lParam) /
         }
         case WM_KILLFOCUS:
         {
-            WindowData* wndData = i::GetWindowData(window);
-            if (wndData)
+            if (WindowData* wndData = i::GetWindowData(window))
             {
                 wndData->hasFocus = false;
             }

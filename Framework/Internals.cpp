@@ -51,13 +51,9 @@ void i::CreateManualError(int line, const char* func, const char* msg)
 void i::DeAlloc()
 {
     i::ProgramState* progState = i::GetState();
-    for (std::pair<HWND, WindowData*> pair : progState->win32.nativeHandleMap)
-    {
-        delete pair.second;
-    }
 
-    progState->win32.nativeHandleMap.clear();
-    progState->win32.handleMap.clear();
+    progState->win32->nativeHandleMap.clear();
+    progState->win32->handleMap.clear();
 
     f::UnInitialise();
 
@@ -66,18 +62,17 @@ void i::DeAlloc()
 }
 
 void i::DoNothingVv()
-{}
+{ /* Well guess what, this function does nothing */ }
 
 bool i::DoNothingBv()
 { return true; }
 
 i::WindowData* i::GetWindowData(HWND handle)
 {
-    auto found = i::GetState()->win32.nativeHandleMap.find(handle);
-
-    if (found != i::GetState()->win32.nativeHandleMap.end())
+    if (const auto found = i::GetState()->win32->nativeHandleMap.find(handle);
+        found != i::GetState()->win32->nativeHandleMap.end())
     {
-        return found->second;
+        return found->second.get();
     }
 
     return nullptr;
@@ -85,11 +80,10 @@ i::WindowData* i::GetWindowData(HWND handle)
 
 i::WindowData* i::GetWindowData(f::WndH handle)
 {
-    auto found = i::GetState()->win32.handleMap.find(handle);
-
-    if (found != i::GetState()->win32.handleMap.end())
+    if (const auto found = i::GetState()->win32->handleMap.find(handle);
+        found != i::GetState()->win32->handleMap.end())
     {
-        return found->second;
+        return found->second.get();
     }
 
     return nullptr;
@@ -97,17 +91,16 @@ i::WindowData* i::GetWindowData(f::WndH handle)
 
 void i::EraseWindowData(HWND hWnd)
 {
-    std::unique_lock<std::mutex> lock(i::GetState()->windowDataMutex);
+    std::unique_lock lock(i::GetState()->windowDataMutex);
 
-    auto res = i::GetState()->win32.nativeHandleMap.find(hWnd); // find data to be erased
+    auto res = i::GetState()->win32->nativeHandleMap.find(hWnd); // find data to be erased
 
     std::wostringstream msg;
     msg << "Data for Window " << res->second->id << " was deleted";
     i::Log(msg.str().c_str(), i::LlDebug);
 
-    i::GetState()->win32.handleMap.erase(res->second->id); // erase data from the id map using the id
-    delete res->second; // free window data
-    i::GetState()->win32.nativeHandleMap.erase(res); // erase data from handle map using the iterator
+    i::GetState()->win32->handleMap.erase(res->second->id); // erase data from the id map using the id
+    i::GetState()->win32->nativeHandleMap.erase(res); // erase data from handle map using the iterator
 }
 
 void i::Log(const wchar_t* msg, LogLvl logLvl)
@@ -205,28 +198,22 @@ void i::Log(const char* msg, LogLvl logLvl)
 #endif // _DEBUG
 }
 
-i::ProgramState* i::GetState(bool dealloc)
+i::ProgramState* i::GetState()
 {
-    static i::ProgramState* state{new i::ProgramState};
-    if (dealloc)
-        delete state;
-    return state;
+    return i::programState.get();
 }
 
-i::NetworkState* i::GetNetworkState(bool dealloc)
+i::NetworkState* i::GetNetworkState()
 {
-    static NetworkState* state{new i::NetworkState};
-    if (dealloc)
-        delete state;
-    return state;
+    return i::networkState.get();
 }
 
 i::ProgramState::ProgramState()
-    : textInput(new wchar_t[100000])
-{}
+{
 
-i::ProgramState::~ProgramState()
-{ delete[] textInput; }
+    win32 = std::make_unique<i::Win32State>();
+    vulkan = std::make_unique<v::VulkanState>();
+}
 
 i::Socket::~Socket()
 {

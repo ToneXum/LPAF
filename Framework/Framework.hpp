@@ -26,6 +26,7 @@
 #include <complex>
 #include <cstdint>
 #include <vector>
+#include <memory>
 
 namespace f // a one letter namespace name...
 {
@@ -322,25 +323,33 @@ struct FrameworkInitData
 
 struct WindowCreateData
 {
-    uint16_t width, height;
-    int16_t xPos, yPos;
-    const wchar_t* pName;
-
     std::vector<WndH> dependants;
-
     void (*pfOnClose)();
     bool (*fpOnCloseAttempt)();
+    const wchar_t* pName;
+    uint16_t width;
+    uint16_t height;
+    int16_t xPos;
+    int16_t yPos;
 } __attribute__((aligned(64)));
 
 struct Rectangle
 {
-    int16_t bottom, top, left, right;
+    int16_t bottom;
+    int16_t top;
+    int16_t left;
+    int16_t right;
 } __attribute__((aligned(8)));
 
 struct MouseInfo
 {
-    int xPos, yPos;
-    bool left, right, middle, x1, x2;
+    int16_t xPos;
+    int16_t yPos;
+    bool left;
+    bool right;
+    bool middle;
+    bool x1;
+    bool x2;
     WndH containingWindow;
 } __attribute__((aligned(16)));
 
@@ -353,28 +362,34 @@ struct SocketCreateInfo
 } __attribute__((aligned(32)));
 
 // Start the entire framework up, so it can be used.
-void Initialise(const FrameworkInitData& initialisationData);
+void Initialise(const FrameworkInitData& kInitialisationData);
 
 // Shutdown, cleanup.
 void UnInitialise();
+
+// Returns true as long as any window is open
+bool IsWindowManagerRunning();
 
 // TODO: restartable window manager
 void RestartWindowManager();
 
 // Create a new window
-WndH CreateWindowAsync(const f::WindowCreateData& windowCreateData);
+WndH CreateWindowAsync(const f::WindowCreateData& kWindowCreateData);
 
 // TODO: implement this
-WndH CreateWindowSync(const f::WindowCreateData& windowCreateData);
+WndH CreateWindowSync(const f::WindowCreateData& kWindowCreateData);
+
+// Return true if any window is open
+bool IsAnyWindowOpen();
 
 // Attempts to close a window
 // This function will order OnWindowCloseAttempt to be called which means that nothing will happen if the request
 // is refused
-void CloseWindow(WndH handle);
+void CloseWindow(WndH kHandle);
 
 // Close the window, don't care if it refuses
 // OnWindowCloseAttempt will not be called
-void CloseWindowForce(WndH handle);
+void CloseWindowForce(WndH kHandle);
 
 // Close all windows
 // This function will order OnWindowCloseAttempt to be called which means that nothing will happen to a window if
@@ -429,9 +444,6 @@ bool WindowHasFocus(WndH handle);
 
 // Returns whether the passed handle corresponds to an existing window or not
 bool IsValidHandle(WndH handle);
-
-// Returns true as long as any window is open
-bool Running();
 
 // Pause the caller thread for the specified amount of ms
 void Halt(int milliseconds);
@@ -526,7 +538,7 @@ WndH GetWindowWithFocus();
 
 // Converts a file to a byte array and allocates that on the heap
 // Returns a pointer to that array
-void* LoadFile(const char* file, size_t& bytes);
+std::unique_ptr<char> LoadFile(const char* file, size_t& bytes);
 
 // Writes memory to a file
 // Returns the amount of bytes written
@@ -539,7 +551,7 @@ bool InitialiseNetworking();
 void UnInitialiseNetworking();
 
 // Creates a socket
-f::SockH CreateSocket(const SocketCreateInfo& socketCreateInfo);
+f::SockH CreateSocket(const SocketCreateInfo& kSocketCreateInfo);
 
 // Do a TCP handshake
 bool ConnectSocket(f::SockH socket);

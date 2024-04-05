@@ -23,10 +23,6 @@
 #include "Vulkan.hpp"
 #include "Internals.hpp"
 
-#ifdef _WINDOWS
-#include "vulkan/vulkan_win32.h"
-#endif
-
 void v::InitialiseVulkan()
 {
     // do setup for validation layers
@@ -39,7 +35,7 @@ void v::InitialiseVulkan()
     vkEnumerateInstanceLayerProperties(&layerCount, availableLayers.data());
 
     bool allLayersFound = true;
-    for (const char* layerName : i::GetState()->vulkan.validationLayers) // loops through the layers we want
+    for (const char* layerName : i::GetState()->vulkan->validationLayers) // loops through the layers we want
     {
         bool found = false;
         for (const VkLayerProperties& layerProperties : availableLayers) // loop through the layers we have
@@ -79,33 +75,33 @@ void v::InitialiseVulkan()
     createInf.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
     createInf.pApplicationInfo = &appInf;
 #ifdef _DEBUG
-    createInf.enabledLayerCount = static_cast<unsigned int>(i::GetState()->vulkan.validationLayers.size());
-    createInf.ppEnabledLayerNames = i::GetState()->vulkan.validationLayers.data();
+    createInf.enabledLayerCount = static_cast<unsigned int>(i::GetState()->vulkan->validationLayers.size());
+    createInf.ppEnabledLayerNames = i::GetState()->vulkan->validationLayers.data();
     createInf.pNext = &messenger;
 #endif // _DEBUG
-    createInf.enabledExtensionCount = static_cast<unsigned int>(i::GetState()->vulkan.extension.size());
-    createInf.ppEnabledExtensionNames = i::GetState()->vulkan.extension.data();
+    createInf.enabledExtensionCount = static_cast<unsigned int>(i::GetState()->vulkan->extension.size());
+    createInf.ppEnabledExtensionNames = i::GetState()->vulkan->extension.data();
 
-    VUL_EC(vkCreateInstance(&createInf, nullptr, &i::GetState()->vulkan.vkInstance))
+    VUL_EC(vkCreateInstance(&createInf, nullptr, &i::GetState()->vulkan->vkInstance))
     i::Log(L"A Vulkan instance was created", i::LlInfo);
 
 #ifdef _DEBUG
-    VUL_EC(v::p::CreateDebugUtilsMessengerExt(i::GetState()->vulkan.vkInstance,
-                                             &messenger, nullptr, &i::GetState()->vulkan.debugMessenger))
+    VUL_EC(v::p::CreateDebugUtilsMessengerExt(i::GetState()->vulkan->vkInstance,
+                                             &messenger, nullptr, &i::GetState()->vulkan->debugMessenger))
 #endif // _DEBUG
 
     unsigned deviceCount = 0;
-    vkEnumeratePhysicalDevices(i::GetState()->vulkan.vkInstance, &deviceCount, nullptr);
+    vkEnumeratePhysicalDevices(i::GetState()->vulkan->vkInstance, &deviceCount, nullptr);
 
     if (!deviceCount) FRAMEWORK_ERR("There is no GPU that supports Vulkan installed in this machine.")
 
     std::vector<VkPhysicalDevice> devices(deviceCount);
-    vkEnumeratePhysicalDevices(i::GetState()->vulkan.vkInstance, &deviceCount, devices.data());
+    vkEnumeratePhysicalDevices(i::GetState()->vulkan->vkInstance, &deviceCount, devices.data());
 
     // choose first device, don't care about anything else
-    i::GetState()->vulkan.physicalDevice = v::ChooseBestPhysicalDevice(devices);
-    if (i::GetState()->vulkan.physicalDevice == nullptr)
-        FRAMEWORK_ERR("There is no GPU installed in this machine that matches the requirements.");
+    i::GetState()->vulkan->physicalDevice = v::ChooseBestPhysicalDevice(devices);
+    if (i::GetState()->vulkan->physicalDevice == nullptr)
+        FRAMEWORK_ERR("There is no GPU installed in this machine that matches the requirements.")
 
     i::GetState()->initialisationState |= i::IfRenderer;
 }
@@ -113,10 +109,11 @@ void v::InitialiseVulkan()
 void v::UnInitializeVulkan()
 {
 #ifdef _DEBUG
-    v::p::DestroyDebugUtilsMessengerExt(i::GetState()->vulkan.vkInstance, i::GetState()->vulkan.debugMessenger, nullptr);
+    v::p::DestroyDebugUtilsMessengerExt(i::GetState()->vulkan->vkInstance,
+                                        i::GetState()->vulkan->debugMessenger, nullptr);
 #endif // _DEBUG
 
-    vkDestroyInstance(i::GetState()->vulkan.vkInstance, nullptr);
+    vkDestroyInstance(i::GetState()->vulkan->vkInstance, nullptr);
 }
 
 void v::CreateVulkanError(int line, int code, const char* func)
@@ -136,7 +133,7 @@ void v::CreateVulkanError(int line, int code, const char* func)
     std::exit(-1);
 }
 
-VkPhysicalDevice v::ChooseBestPhysicalDevice(const std::vector<VkPhysicalDevice>& dev)
+VkPhysicalDevice v::ChooseBestPhysicalDevice(const std::vector<VkPhysicalDevice>& kDevice)
 {
     struct GpuScore
     {
@@ -145,9 +142,10 @@ VkPhysicalDevice v::ChooseBestPhysicalDevice(const std::vector<VkPhysicalDevice>
     } __attribute__((aligned(16)));
     std::vector<GpuScore> rankedDevices;
 
-    for (const VkPhysicalDevice& devi : dev)
+    for (const VkPhysicalDevice& devi : kDevice)
     {
-        uint32_t score = 0, queueFamCount = 0;
+        uint32_t score = 0;
+        uint32_t queueFamCount = 0;
         vkGetPhysicalDeviceQueueFamilyProperties(devi, &queueFamCount, nullptr);
 
         std::vector<VkQueueFamilyProperties> queueFamilies(queueFamCount);

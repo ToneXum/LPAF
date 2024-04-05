@@ -27,8 +27,8 @@
 #define WIN32_LEAN_AND_MEAN // prevent Windows.h from including winsock-1.1
 #endif
 
-#include <Windows.h>
-#include <Windowsx.h>
+#include <windows.h>
+#include <windowsx.h>
 #include <winsock2.h>
 #include <ws2tcpip.h>
 #include <xaudio2.h>
@@ -85,6 +85,8 @@
 
 namespace i
 {
+const constexpr int kTextInputSize = 100000;
+
 // Log level for in::Log(), this will determine the prefix of the message
 enum LogLvl : uint8_t
 {
@@ -112,12 +114,17 @@ struct WindowData // additional data associated to each window
     bool (*pfOnCloseAttempt)();
 
     wchar_t* name = nullptr;
-    int16_t xPos = 0, yPos = 0;
-    uint16_t width = 0, height = 0;
+    int16_t xPos = 0;
+    int16_t yPos = 0;
+    uint16_t width = 0;
+    uint16_t height = 0;
 
     f::WndH id = 0;
 
-    bool isVisible = true, isValid = true, hasFocus = true, hasMouseInClientArea = false;
+    bool isVisible = true;
+    bool isValid = true;
+    bool hasFocus = true;
+    bool hasMouseInClientArea = false;
 } __attribute__((aligned(128)));
 
 class Win32State
@@ -132,8 +139,8 @@ public:
     Win32State operator=(const Win32State&) = delete;
     Win32State operator=(const Win32State&&) = delete;
 
-    std::map<f::WndH, WindowData*> handleMap;
-    std::map<HWND, WindowData*> nativeHandleMap;
+    std::map<f::WndH, std::shared_ptr<WindowData>> handleMap;
+    std::map<HWND, std::shared_ptr<WindowData>> nativeHandleMap;
 
     const wchar_t* pClassName = L"LPAF Window Manager Class";
     HINSTANCE instance{}; // handle to window class
@@ -146,28 +153,35 @@ class ProgramState
 {
 public:
     ProgramState();
-    ~ProgramState();
+    ~ProgramState() = default;
 
     ProgramState(const ProgramState&) = delete;
     ProgramState(const ProgramState&&) = delete;
     ProgramState operator=(const ProgramState&) = delete;
     ProgramState operator=(const ProgramState&&) = delete;
 
-    Win32State win32;
-    v::VulkanState vulkan;
+    // Bitset for keyboard key states
+    std::bitset<256> keyStates = 0;
 
     // Mouse information
     struct Mouse
     {
-        int xPos{}, yPos{};
-        int wheelDelta{};
-        bool leftButton{}, rightButton{}, middleButton{}, x1Button{}, x2Button{};
-    } __attribute__((aligned(32))) mouse;
+        int32_t wheelDelta{};
+        int16_t xPos{};
+        int16_t yPos{};
+        bool leftButton{};
+        bool rightButton{};
+        bool middleButton{};
+        bool x1Button{};
+        bool x2Button{};
+    } __attribute__((aligned(16)));
 
-    // Bitset for keyboard key states
-    std::bitset<256> keyStates = 0;
+    Mouse mouse;
 
-    std::thread* pWindowThread{};
+    std::jthread* pWindowThread{};
+
+    std::unique_ptr<Win32State> win32;
+    std::unique_ptr<v::VulkanState> vulkan;
 
     std::mutex loggerMutex; // thread safety for logging
     std::mutex windowDataMutex; // thread safety for accesses on the window data maps
@@ -175,14 +189,17 @@ public:
     std::condition_variable windowThreadConditionVar;
     std::mutex windowThreadMutex;
 
-    wchar_t* textInput;
+    wchar_t* textInput = new wchar_t[kTextInputSize];
 
-    int16_t windowCount = 0, windowsOpened = 0;
+    int16_t windowCount = 0;
+    int16_t windowsOpened = 0;
     uint8_t initialisationState = 0; // set of flags indicating what parts of LPAF are running
     bool isRunning = true; // becomes false when no window is open anymore
     bool textInputEnabled = false;
     bool windowThreadIsRunning = false;
 };
+
+const inline std::unique_ptr<ProgramState> programState = std::make_unique<ProgramState>();
 
 struct Socket
 {
@@ -206,10 +223,14 @@ public:
     NetworkState operator=(const NetworkState&) = delete;
     NetworkState operator=(const NetworkState&&) = delete;
 
-    std::map<f::SockH, Socket*> socketMap;
+    std::map<f::SockH, std::unique_ptr<Socket>> socketMap;
 
-    uint16_t socketsCreated{}, connectedSockets{}, existingSockets{};
+    uint16_t socketsCreated{};
+    uint16_t connectedSockets{};
+    uint16_t existingSockets{};
 };
+
+const inline std::unique_ptr<NetworkState> networkState = std::make_unique<NetworkState>();
 
 // Functions that do nothing
 // First letter corresponds with the return type the rest indicate arguments
@@ -218,35 +239,30 @@ void DoNothingVv();
 bool DoNothingBv(); // returns true
 
 // Gets pointer to state
-ProgramState* GetState(bool dealloc = false);
+i::ProgramState* GetState();
 
 // Gets pointer to network state
-NetworkState* GetNetworkState(bool dealloc = false);
+i::NetworkState* GetNetworkState();
 
 void WindowProcedureThread();
 
 void CreateWin32Window(i::WindowData* wndDt);
 
 // Win32 Error creation
-void CreateWin32Error(int line, int code, const char* func);
+__attribute__((noreturn)) void CreateWin32Error(int line, int code, const char* func);
 
 // Winsock error creation
-void CreateWinsockError(int line, int code, const char* func);
+__attribute__((noreturn)) void CreateWinsockError(int line, int code, const char* func);
 
 // Manual and instant error creation
-void CreateManualError(int line, const char* func, const char* msg);
+__attribute__((noreturn)) void CreateManualError(int line, const char* func, const char* msg);
 
 LRESULT WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
-// Look through AppInfo.windows and return the instance matching the handle
-// Time complexity is linear to the amount of windows open
 WindowData* GetWindowData(HWND handle);
 
-// Look through AppInfo.windows and return the instance matching the id of the underlying window
-// Time complexity is linear to the amount of windows open
 WindowData* GetWindowData(f::WndH handle);
 
-// Loops through AppData.windows and erases all WindowData that is invalid
 void EraseWindowData(HWND hWnd);
 
 // Deallocates everything, closes handles and cleans up

@@ -6,7 +6,6 @@ int main()
     initData.appStyle   = f::AsNoIntegratedRenderer;
     f::Initialise(initData);
 
-    f::NetworkingInitData netInitData{};
     f::InitialiseNetworking();
 
     f::WindowCreateData cdt{};
@@ -31,12 +30,12 @@ int main()
     char buffer[4096]{};
     f::Receive(socket, buffer, sizeof(buffer));
 
+    f::DestroySocket(socket);
+
     uint8_t counter = 0;
     f::SetTextInputState(true);
 
-    goto bruh;
-
-    while (f::Running())
+    while (true)
     {
         f::ChangeWindowName(dependant, f::GetTextInput());
 
@@ -69,12 +68,16 @@ int main()
         if (counter > 0)
             counter++;
 
+        if (!f::IsAnyWindowOpen())
+            break;
+
         // simulate computation
         f::Halt(16);
     }
-    bruh:
 
-    f::DestroySocket(socket);
+    f::CloseAllWindowsForce();
+
+    while (f::IsAnyWindowOpen());
 
     f::UnInitialiseNetworking();
     f::UnInitialise();

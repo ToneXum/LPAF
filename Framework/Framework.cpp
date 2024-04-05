@@ -28,7 +28,7 @@
 #include "Framework.hpp"
 #include "Internals.hpp"
 
-void f::Initialise(const f::FrameworkInitData& initialisationData)
+void f::Initialise(const f::FrameworkInitData& kInitialisationData)
 {
     // M A X I M U M  C A C H E  E X P L I O T A T I O N
     i::ProgramState* progState = i::GetState();
@@ -42,10 +42,10 @@ void f::Initialise(const f::FrameworkInitData& initialisationData)
 
     // Create thread as early as possible. Since the execution does not start immediately this function will wait for it
     // to do so. In the meantime, it can perform work.
-    progState->pWindowThread = new std::thread(i::WindowProcedureThread);
+    progState->pWindowThread = new std::jthread(i::WindowProcedureThread);
 
     // Get hInstance since the program does not use the winMain entry point
-    progState->win32.instance = GetModuleHandle(nullptr);
+    progState->win32->instance = GetModuleHandle(nullptr);
 
     WNDCLASSEXW wndC = {};
 
@@ -53,24 +53,24 @@ void f::Initialise(const f::FrameworkInitData& initialisationData)
     wndC.cbSize           = sizeof(WNDCLASSEXW);
     wndC.cbWndExtra       = 0;
     wndC.hbrBackground    = nullptr;
-    wndC.hCursor          = progState->win32.cursor;
-    wndC.hIcon            = progState->win32.icon;
-    wndC.hIconSm          = progState->win32.icon;
-    wndC.hInstance        = progState->win32.instance;
+    wndC.hCursor          = progState->win32->cursor;
+    wndC.hIcon            = progState->win32->icon;
+    wndC.hIconSm          = progState->win32->icon;
+    wndC.hInstance        = progState->win32->instance;
     wndC.lpfnWndProc      = i::WindowProc;
-    wndC.lpszClassName    = progState->win32.pClassName;
+    wndC.lpszClassName    = progState->win32->pClassName;
     wndC.lpszMenuName     = nullptr;
     wndC.style            = 0;
 
     WIN32_EC(RegisterClassExW(&wndC), 1, ATOM)
 
     // Wait for the window thread to start its execution if it has not already
-    std::unique_lock<std::mutex> lock(progState->windowThreadMutex);
-    progState->windowThreadConditionVar.wait(lock, [progState]() -> bool { return progState->windowThreadIsRunning; });
+    std::unique_lock lock(progState->windowThreadMutex);
+    progState->windowThreadConditionVar.wait(lock, [progState]() { return progState->windowThreadIsRunning; });
 
     progState->initialisationState |= i::IfFramework;
 
-    if (!(initialisationData.appStyle & f::AsNoIntegratedRenderer))
+    if (!(kInitialisationData.appStyle & f::AsNoIntegratedRenderer))
         v::InitialiseVulkan();
 
     i::Log(L"Framework was successfully initialised", i::LlInfo);
@@ -84,25 +84,27 @@ void f::Initialise(const f::FrameworkInitData& initialisationData)
 
 void f::UnInitialise()
 {
-    f::CloseAllWindowsForce();
-
     i::ProgramState* progState = i::GetState();
 
-    // As soon as all windows are closed (aka the manager thread is not running anymore), execution will continue
-    std::unique_lock<std::mutex> lock(progState->windowThreadMutex);
-    progState->windowThreadConditionVar.wait(lock, [progState]() -> bool { return !progState->windowThreadIsRunning; });
+    if (f::IsAnyWindowOpen())
+    {
+        i::Log("All windows must be closed before stopping the framework", i::LlError);
+        return;
+    }
 
-    WIN32_EC(UnregisterClassW(progState->win32.pClassName, progState->win32.instance), 1, WINBOOL)
+    // As soon as all windows are closed (aka the manager thread is not running anymore), execution will continue
+    std::unique_lock lock(progState->windowThreadMutex);
+    progState->windowThreadConditionVar.wait(lock, [progState]() { return !progState->windowThreadIsRunning; });
 
     if (progState->initialisationState & i::IfRenderer)
         v::UnInitializeVulkan();
 
-    i::Log(L"Framework was successfully uninitialised", i::LlInfo);
+    WIN32_EC(UnregisterClassW(progState->win32->pClassName, progState->win32->instance), 1, WINBOOL)
 
-    delete progState;
+    i::Log(L"Framework was successfully uninitialised", i::LlInfo);
 }
 
-f::WndH f::CreateWindowAsync(const f::WindowCreateData& wndCrtData)
+f::WndH f::CreateWindowAsync(const f::WindowCreateData& kWindowCreateData)
 {
     // M A X I M U M  C A C H E  E X P L I O T A T I O N
     i::ProgramState* progState = i::GetState();
@@ -112,44 +114,45 @@ f::WndH f::CreateWindowAsync(const f::WindowCreateData& wndCrtData)
         i::Log(L"CreateWindowAsync() was called before initialisation", i::LlError);
         return 0;
     }
-    if (!wndCrtData.pName) // name is nullptr
+    if (!kWindowCreateData.pName) // name is nullptr
     {
         i::Log(L"Nullptr was passed to a required parameter at CreateWindowAsync()", i::LlError);
         return 0;
     }
-    if ((wndCrtData.height <= 0) || (wndCrtData.width <= 0))
+    if ((kWindowCreateData.height <= 0) || (kWindowCreateData.width <= 0))
     {
         i::Log(L"Invalid height or width amount for window creation", i::LlError);
         return 0;
     }
 
-    i::WindowData* wndData = new i::WindowData;
+    auto* wndData = new i::WindowData;
 
     progState->windowCount += 1;
     progState->windowsOpened += 1;
 
-    wndData->name       = const_cast<wchar_t*>(wndCrtData.pName);
-    wndData->width      = wndCrtData.width;
-    wndData->height     = wndCrtData.height;
-    wndData->xPos       = wndCrtData.xPos;
-    wndData->yPos       = wndCrtData.yPos;
+    wndData->name       = const_cast<wchar_t*>(kWindowCreateData.pName);
+    wndData->width      = kWindowCreateData.width;
+    wndData->height     = kWindowCreateData.height;
+    wndData->xPos       = kWindowCreateData.xPos;
+    wndData->yPos       = kWindowCreateData.yPos;
     wndData->isValid    = true;
     wndData->hasFocus   = true;
     wndData->hasMouseInClientArea = false;
     wndData->id         = progState->windowsOpened;
     wndData->pfOnClose  = i::DoNothingVv;
     wndData->pfOnCloseAttempt = i::DoNothingBv;
-    
-    if (!wndCrtData.dependants.empty())
+
+    if (!kWindowCreateData.dependants.empty())
     {
-        for (WndH dep : wndCrtData.dependants)
+        // TODO: make this better
+        for (WndH dep : kWindowCreateData.dependants)
         {
             wndData->dependants.push_back(i::GetWindowData(dep)->window);
         }
     }
 
     WIN32_EC(PostThreadMessageW(
-            progState->win32.nativeThreadId,
+            progState->win32->nativeThreadId,
             CWM_CREATE_WINDOW_REQ,
             reinterpret_cast<WPARAM>(nullptr),
             reinterpret_cast<LPARAM>(wndData)
@@ -159,9 +162,9 @@ f::WndH f::CreateWindowAsync(const f::WindowCreateData& wndCrtData)
     return wndData->id;
 }
 
-void f::CloseWindow(const WndH handle)
+void f::CloseWindow(const WndH kHandle)
 {
-    i::WindowData* windowData = i::GetWindowData(handle);
+    i::WindowData* windowData = i::GetWindowData(kHandle);
     
     if (!windowData) // window does not exist
         return;
@@ -174,15 +177,15 @@ void f::CloseWindow(const WndH handle)
     ), 1, WINBOOL)
 }
 
-void f::CloseWindowForce(const WndH handle)
+void f::CloseWindowForce(const WndH kHandle)
 {
-    i::WindowData* windowData = i::GetWindowData(handle);
+    i::WindowData* windowData = i::GetWindowData(kHandle);
 
     if (!windowData) // window does not exist
         return;
 
     WIN32_EC(PostThreadMessageW(
-        i::GetState()->win32.nativeThreadId,
+            i::GetState()->win32->nativeThreadId,
         CWM_DESTROY_WINDOW,
         reinterpret_cast<WPARAM>(windowData->window),
         reinterpret_cast<LPARAM>(nullptr)
@@ -191,10 +194,10 @@ void f::CloseWindowForce(const WndH handle)
 
 void f::CloseAllWindows()
 {
-    for (std::pair<f::WndH, i::WindowData*>&& dataPair : i::GetState()->win32.handleMap)
+    for (const auto& [key, data] : i::GetState()->win32->handleMap)
     {
         WIN32_EC(PostMessageA(
-            dataPair.second->window,
+            data->window,
             WM_CLOSE,
             reinterpret_cast<WPARAM>(nullptr),
             reinterpret_cast<LPARAM>(nullptr)
@@ -204,10 +207,10 @@ void f::CloseAllWindows()
 
 void f::CloseAllWindowsForce()
 {
-    i::ProgramState* progState = i::GetState();
+    const i::ProgramState* progState = i::GetState();
 
     WIN32_EC(PostThreadMessageW(
-            progState->win32.nativeThreadId,
+            progState->win32->nativeThreadId,
             CWM_DESTROY_ALL_WINDOWS,
             reinterpret_cast<WPARAM>(nullptr),
             reinterpret_cast<LPARAM>(nullptr)
@@ -255,7 +258,6 @@ int f::MessageBox(WndH owner, const wchar_t* title, const wchar_t* msg, uint16_t
     int result = MessageBoxW(ownerData ? ownerData->window : nullptr, msg, title, rawFlags);
     if (result == 0)
         i::Log(L"Invalid set of flags where passed to MessageBox()", i::LlError);
-#undef MB_OK
     switch (result)
     {
         case IDABORT:       return MrAbort;
@@ -278,13 +280,13 @@ void f::OnWindowCloseAttempt(WndH handle, bool(*func)())
 
 void f::OnWindowClose(WndH handle, void(*func)())
 {
-    std::unique_lock<std::mutex> lock(i::GetState()->windowDataMutex);
+    std::unique_lock lock(i::GetState()->windowDataMutex);
     i::GetWindowData(handle)->pfOnClose = func;
 }
 
 wchar_t* f::GetWindowName(WndH handle)
 {
-    std::unique_lock<std::mutex> lock(i::GetState()->windowDataMutex);
+    std::unique_lock lock(i::GetState()->windowDataMutex);
     i::WindowData* wndData = i::GetWindowData(handle);
     if (!wndData) [[unlikely]] { return nullptr; }
     return wndData->name;
@@ -292,31 +294,31 @@ wchar_t* f::GetWindowName(WndH handle)
 
 bool f::GetWindowVisibility(WndH handle)
 {
-    std::unique_lock<std::mutex> lock(i::GetState()->windowDataMutex);
-    i::WindowData* wndData = i::GetWindowData(handle);
+    std::unique_lock lock(i::GetState()->windowDataMutex);
+    const i::WindowData* wndData = i::GetWindowData(handle);
     if (!wndData) [[unlikely]] { return false; }
     return wndData->isVisible;
 }
 
 uint16_t f::GetWindowWidth(WndH handle)
 {
-    std::unique_lock<std::mutex> lock(i::GetState()->windowDataMutex);
-    i::WindowData* wndData = i::GetWindowData(handle);
+    std::unique_lock lock(i::GetState()->windowDataMutex);
+    const i::WindowData* wndData = i::GetWindowData(handle);
     if (!wndData) [[unlikely]] { return false; }
     return wndData->width;
 }
 
 uint16_t f::GetWindowHeight(WndH handle)
 {
-    std::unique_lock<std::mutex> lock(i::GetState()->windowDataMutex);
-    i::WindowData* wndData = i::GetWindowData(handle);
+    std::unique_lock lock(i::GetState()->windowDataMutex);
+    const i::WindowData* wndData = i::GetWindowData(handle);
     if (!wndData) [[unlikely]] { return false; }
     return wndData->height;
 }
 
 std::pair<uint16_t, uint16_t> f::GetWindowDimensions(WndH handle)
 {
-    std::unique_lock<std::mutex> lock(i::GetState()->windowDataMutex);
+    std::unique_lock lock(i::GetState()->windowDataMutex);
     i::WindowData* wndData = i::GetWindowData(handle);
     if (!wndData) [[unlikely]] { return {0, 0}; }
     return {wndData->width, wndData->height};
@@ -329,7 +331,7 @@ int f::GetWindowCount()
 
 void f::ChangeWindowName(WndH handle, const wchar_t* name)
 {
-    std::unique_lock<std::mutex> lock(i::GetState()->windowDataMutex);
+    std::unique_lock lock(i::GetState()->windowDataMutex);
 
     i::WindowData* wndData = i::GetWindowData(handle);
     if (!wndData) { return; }
@@ -342,8 +344,8 @@ void f::ChangeWindowName(WndH handle, const wchar_t* name)
 
 bool f::WindowHasFocus(WndH handle)
 {
-    std::unique_lock<std::mutex> lock(i::GetState()->windowDataMutex);
-    i::WindowData* wndData = i::GetWindowData(handle);
+    std::unique_lock lock(i::GetState()->windowDataMutex);
+    const i::WindowData* wndData = i::GetWindowData(handle);
     if (!wndData) [[unlikely]] { return false; }
     lock.unlock();
     return wndData->hasFocus;
@@ -354,9 +356,10 @@ bool f::IsValidHandle(WndH handle)
     return i::GetWindowData(handle) != nullptr;
 }
 
-bool f::Running()
+bool f::IsAnyWindowOpen()
 {
-    return i::GetState()->isRunning;
+    // implicit boolean conversion my beloved
+    return i::GetState()->windowCount;
 }
 
 void f::Halt(int milliseconds)
@@ -400,7 +403,7 @@ void f::SetTextInputState(bool state, bool clear)
     i::GetState()->textInputEnabled = state;
     if (clear) // true by default
     {
-        memset(i::GetState()->textInput, 0, 200000);
+        memset(i::GetState()->textInput, 0, i::kTextInputSize * sizeof(wchar_t));
     }
 }
 
@@ -411,7 +414,7 @@ const wchar_t* f::GetTextInput()
 
 void f::ClearTextInput()
 {
-    memset(i::GetState()->textInput, 0, 200000);
+    memset(i::GetState()->textInput, 0, i::kTextInputSize * sizeof(wchar_t));
 }
 
 bool f::GetTextInputState()
@@ -422,7 +425,7 @@ bool f::GetTextInputState()
 f::MouseInfo f::GetMouseInfo()
 {
     MouseInfo msInfo = {};
-    i::ProgramState* progState = i::GetState();
+    const i::ProgramState* progState = i::GetState();
 
     msInfo.left     = progState->mouse.leftButton;
     msInfo.right    = progState->mouse.rightButton;
@@ -533,9 +536,8 @@ int f::GetMouseWheelDelta()
 
 bool f::WindowContainsMouse(WndH handle)
 {
-    std::unique_lock<std::mutex> lock(i::GetState()->windowDataMutex);
-    i::WindowData* wndData = i::GetWindowData(handle);
-    if (wndData)
+    std::unique_lock lock(i::GetState()->windowDataMutex);
+    if (const i::WindowData* wndData = i::GetWindowData(handle))
     {
         lock.unlock();
         return wndData->hasMouseInClientArea;
@@ -546,13 +548,13 @@ bool f::WindowContainsMouse(WndH handle)
 
 f::WndH f::GetMouseContainerWindow()
 {
-    std::unique_lock<std::mutex> lock(i::GetState()->windowDataMutex);
-    for (std::pair<WndH, i::WindowData*> pair : i::GetState()->win32.handleMap)
+    std::unique_lock lock(i::GetState()->windowDataMutex);
+    for (const auto& [key, data] : i::GetState()->win32->handleMap)
     {
-        if (pair.second->hasMouseInClientArea)
+        if (data->hasMouseInClientArea)
         {
             lock.unlock();
-            return pair.second->id;
+            return data->id;
         }
     }
     lock.unlock();
@@ -566,7 +568,7 @@ void f::SetWindowVisibility(f::WndH handle, f::WindowVisibility visibility)
 
 bool f::GetWindowRectangle(WndH handle, Rectangle& wpr)
 {
-    i::WindowData* wndData = i::GetWindowData(handle);
+    const i::WindowData* wndData = i::GetWindowData(handle);
     if (!wndData) [[unlikely]]
         return false;
 
@@ -578,20 +580,18 @@ bool f::GetWindowRectangle(WndH handle, Rectangle& wpr)
     return true;
 }
 
-void* f::LoadFile[[nodiscard("memory leak if not freed")]](const char* file, size_t& bytes)
+std::unique_ptr<char> f::LoadFile[[nodiscard("Memory leak if not freed")]](const char* file, size_t& bytes)
 {
-    std::ifstream infile(file, std::ios_base::binary | std::ios_base::in);
-
-    if (!infile.fail())
+    if (std::ifstream infile(file, std::ios_base::binary | std::ios_base::in); !infile.fail())
     {
         // determine size of file
         infile.seekg(0, std::ios::end);
         bytes = infile.tellg();
         infile.seekg(0, std::ios::beg);
 
-        char* buffer = new char[bytes];
+        auto buffer = std::make_unique<char>(bytes);
 
-        infile.read(buffer, static_cast<int64_t>(bytes));
+        infile.read(buffer.get(), static_cast<int64_t>(bytes));
 
         infile.close();
         return buffer;
@@ -608,9 +608,8 @@ void* f::LoadFile[[nodiscard("memory leak if not freed")]](const char* file, siz
 bool f::InitialiseNetworking()
 {
     WSADATA winSockData{};
-    int err = WSAStartup(MAKEWORD(2, 2), &winSockData);
 
-    switch (err)
+    switch (int err = WSAStartup(MAKEWORD(2, 2), &winSockData))
     {
         case 0: [[likely]] // no error
             break;
@@ -658,7 +657,7 @@ void f::UnInitialiseNetworking()
     }
 }
 
-f::SockH f::CreateSocket(const SocketCreateInfo& socketCreateInfo)
+f::SockH f::CreateSocket(const SocketCreateInfo& kSocketCreateInfo)
 {
     if (!(i::GetState()->initialisationState & i::IfNetwork)) [[unlikely]]
     {
@@ -667,10 +666,11 @@ f::SockH f::CreateSocket(const SocketCreateInfo& socketCreateInfo)
     }
 
     // addressInfo is not a pointer
-    addrinfoexW* pResult{}, connectionHints{};
+    addrinfoexW* pResult{};
+    addrinfoexW connectionHints{}; // description of the requested connection
     unsigned int ipNameSpace = 0;
 
-    switch (socketCreateInfo.ipFamily)
+    switch (kSocketCreateInfo.ipFamily)
     {
         case f::IaIPv4:
         {
@@ -692,7 +692,7 @@ f::SockH f::CreateSocket(const SocketCreateInfo& socketCreateInfo)
         }
     }
 
-    switch (socketCreateInfo.internetProtocol)
+    switch (kSocketCreateInfo.internetProtocol)
     {
         case f::IpTransmissionControlProtocol:
         {
@@ -710,8 +710,8 @@ f::SockH f::CreateSocket(const SocketCreateInfo& socketCreateInfo)
 
     // resolves domain name to ip
     int res = GetAddrInfoExW(
-            socketCreateInfo.hostName,
-            socketCreateInfo.port,
+            kSocketCreateInfo.hostName,
+            kSocketCreateInfo.port,
             ipNameSpace,
             nullptr,
             &connectionHints,
@@ -731,7 +731,7 @@ f::SockH f::CreateSocket(const SocketCreateInfo& socketCreateInfo)
         case WSAHOST_NOT_FOUND:
         {
             std::wostringstream msg;
-            msg << L"Host " << socketCreateInfo.hostName << " at port " << socketCreateInfo.port;
+            msg << L"Host " << kSocketCreateInfo.hostName << " at port " << kSocketCreateInfo.port;
             msg << L" could not be resolved, is the address valid?";
             i::Log(msg.str().c_str(), i::LlError);
             return 0;
@@ -749,7 +749,6 @@ f::SockH f::CreateSocket(const SocketCreateInfo& socketCreateInfo)
         default:
         {
             i::CreateWinsockError(__LINE__, WSAGetLastError(), __func__);
-            break;
         }
     }
 
@@ -762,12 +761,12 @@ f::SockH f::CreateSocket(const SocketCreateInfo& socketCreateInfo)
     }
 
     i::NetworkState* netState = i::GetNetworkState();
-    i::Socket* intSocket = new i::Socket;
-    intSocket->socketCreateInfo         = socketCreateInfo;
+    auto intSocket = std::make_unique<i::Socket>();
+    intSocket->socketCreateInfo         = kSocketCreateInfo;
     intSocket->nativeAddressInformation = pResult;
     intSocket->nativeSocket             = socketObj;
     intSocket->status                   = f::SsDisconnected;
-    netState->socketMap.insert({++netState->socketsCreated, intSocket});
+    netState->socketMap.insert({++netState->socketsCreated, std::move(intSocket)});
 
     std::ostringstream msg;
     msg << "Socket " << netState->socketsCreated << " was created";
@@ -778,7 +777,7 @@ f::SockH f::CreateSocket(const SocketCreateInfo& socketCreateInfo)
 
 bool f::ConnectSocket(f::SockH socket)
 {
-    i::Socket* intSocket = i::GetNetworkState()->socketMap.at(socket);
+    i::Socket* intSocket = i::GetNetworkState()->socketMap.at(socket).get();
 
     addrinfoexW* curAddressInfo = intSocket->nativeAddressInformation;
     while (true)
@@ -789,6 +788,10 @@ bool f::ConnectSocket(f::SockH socket)
                         static_cast<int>(curAddressInfo->ai_addrlen)
         ))
         {
+            default:
+                break; // error handling is below
+            case 0: // no error
+                goto exitLoop; // Today on bad C++: How to break a loop from inside a switch case
             case WSAECONNREFUSED:
             {
                 std::wostringstream msg;
@@ -812,10 +815,6 @@ bool f::ConnectSocket(f::SockH socket)
                 i::Log(msg.str().c_str(), i::LlError);
                 break;
             }
-            default:
-                break; // error handling is below
-            case 0: // no error
-                goto exitLoop; // Today on bad C++: How to break a loop from inside a switch case
         }
 
         if (curAddressInfo->ai_next != nullptr)
@@ -843,9 +842,9 @@ exitLoop:
 
 bool f::Send(f::SockH socket, const char* data, uint32_t size)
 {
-    i::Socket* intSocket = i::GetNetworkState()->socketMap.at(socket);
 
-    if (send(intSocket->nativeSocket, data, static_cast<int>(size), 0) == SOCKET_ERROR) [[unlikely]]
+    if (i::Socket* intSocket = i::GetNetworkState()->socketMap.at(socket).get();
+        send(intSocket->nativeSocket, data, static_cast<int>(size), 0) == SOCKET_ERROR) [[unlikely]]
     {
         int error = WSAGetLastError();
         switch (error)
@@ -902,10 +901,10 @@ bool f::Send(f::SockH socket, const char* data, uint32_t size)
 
 bool f::Receive(f::SockH socket, char* buffer, uint32_t size)
 {
-    i::Socket* intSocket{};
+    const i::Socket* intSocket{};
     try
     {
-        intSocket = i::GetNetworkState()->socketMap.at(socket);
+        intSocket = i::GetNetworkState()->socketMap.at(socket).get();
     }
     catch (const std::out_of_range&) // element is not in map -> socket does not exist
     {
@@ -920,7 +919,6 @@ bool f::Receive(f::SockH socket, char* buffer, uint32_t size)
     if (received == SOCKET_ERROR) [[unlikely]]
     {
         i::CreateWinsockError(__LINE__, WSAGetLastError(), __func__);
-        return false;
     }
     else if (received == 0)
     {
@@ -939,10 +937,10 @@ bool f::Receive(f::SockH socket, char* buffer, uint32_t size)
 
 bool f::DestroySocket(f::SockH socket)
 {
-    i::Socket* intSock{};
+    const i::Socket* intSock{};
     try
     {
-        intSock = i::GetNetworkState()->socketMap.at(socket);
+        intSock = i::GetNetworkState()->socketMap.at(socket).get();
     }
     catch (const std::out_of_range&) // element is not in map -> socket does not exist
     {
@@ -964,7 +962,6 @@ bool f::DestroySocket(f::SockH socket)
         i::CreateWinsockError(__LINE__, error, __func__);
     }
 
-    delete intSock;
     i::GetNetworkState()->socketMap.erase(socket);
 
     std::ostringstream msg;

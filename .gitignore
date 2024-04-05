@@ -1,16 +1,16 @@
 ## Writen by Tonexum
 
+# SolarLind
+.idea/sonarlint
+
 # Uncommited changes
-.idea/shelf**
+.idea/shelf*
 
 # Output directory
-cmake-build-**
+cmake-build-*
 
 # What are you doing here?
 desktop.ini
-
-# third party static libraries
-.lib**
 
 # Binaries
 *.exe

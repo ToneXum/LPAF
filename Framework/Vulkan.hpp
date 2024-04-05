@@ -71,10 +71,10 @@ void InitialiseVulkan();
 
 void UnInitializeVulkan();
 
-VkPhysicalDevice ChooseBestPhysicalDevice(const std::vector<VkPhysicalDevice>& dev);
+VkPhysicalDevice ChooseBestPhysicalDevice(const std::vector<VkPhysicalDevice>& kDevice);
 
 // Vulkan error creation
-void CreateVulkanError(int line, int code, const char* func);
+__attribute__((noreturn)) void CreateVulkanError(int line, int code, const char* func);
 
 #ifdef _DEBUG
 // Called when a validation layer is invoked
