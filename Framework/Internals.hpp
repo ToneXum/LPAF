@@ -139,7 +139,6 @@ public:
     Win32State operator=(const Win32State&) = delete;
     Win32State operator=(const Win32State&&) = delete;
 
-    std::map<f::WndH, std::shared_ptr<WindowData>> handleMap;
     std::map<HWND, std::shared_ptr<WindowData>> nativeHandleMap;
 
     const wchar_t* pClassName = L"LPAF Window Manager Class";
@@ -159,6 +158,9 @@ public:
     ProgramState(const ProgramState&&) = delete;
     ProgramState operator=(const ProgramState&) = delete;
     ProgramState operator=(const ProgramState&&) = delete;
+
+    // Framework to data hashmap
+    std::map<f::WndH, std::shared_ptr<WindowData>> handleMap;
 
     // Bitset for keyboard key states
     std::bitset<256> keyStates = 0;

@@ -176,7 +176,7 @@ void i::CreateWin32Window(i::WindowData* wndDt)
     oss << L"Window " << wndDt->id << " was created with native handle " << wndDt->window;
     i::Log(oss.str().c_str(), i::LlInfo);
 
-    progState->win32->handleMap.try_emplace(wndDt->id, sharedPtr);
+    progState->handleMap.try_emplace(wndDt->id, sharedPtr);
     progState->win32->nativeHandleMap.try_emplace(wndDt->window, sharedPtr);
 
     std::unique_lock lock(progState->windowCreationMutex);
@@ -221,19 +221,35 @@ LRESULT i::WindowProc(HWND window, UINT message, WPARAM wParam, LPARAM lParam) /
         case WM_DESTROY: // closing a window was ordered and confirmed
         {
             WindowData* wnd = GetWindowData(window);
+            ProgramState* progState = i::GetState();
             wnd->pfOnClose();
             wnd->isValid = false;
-            i::GetState()->windowCount -= 1;
+            progState->windowCount -= 1;
 
-            std::ostringstream msg;
-            msg << "Window " << wnd->id << " was closed";
-            i::Log(msg.str().c_str(), i::LlInfo);
+            {
+                std::ostringstream msg;
+                msg << "Window " << wnd->id << " was destroyed";
+                i::Log(msg.str().c_str(), i::LlInfo);
+            }
+            {
+                std::ostringstream msg;
+                msg << "Also destroying associated dependants of window " << wnd->id;
+                i::Log(msg.str().c_str(), i::LlInfo);
+            }
+
+            if (!wnd->dependants.empty()) [[unlikely]]
+            {
+                for (const HWND& handle : wnd->dependants)
+                {
+                    WIN32_EC(DestroyWindow(handle), 1, WINBOOL)
+                }
+            }
 
             i::EraseWindowData(window);
 
-            if (i::GetState()->windowCount == 0) // quit program if last window remaining is closed
+            if (progState->windowCount == 0) // quit program if last window remaining is closed
             {
-                i::GetState()->isRunning = false;
+                progState->isRunning = false;
                 PostQuitMessage(0);
             }
 

@@ -32,48 +32,7 @@ int main()
 
     f::DestroySocket(socket);
 
-    uint8_t counter = 0;
-    f::SetTextInputState(true);
-
-    while (true)
-    {
-        f::ChangeWindowName(dependant, f::GetTextInput());
-
-        if (f::IsKeyPressedOnce(f::KeyEnter))
-        {
-            if (f::GetTextInputState())
-            {
-                f::SetTextInputState(false);
-            }
-            else
-            {
-                f::SetTextInputState(true);
-            }
-        }
-
-        if (f::IsKeyPressedOnce(f::KeyEscape))
-            f::CloseWindow(whoInvitedThisGuy);
-
-        if (f::IsKeyPressedOnce(f::KeyH))
-        {
-            f::SetWindowVisibility(whoInvitedThisGuy, f::WvHide);
-            counter++;
-        }
-
-        if (counter == 128)
-        {
-            f::SetWindowVisibility(whoInvitedThisGuy, f::WvNormalNoActivate);
-            counter = 0;
-        }
-        if (counter > 0)
-            counter++;
-
-        if (!f::IsAnyWindowOpen())
-            break;
-
-        // simulate computation
-        f::Halt(16);
-    }
+    // TODO: make this a full unit-test system
 
     f::CloseAllWindowsForce();
 

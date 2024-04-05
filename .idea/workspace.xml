@@ -27,11 +27,8 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="b43a079c-b7ae-41fc-bc1a-f78f46edc6d3" name="Changes" comment="restartable window manager thread">
-      <change beforePath="$PROJECT_DIR$/Framework/Framework.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Framework/Framework.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Framework/Framework.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/Framework/Framework.hpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Framework/Internals.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/Framework/Internals.hpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Framework/Win32.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Framework/Win32.cpp" afterDir="false" />
+    <list default="true" id="b43a079c-b7ae-41fc-bc1a-f78f46edc6d3" name="Changes" comment="implement synchronous window creation">
+      <change beforePath="$PROJECT_DIR$/Tests/Main.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Tests/Main.cpp" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -110,6 +107,7 @@
 }</component>
   <component name="ProjectId" id="2cpKJZHdXdQaCuFCyzCqYz8oIfk" />
   <component name="ProjectLevelVcsManager" settingsEditedManually="true">
+    <OptionsSetting value="false" id="Update" />
     <ConfirmationsSetting value="2" id="Add" />
   </component>
   <component name="ProjectViewState">
@@ -217,7 +215,7 @@
       <workItem from="1711714363024" duration="6419000" />
       <workItem from="1711969595182" duration="22333000" />
       <workItem from="1712069267323" duration="11260000" />
-      <workItem from="1712330720566" duration="14017000" />
+      <workItem from="1712330720566" duration="16688000" />
     </task>
     <task id="LOCAL-00001" summary="initial rework">
       <option name="closed" value="true" />
@@ -507,7 +505,15 @@
       <option name="project" value="LOCAL" />
       <updated>1712345742527</updated>
     </task>
-    <option name="localTasksCounter" value="37" />
+    <task id="LOCAL-00037" summary="implement synchronous window creation">
+      <option name="closed" value="true" />
+      <created>1712348204236</created>
+      <option name="number" value="00037" />
+      <option name="presentableId" value="LOCAL-00037" />
+      <option name="project" value="LOCAL" />
+      <updated>1712348204236</updated>
+    </task>
+    <option name="localTasksCounter" value="38" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -554,7 +560,6 @@
     <ignored-roots>
       <path value="$PROJECT_DIR$/Framework" />
     </ignored-roots>
-    <MESSAGE value="reformat readme.md" />
     <MESSAGE value="reformat readme.md (again)" />
     <MESSAGE value="more documentation" />
     <MESSAGE value="os specific implementations" />
@@ -579,7 +584,8 @@
     <MESSAGE value="implement socket status" />
     <MESSAGE value="modernize memory management" />
     <MESSAGE value="restartable window manager thread" />
-    <option name="LAST_COMMIT_MESSAGE" value="restartable window manager thread" />
+    <MESSAGE value="implement synchronous window creation" />
+    <option name="LAST_COMMIT_MESSAGE" value="implement synchronous window creation" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

@@ -53,7 +53,7 @@ void i::DeAlloc()
     i::ProgramState* progState = i::GetState();
 
     progState->win32->nativeHandleMap.clear();
-    progState->win32->handleMap.clear();
+    progState->handleMap.clear();
 
     f::UnInitialise();
 
@@ -80,8 +80,8 @@ i::WindowData* i::GetWindowData(HWND handle)
 
 i::WindowData* i::GetWindowData(f::WndH handle)
 {
-    if (const auto found = i::GetState()->win32->handleMap.find(handle);
-        found != i::GetState()->win32->handleMap.end())
+    if (const auto found = i::GetState()->handleMap.find(handle);
+        found != i::GetState()->handleMap.end())
     {
         return found->second.get();
     }
@@ -99,7 +99,7 @@ void i::EraseWindowData(HWND hWnd)
     msg << "Data for Window " << res->second->id << " was deleted";
     i::Log(msg.str().c_str(), i::LlDebug);
 
-    i::GetState()->win32->handleMap.erase(res->second->id); // erase data from the id map using the id
+    i::GetState()->handleMap.erase(res->second->id); // erase data from the id map using the id
     i::GetState()->win32->nativeHandleMap.erase(res); // erase data from handle map using the iterator
 }
 

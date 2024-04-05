@@ -153,10 +153,16 @@ f::WndH f::CreateWindowAsync(const f::WindowCreateData& kWindowCreateData)
 
     if (!kWindowCreateData.dependants.empty())
     {
-        // TODO: make this better
-        for (WndH dep : kWindowCreateData.dependants)
+        // Container won't have to be resized every time
+        wndData->dependants.reserve(kWindowCreateData.dependants.size());
+        for (const f::WndH& handle : kWindowCreateData.dependants)
         {
-            wndData->dependants.push_back(i::GetWindowData(dep)->window);
+            try
+            {
+                wndData->dependants.push_back(progState->handleMap.at(handle)->window);
+            }
+            catch (const std::out_of_range&)
+            { continue; } // filters invalid handles
         }
     }
 
@@ -204,7 +210,7 @@ void f::CloseWindowForce(const WndH kHandle)
 
 void f::CloseAllWindows()
 {
-    for (const auto& [key, data] : i::GetState()->win32->handleMap)
+    for (const auto& [key, data] : i::GetState()->handleMap)
     {
         WIN32_EC(PostMessageA(
             data->window,
@@ -559,7 +565,7 @@ bool f::WindowContainsMouse(WndH handle)
 f::WndH f::GetMouseContainerWindow()
 {
     std::unique_lock lock(i::GetState()->windowDataMutex);
-    for (const auto& [key, data] : i::GetState()->win32->handleMap)
+    for (const auto& [key, data] : i::GetState()->handleMap)
     {
         if (data->hasMouseInClientArea)
         {
