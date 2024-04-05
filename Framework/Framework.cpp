@@ -40,9 +40,9 @@ void f::Initialise(const f::FrameworkInitData& kInitialisationData)
         return;
     }
 
-    // Create thread as early as possible. Since the execution does not start immediately this function will wait for it
-    // to do so. In the meantime, it can perform work.
-    progState->pWindowThread = new std::jthread(i::WindowProcedureThread);
+    // Create thread as early as possible. Since the execution does not start immediately this function will wait for
+    // it to do so. In the meantime, it can perform work.
+    progState->pWindowThread = std::make_unique<std::jthread>(i::WindowProcedureThread);
 
     // Get hInstance since the program does not use the winMain entry point
     progState->win32->instance = GetModuleHandle(nullptr);
@@ -101,6 +101,9 @@ void f::UnInitialise()
 
     WIN32_EC(UnregisterClassW(progState->win32->pClassName, progState->win32->instance), 1, WINBOOL)
 
+    progState->initialisationState &= !i::IfFramework;
+    if (!progState->initialisationState)
+        progState->isRunning = false;
     i::Log(L"Framework was successfully uninitialised", i::LlInfo);
 }
 
@@ -112,6 +115,11 @@ f::WndH f::CreateWindowAsync(const f::WindowCreateData& kWindowCreateData)
     if (!(progState->initialisationState & i::IfFramework)) // init was not called
     {
         i::Log(L"CreateWindowAsync() was called before initialisation", i::LlError);
+        return 0;
+    }
+    if (!progState->windowThreadIsRunning)
+    {
+        i::Log("The window manager thread is not running; You must restart it", i::LlError);
         return 0;
     }
     if (!kWindowCreateData.pName) // name is nullptr
@@ -159,6 +167,7 @@ f::WndH f::CreateWindowAsync(const f::WindowCreateData& kWindowCreateData)
             ), 1, WINBOOL
     )
 
+    // Potential leak is intentional, if the error handling above triggers we have much bigger problems...
     return wndData->id;
 }
 
@@ -647,8 +656,12 @@ bool f::InitialiseNetworking()
 
 void f::UnInitialiseNetworking()
 {
-    if (i::GetState()->initialisationState & i::IfNetwork)
+    if (i::ProgramState* progState = i::GetState(); progState->initialisationState & i::IfNetwork)
     {
+        progState->initialisationState &= !i::IfNetwork;
+        if (!progState->initialisationState)
+            progState->isRunning = false;
+
         WSA_EC(WSACleanup(), 0, int)
     }
     else
@@ -863,8 +876,8 @@ bool f::Send(f::SockH socket, const char* data, uint32_t size)
             {
                 std::ostringstream msg;
                 msg << "Tried sending data over socket " << socket << " but its connection was reset; If this is a "
-                                                                      "UDP connection then the last datagram could not "
-                                                                      "be received by this socket";
+                                                                      "UDP connection then the last datagram could "
+                                                                      "not be received by this socket";
                 i::Log(msg.str().c_str(), i::LlError);
                 intSocket->status = f::SsDisconnected;
                 return false;
@@ -982,4 +995,23 @@ f::SocketStatus f::GetSocketStatus(f::SockH socket)
         i::Log("Tried to retrieve status of a socket that does not exist", i::LlError);
         return f::SsUnusable;
     }
+}
+
+void f::RestartWindowManager()
+{
+    // JThread is join-able when the function returned but didn't join
+    if (i::ProgramState* progState = i::GetState(); !progState->windowThreadIsRunning)
+    {
+        progState->pWindowThread->join();
+
+        auto newThread = std::make_unique<std::jthread>(i::WindowProcedureThread);
+
+        progState->pWindowThread.swap(newThread);
+
+        // Wait for the window thread to start its execution if it has not already
+        std::unique_lock lock(progState->windowThreadMutex);
+        progState->windowThreadConditionVar.wait(lock,
+                                                 [progState]() { return progState->windowThreadIsRunning; });
+    }
+    i::Log("Tried to restart window manager which was running, restart was aborted", i::LlError);
 }

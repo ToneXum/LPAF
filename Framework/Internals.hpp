@@ -178,7 +178,7 @@ public:
 
     Mouse mouse;
 
-    std::jthread* pWindowThread{};
+    std::unique_ptr<std::jthread> pWindowThread;
 
     std::unique_ptr<Win32State> win32;
     std::unique_ptr<v::VulkanState> vulkan;

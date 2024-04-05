@@ -370,7 +370,6 @@ void UnInitialise();
 // Returns true as long as any window is open
 bool IsWindowManagerRunning();
 
-// TODO: restartable window manager
 void RestartWindowManager();
 
 // Create a new window

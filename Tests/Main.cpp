@@ -77,8 +77,6 @@ int main()
 
     f::CloseAllWindowsForce();
 
-    while (f::IsAnyWindowOpen());
-
     f::UnInitialiseNetworking();
     f::UnInitialise();
     return 0;
