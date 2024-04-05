@@ -3,9 +3,9 @@
 # LPAF
 
 <p align="center">
-  <img alt="Static Badge" src="https://img.shields.io/badge/Documentation-Almost%20none-orange">
-  <img alt="Static Badge" src="https://img.shields.io/badge/Code%20coverage-Horrible-crimson">
-  <img alt="Static Badge" src="https://img.shields.io/badge/Trust%20me-Im%20still%20working%20on%20it-white">
+  <img alt="Static Badge" src="https://img.shields.io/badge/documentation-almost%20none-orange">
+  <img alt="Static Badge" src="https://img.shields.io/badge/code%20coverage-horrible-crimson">
+  <img alt="Static Badge" src="https://img.shields.io/badge/trust%20me-im%20still%20working%20on%20it-white">
 </p>
 <p align="center">
   <img alt="GitHub Issues or Pull Requests" src="https://img.shields.io/github/issues/ToneXum/LPAF">
@@ -16,7 +16,7 @@
 </p>
 <p align="center">
   <img alt="GitHub repo size" src="https://img.shields.io/github/repo-size/ToneXum/LPAF">
-
+  <img alt="Lines of code" src="https://tokei.rs/b1/github/ToneXum/LPAF?category=code">
 </p>
 
 The **L**ightweigt and **P**erfomant **A**pplication **F**ramwork is really just what the name says, a framework for 
