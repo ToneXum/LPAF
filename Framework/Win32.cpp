@@ -144,9 +144,10 @@ void i::WindowProcedureThread()
 
 void i::CreateWin32Window(i::WindowData* wndDt)
 {
+    i::ProgramState* progState = i::GetState();
     WIN32_EC_RET(wndDt->window, CreateWindowExW(
             0,
-            i::GetState()->win32->pClassName,
+            progState->win32->pClassName,
             wndDt->name,
             WS_MINIMIZEBOX | WS_CAPTION | WS_SYSMENU,
             // man do I love ternary expressions :)
@@ -154,7 +155,7 @@ void i::CreateWin32Window(i::WindowData* wndDt)
             wndDt->width, wndDt->height,
             nullptr,
             nullptr,
-            i::GetState()->win32->instance,
+            progState->win32->instance,
             nullptr
     ), 1)
 
@@ -175,8 +176,13 @@ void i::CreateWin32Window(i::WindowData* wndDt)
     oss << L"Window " << wndDt->id << " was created with native handle " << wndDt->window;
     i::Log(oss.str().c_str(), i::LlInfo);
 
-    i::GetState()->win32->handleMap.try_emplace(wndDt->id, sharedPtr);
-    i::GetState()->win32->nativeHandleMap.try_emplace(wndDt->window, sharedPtr);
+    progState->win32->handleMap.try_emplace(wndDt->id, sharedPtr);
+    progState->win32->nativeHandleMap.try_emplace(wndDt->window, sharedPtr);
+
+    std::unique_lock lock(progState->windowCreationMutex);
+    progState->windowCreationDone = true;
+    lock.unlock();
+    progState->windowCreationConditionVar.notify_one();
 }
 
 LRESULT i::WindowProc(HWND window, UINT message, WPARAM wParam, LPARAM lParam) // NOLINT(*-function-cognitive-complexity)

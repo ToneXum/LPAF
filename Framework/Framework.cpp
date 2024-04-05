@@ -69,6 +69,7 @@ void f::Initialise(const f::FrameworkInitData& kInitialisationData)
     progState->windowThreadConditionVar.wait(lock, [progState]() { return progState->windowThreadIsRunning; });
 
     progState->initialisationState |= i::IfFramework;
+    progState->isRunning = true;
 
     if (!(kInitialisationData.appStyle & f::AsNoIntegratedRenderer))
         v::InitialiseVulkan();
@@ -1014,4 +1015,18 @@ void f::RestartWindowManager()
                                                  [progState]() { return progState->windowThreadIsRunning; });
     }
     i::Log("Tried to restart window manager which was running, restart was aborted", i::LlError);
+}
+
+f::WndH f::CreateWindowSync(const f::WindowCreateData& kWindowCreateData)
+{
+    f::WndH res = CreateWindowAsync(kWindowCreateData);
+
+    // Hold up, wait a minute
+    i::ProgramState* progState = i::GetState();
+    std::unique_lock lock(progState->windowCreationMutex);
+    progState->windowCreationConditionVar.wait(lock, [progState]() { return progState->windowCreationDone; });
+
+    progState->windowCreationDone = false;
+
+    return res;
 }

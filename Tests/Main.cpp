@@ -13,7 +13,7 @@ int main()
     f::WndH dependant = f::CreateWindowAsync(cdt);
 
     cdt.pName = L"Uninvited guest";
-    f::WndH whoInvitedThisGuy = f::CreateWindowAsync(cdt);
+    f::WndH whoInvitedThisGuy = f::CreateWindowSync(cdt);
 
     f::SocketCreateInfo socketCreateInfo{};
     socketCreateInfo.ipFamily       = f::IaIPv4;

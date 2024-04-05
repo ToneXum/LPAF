@@ -189,14 +189,18 @@ public:
     std::condition_variable windowThreadConditionVar;
     std::mutex windowThreadMutex;
 
+    std::condition_variable windowCreationConditionVar;
+    std::mutex windowCreationMutex;
+
     wchar_t* textInput = new wchar_t[kTextInputSize];
 
     int16_t windowCount = 0;
     int16_t windowsOpened = 0;
     uint8_t initialisationState = 0; // set of flags indicating what parts of LPAF are running
-    bool isRunning = true; // becomes false when no window is open anymore
+    bool isRunning = false; // gets true when any part of the framework is running; false otherwise
     bool textInputEnabled = false;
     bool windowThreadIsRunning = false;
+    bool windowCreationDone = false;
 };
 
 const inline std::unique_ptr<ProgramState> programState = std::make_unique<ProgramState>();

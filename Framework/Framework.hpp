@@ -372,10 +372,10 @@ bool IsWindowManagerRunning();
 
 void RestartWindowManager();
 
-// Create a new window
+// Request a window to be created and don't wait until it's done
 WndH CreateWindowAsync(const f::WindowCreateData& kWindowCreateData);
 
-// TODO: implement this
+// Request a window to be created and wait until it is done
 WndH CreateWindowSync(const f::WindowCreateData& kWindowCreateData);
 
 // Return true if any window is open
