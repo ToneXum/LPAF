@@ -4,6 +4,6 @@ Because things are still changing in a rapid manner, information may be outdated
 Here you can find all the documentation. It is actively worked on and being updated as changes are being made to LPAF.
 
 There are three directories here:
-- External (symbol reference for symbols that the user can use, normal usage)
-- Internal (symbol reference for symbols only used within the framework, advanced usage)
+- External (symbol reference, normal usage)
+- Internal (framework internal, if you know what you are doing)
 - Guides (tutorials and such)
