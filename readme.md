@@ -53,7 +53,7 @@ You can find documentation and guides in the `Documentation/` directory in this 
   - Windows ✔️ (done)
   - MacOS ❌ ($soon^{TM}$)
   - Linux / Unix ❌ ($soon^{TM}$)
-- Sound ❌
+- Various multimedia functionality ❌
   - Windows ❌ ($soon^{TM}$)
   - MacOS ❌ ($soon^{TM}$)
   - Linux / Unix ❌ ($soon^{TM}$)
