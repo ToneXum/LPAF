@@ -14,10 +14,10 @@
   </component>
   <component name="CMakeRunConfigurationManager">
     <generated>
-      <config projectName="LPAF" targetName="Framework_Lib" />
       <config projectName="LPAF" targetName="Test" />
       <config projectName="LPAF" targetName="LPAFStaticLib" />
-      <config projectName="LPAF" targetName="Test_Application" />
+      <config projectName="LPAF" targetName="lpaf" />
+      <config projectName="LPAF" targetName="lpafTest" />
     </generated>
   </component>
   <component name="CMakeSettings">
@@ -28,7 +28,57 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="b43a079c-b7ae-41fc-bc1a-f78f46edc6d3" name="Changes" comment="implement synchronous window creation">
-      <change beforePath="$PROJECT_DIR$/Tests/Main.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Tests/Main.cpp" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/framework/framework.c" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/framework/framework.h" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/framework/win32.c" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/framework/win32.h" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/tests/main.c" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/tests/tests.c" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/tests/tests.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.runtime/res/test.sjdfjsdfjskdsk" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.runtime/shader/basic.frag.spv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.runtime/shader/basic.vert.spv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/CMakeLists.txt" beforeDir="false" afterPath="$PROJECT_DIR$/CMakeLists.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Documentation/External/ApplicationStyle_enum.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Documentation/External/CreateWindowAsync_func.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Documentation/External/CreateWindowSync_func.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Documentation/External/FrameworkInitData_struct.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Documentation/External/Initialise_func.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Documentation/External/IsKeyPressedOnce_func.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Documentation/External/IsKeyPressed_func.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Documentation/External/IsKeyReleased_func.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Documentation/External/IsValidHandle_func.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Documentation/External/Key_enum.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Documentation/External/LoadFile_func.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Documentation/External/OnWindowCloseAttempt_func.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Documentation/External/OnWindowClose_func.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Documentation/External/UnInitialise_func.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Documentation/External/WindowCreateData_type.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Documentation/External/WndH_type.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Documentation/Guides/Class_Customization.md" beforeDir="false" afterPath="$PROJECT_DIR$/framework/CMakeLists.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Documentation/Guides/Getting_Started.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Documentation/Internal/FRAMEWORK_ERR_macro.md" beforeDir="false" afterPath="$PROJECT_DIR$/tests/CMakeLists.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Documentation/Internal/WIN32_EC_RET_macro.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Documentation/Internal/WIN32_EC_macro.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Documentation/Internal/WSA_EC_RET_macro.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Documentation/Internal/WSA_EC_macro.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Documentation/readme.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Framework/CMakeLists.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Framework/Cocoa.cpp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Framework/Framework.cpp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Framework/Framework.hpp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Framework/Internals.cpp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Framework/Internals.hpp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Framework/Vulkan.cpp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Framework/Vulkan.hpp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Framework/Wayland.cpp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Framework/Win32.cpp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Framework/X11.cpp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Tests/CMakeLists.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Tests/Main.cpp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Tests/res/app.ico" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Tests/res/res.rc" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -120,6 +170,7 @@
     "ASKED_MARK_IGNORED_FILES_AS_EXCLUDED": "true",
     "CMake Application.Framework_Lib.executor": "Run",
     "CMake Application.Test_Application.executor": "Run",
+    "CMake Application.lpafTest.executor": "Run",
     "RunOnceActivity.OpenProjectViewOnStart": "true",
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "RunOnceActivity.cidr.known.project.marker": "true",
@@ -127,7 +178,8 @@
     "SONARLINT_PRECOMMIT_ANALYSIS": "true",
     "cf.first.check.clang-format": "false",
     "cidr.known.project.marker": "true",
-    "git-widget-placeholder": "master",
+    "deletionFromPopupRequiresConfirmation": "false",
+    "git-widget-placeholder": "c-remake",
     "last_opened_file_path": "D:/File Dump/Programming Projects/Framework/CMakeLists.txt",
     "node.js.detected.package.eslint": "true",
     "node.js.detected.package.stylelint": "true",
@@ -137,32 +189,37 @@
     "node.js.selected.package.tslint": "(autodetect)",
     "nodejs_package_manager_path": "npm",
     "run.code.analysis.last.selected.profile": "pProject Default",
-    "settings.editor.selected.configurable": "preferences.pluginManager",
+    "settings.editor.selected.configurable": "CMakeSettings",
     "structure.view.defaults.are.configured": "true",
     "vue.rearranger.settings.migration": "true"
   }
 }]]></component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="D:\File Dump\Programming Projects\Framework" />
       <recent name="D:\File Dump\Programming Projects\Framework\Framework" />
       <recent name="D:\File Dump\Programming Projects\Framework\Documentation" />
-      <recent name="D:\File Dump\Programming Projects\Framework" />
     </key>
   </component>
-  <component name="RunManager" selected="CMake Application.Framework_Lib">
-    <configuration name="Framework_Lib" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="LPAF" TARGET_NAME="Framework_Lib" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="LPAF" RUN_TARGET_NAME="Test_Application">
+  <component name="RunManager" selected="CMake Application.lpaf">
+    <configuration default="true" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true">
       <method v="2">
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
       </method>
     </configuration>
-    <configuration name="Test_Application" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="true" EMULATE_TERMINAL="false" WORKING_DIR="file://$PROJECT_DIR$/.runtime" PASS_PARENT_ENVS_2="true" PROJECT_NAME="LPAF" TARGET_NAME="Test_Application" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="LPAF" RUN_TARGET_NAME="Test_Application">
+    <configuration name="lpaf" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" WORKING_DIR="file://$PROJECT_DIR$/lib" PASS_PARENT_ENVS_2="true" PROJECT_NAME="LPAF" TARGET_NAME="lpaf" CONFIG_NAME="Debug">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="lpafTest" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="LPAF" TARGET_NAME="lpafTest" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="LPAF" RUN_TARGET_NAME="lpafTest">
       <method v="2">
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
       </method>
     </configuration>
     <list>
-      <item itemvalue="CMake Application.Framework_Lib" />
-      <item itemvalue="CMake Application.Test_Application" />
+      <item itemvalue="CMake Application.lpaf" />
+      <item itemvalue="CMake Application.lpafTest" />
     </list>
   </component>
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
@@ -216,6 +273,7 @@
       <workItem from="1711969595182" duration="22333000" />
       <workItem from="1712069267323" duration="11260000" />
       <workItem from="1712330720566" duration="16688000" />
+      <workItem from="1714305969509" duration="6224000" />
     </task>
     <task id="LOCAL-00001" summary="initial rework">
       <option name="closed" value="true" />
