@@ -17,3 +17,6 @@ desktop.ini
 *.a
 *.so
 *.lib
+
+# Link to Vulkan SDK
+Vulkan.lnk
