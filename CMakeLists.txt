@@ -17,12 +17,13 @@ endif ()
 set(CMAKE_C_STANDARD 23) # only partial support but there is so much good stuff in that revision
 set(CMAKE_CXX_STANDARD 23)
 
+enable_language("RC")
+
 ### LIB BUILD SETTINGS
 if (WIN32)
     add_definitions(-D_WINDOWS)
     set(LIB_NAME "lpafWin")
     set(FILE_SUFFIX ".lib")
-    enable_language("RC")
 elseif (LINUX)
     add_definitions(-D_LINUX)
     set(LIB_NAME "lpafLin")
@@ -36,6 +37,8 @@ endif ()
 set(FRAMEWORK_SOURCE
         framework/framework.c
         framework/win32.c
+        framework/internal.c
+        framework/internal.h
 )
 add_library(lpafLib STATIC ${FRAMEWORK_SOURCE})
 set_target_properties(lpafLib PROPERTIES
