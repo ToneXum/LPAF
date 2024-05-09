@@ -13,7 +13,6 @@
   <img alt="GitHub Issues or Pull Requests" src="https://img.shields.io/github/issues-closed/ToneXum/LPAF">
   <img alt="GitHub Issues or Pull Requests" src="https://img.shields.io/github/issues-pr/ToneXum/LPAF">
   <img alt="GitHub Issues or Pull Requests" src="https://img.shields.io/github/issues-pr-closed/ToneXum/LPAF">
-  <img alt="GitHub Downloads (all assets, all releases)" src="https://img.shields.io/github/downloads/ToneXum/LPAF/total">
 </p>
 <p align="center">
   <img alt="GitHub repo size" src="https://img.shields.io/github/repo-size/ToneXum/LPAF">
@@ -36,27 +35,7 @@ touch. This creates a middle ground between these low-level APIs where you have 
 higher-level engines where **everything** is abstracted away.
 
 ## Documentation and Information
-You can find documentation and guides in the `Documentation/` directory in this repository (work in progress, be warned).
-
-### Milestones
-- Basic features ⭕
-  - Windows ✔️ (done)
-  - MacOS ❌ ($soon^{TM}$)
-  - Linux / Unix ❌ ($soon^{TM}$)
-- Somewhat stable release ❌
-  - Windows ⭕ (partially)
-  - MacOS ❌ ($soon^{TM}$)
-  - Linux / Unix ❌ ($soon^{TM}$)
-- Entrypoint for integrated renderer ✔️ (done)
-- Full rendering implementation ❌
-- Networking ⭕
-  - Windows ✔️ (done)
-  - MacOS ❌ ($soon^{TM}$)
-  - Linux / Unix ❌ ($soon^{TM}$)
-- Various multimedia functionality ❌
-  - Windows ❌ ($soon^{TM}$)
-  - MacOS ❌ ($soon^{TM}$)
-  - Linux / Unix ❌ ($soon^{TM}$)
+Documentation exists in the form of doxygen for all symbols. Guides and tutorials are provided in `doc/`.
 
 ## Contact
 For any inquiries you can send an E-Mail to tonexum@national.shitposting.agency (Yes, I'm not joking. Checked every few 
