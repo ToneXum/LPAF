@@ -101,7 +101,7 @@
     <option name="stateVersion" value="1" />
   </component>
   <component name="OCResolveContextSettings">
-    <option name="configuration" value="1-Release-lpafLib" />
+    <option name="configuration" value="0-Debug-lpafLib" />
   </component>
   <component name="ProblemsViewState">
     <option name="groupByToolId" value="true" />
@@ -612,6 +612,7 @@
     <ignored-roots>
       <path value="$PROJECT_DIR$/Framework" />
     </ignored-roots>
+    <MESSAGE value="os specific implementations" />
     <MESSAGE value="implement load file to memory" />
     <MESSAGE value="rename LoadFile, fix log level, update test" />
     <MESSAGE value="subtitles are now H2" />

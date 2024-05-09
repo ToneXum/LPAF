@@ -3,7 +3,7 @@
 int main()
 {
     struct fwStartModuleInfo startInfo = {};
-    startInfo.kModule = fwModuleWindow;
+    startInfo.module = fwModuleWindow;
     fwStartModule(&startInfo);
 
     return 0;
