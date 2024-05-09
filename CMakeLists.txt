@@ -17,8 +17,6 @@ endif ()
 set(CMAKE_C_STANDARD 23) # only partial support but there is so much good stuff in that revision
 set(CMAKE_CXX_STANDARD 23)
 
-enable_language("RC")
-
 ### LIB BUILD SETTINGS
 if (WIN32)
     add_definitions(-DPLATFORM_WINDOWS)
