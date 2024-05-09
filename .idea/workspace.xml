@@ -14,10 +14,10 @@
   </component>
   <component name="CMakeRunConfigurationManager">
     <generated>
-      <config projectName="LPAF" targetName="Framework_Lib" />
       <config projectName="LPAF" targetName="Test" />
       <config projectName="LPAF" targetName="LPAFStaticLib" />
-      <config projectName="LPAF" targetName="Test_Application" />
+      <config projectName="LPAF" targetName="lpafLib" />
+      <config projectName="LPAF" targetName="lpafTest" />
     </generated>
   </component>
   <component name="CMakeSettings">
@@ -27,8 +27,17 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="b43a079c-b7ae-41fc-bc1a-f78f46edc6d3" name="Changes" comment="implement synchronous window creation">
-      <change beforePath="$PROJECT_DIR$/Tests/Main.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Tests/Main.cpp" afterDir="false" />
+    <list default="true" id="b43a079c-b7ae-41fc-bc1a-f78f46edc6d3" name="Changes" comment="fix CMakeLists.txt">
+      <change afterPath="$PROJECT_DIR$/Vulkan.lnk" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/framework/internal.c" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/framework/internal.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/inspectionProfiles/Project_Default.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/inspectionProfiles/Project_Default.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/CMakeLists.txt" beforeDir="false" afterPath="$PROJECT_DIR$/CMakeLists.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/LICENSE" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/framework/framework.c" beforeDir="false" afterPath="$PROJECT_DIR$/framework/framework.c" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/framework/framework.h" beforeDir="false" afterPath="$PROJECT_DIR$/framework/framework.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/main.c" beforeDir="false" afterPath="$PROJECT_DIR$/tests/main.c" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -93,6 +102,9 @@
   <component name="MarkdownSettingsMigration">
     <option name="stateVersion" value="1" />
   </component>
+  <component name="OCResolveContextSettings">
+    <option name="configuration" value="0-Debug-lpafLib" />
+  </component>
   <component name="ProblemsViewState">
     <option name="groupByToolId" value="true" />
     <option name="selectedTabId" value="CurrentFile" />
@@ -120,14 +132,19 @@
     "ASKED_MARK_IGNORED_FILES_AS_EXCLUDED": "true",
     "CMake Application.Framework_Lib.executor": "Run",
     "CMake Application.Test_Application.executor": "Run",
+    "CMake Application.lpaf.executor": "Run",
+    "CMake Application.lpafLib.executor": "Run",
+    "CMake Application.lpafTest.executor": "Run",
     "RunOnceActivity.OpenProjectViewOnStart": "true",
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "RunOnceActivity.cidr.known.project.marker": "true",
     "RunOnceActivity.readMode.enableVisualFormatting": "true",
+    "SHARE_PROJECT_CONFIGURATION_FILES": "true",
     "SONARLINT_PRECOMMIT_ANALYSIS": "true",
     "cf.first.check.clang-format": "false",
     "cidr.known.project.marker": "true",
-    "git-widget-placeholder": "master",
+    "deletionFromPopupRequiresConfirmation": "false",
+    "git-widget-placeholder": "c-remake",
     "last_opened_file_path": "D:/File Dump/Programming Projects/Framework/CMakeLists.txt",
     "node.js.detected.package.eslint": "true",
     "node.js.detected.package.stylelint": "true",
@@ -137,32 +154,32 @@
     "node.js.selected.package.tslint": "(autodetect)",
     "nodejs_package_manager_path": "npm",
     "run.code.analysis.last.selected.profile": "pProject Default",
-    "settings.editor.selected.configurable": "preferences.pluginManager",
+    "settings.editor.selected.configurable": "preferences.editor.code.editing",
     "structure.view.defaults.are.configured": "true",
     "vue.rearranger.settings.migration": "true"
   }
 }]]></component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="D:\File Dump\Programming Projects\Framework" />
       <recent name="D:\File Dump\Programming Projects\Framework\Framework" />
       <recent name="D:\File Dump\Programming Projects\Framework\Documentation" />
-      <recent name="D:\File Dump\Programming Projects\Framework" />
     </key>
   </component>
-  <component name="RunManager" selected="CMake Application.Framework_Lib">
-    <configuration name="Framework_Lib" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="LPAF" TARGET_NAME="Framework_Lib" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="LPAF" RUN_TARGET_NAME="Test_Application">
+  <component name="RunManager" selected="CMake Application.lpafLib">
+    <configuration name="lpafLib" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="LPAF" TARGET_NAME="lpafLib" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="LPAF" RUN_TARGET_NAME="lpafTest">
       <method v="2">
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
       </method>
     </configuration>
-    <configuration name="Test_Application" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="true" EMULATE_TERMINAL="false" WORKING_DIR="file://$PROJECT_DIR$/.runtime" PASS_PARENT_ENVS_2="true" PROJECT_NAME="LPAF" TARGET_NAME="Test_Application" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="LPAF" RUN_TARGET_NAME="Test_Application">
+    <configuration name="lpafTest" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="LPAF" TARGET_NAME="lpafTest" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="LPAF" RUN_TARGET_NAME="lpafTest">
       <method v="2">
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
       </method>
     </configuration>
     <list>
-      <item itemvalue="CMake Application.Framework_Lib" />
-      <item itemvalue="CMake Application.Test_Application" />
+      <item itemvalue="CMake Application.lpafLib" />
+      <item itemvalue="CMake Application.lpafTest" />
     </list>
   </component>
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
@@ -216,6 +233,12 @@
       <workItem from="1711969595182" duration="22333000" />
       <workItem from="1712069267323" duration="11260000" />
       <workItem from="1712330720566" duration="16688000" />
+      <workItem from="1714305969509" duration="6224000" />
+      <workItem from="1714319884748" duration="7904000" />
+      <workItem from="1714839967116" duration="15036000" />
+      <workItem from="1714912223950" duration="7235000" />
+      <workItem from="1715022152456" duration="516000" />
+      <workItem from="1715105929356" duration="5777000" />
     </task>
     <task id="LOCAL-00001" summary="initial rework">
       <option name="closed" value="true" />
@@ -513,7 +536,23 @@
       <option name="project" value="LOCAL" />
       <updated>1712348204236</updated>
     </task>
-    <option name="localTasksCounter" value="38" />
+    <task id="LOCAL-00038" summary="delete everything and simplify the CMakeLists.txt">
+      <option name="closed" value="true" />
+      <created>1714323057317</created>
+      <option name="number" value="00038" />
+      <option name="presentableId" value="LOCAL-00038" />
+      <option name="project" value="LOCAL" />
+      <updated>1714323057318</updated>
+    </task>
+    <task id="LOCAL-00039" summary="fix CMakeLists.txt">
+      <option name="closed" value="true" />
+      <created>1714843751316</created>
+      <option name="number" value="00039" />
+      <option name="presentableId" value="LOCAL-00039" />
+      <option name="project" value="LOCAL" />
+      <updated>1714843751316</updated>
+    </task>
+    <option name="localTasksCounter" value="40" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -560,8 +599,6 @@
     <ignored-roots>
       <path value="$PROJECT_DIR$/Framework" />
     </ignored-roots>
-    <MESSAGE value="reformat readme.md (again)" />
-    <MESSAGE value="more documentation" />
     <MESSAGE value="os specific implementations" />
     <MESSAGE value="implement load file to memory" />
     <MESSAGE value="rename LoadFile, fix log level, update test" />
@@ -585,7 +622,9 @@
     <MESSAGE value="modernize memory management" />
     <MESSAGE value="restartable window manager thread" />
     <MESSAGE value="implement synchronous window creation" />
-    <option name="LAST_COMMIT_MESSAGE" value="implement synchronous window creation" />
+    <MESSAGE value="delete everything and simplify the CMakeLists.txt" />
+    <MESSAGE value="fix CMakeLists.txt" />
+    <option name="LAST_COMMIT_MESSAGE" value="fix CMakeLists.txt" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

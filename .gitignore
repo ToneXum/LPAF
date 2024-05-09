@@ -1,9 +1,9 @@
 ## Writen by Tonexum
 
-# SolarLind
+# SolarLint
 .idea/sonarlint
 
-# Uncommited changes
+# Stashed changes
 .idea/shelf*
 
 # Output directory
@@ -17,4 +17,6 @@ desktop.ini
 *.a
 *.so
 *.lib
-*.dll
+
+# Link to Vulkan SDK
+Vulkan.lnk
