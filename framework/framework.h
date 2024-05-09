@@ -5,7 +5,7 @@
 
 /**
  * @brief Specifies a module of LPAF. For example the renderer or the networking subsystem
- * @see Used as parameter for @c fwStartInfo
+ * @see Used as parameter for @c fwStartModuleInfo
  */
 typedef enum fwModule : uint8_t {
     fwModuleWindow      = 0b0001 /*! Module for windowed UI */,
@@ -19,7 +19,7 @@ typedef enum fwModule : uint8_t {
  * module
  */
 typedef enum fwModuleStartFlags : uint8_t {
-    fwModuleStartNoWindowClose          = 0b10 /*! Disables the close button on the windows's NCR */
+    fwWindowModuleStartNoWindowClose          = 0b10
 } lfModuleStartFlags;
 
 /**
@@ -38,8 +38,8 @@ typedef enum fwError : uint8_t {
  * @see Used as parameter for @c fwStartModule()
  */
 typedef struct fwStartModuleInfo {
-    const enum fwModule kModule;
-    const uint8_t kModuleStartFlags;
+    enum fwModule Module;
+    uint8_t ModuleStartFlags;
 } __attribute__((aligned(2))) lfStartInfo;
 
 /**
@@ -63,4 +63,13 @@ void fwStopModule(
         enum fwModule module
         );
 
+/**
+ * @brief "Advances" the execution of the framework, re-pulls input and corrects state
+ * @note Must be called at the end of the main application loop
+ */
+void fwAdvance(
+        void
+        );
+
+=======
 #endif //LPAF_FRAMEWORK_H
