@@ -1,4 +1,4 @@
-<!-- This repo was createn on 13th of November in 2023 at 18:50 UTC+1 Berlin / Middle-European time -->
+<!-- This repo was created on 13th of November in 2023 at 18:50 UTC+1 Berlin / Middle-European time -->
 **This project is still far, far from finished and cannot possibly be used for production.**
 
 # LPAF
@@ -19,7 +19,7 @@
   <img alt="Lines of code" src="https://tokei.rs/b1/github/ToneXum/LPAF?category=code&style=flat">
 </p>
 
-The **L**ightweigt and **P**erfomant **A**pplication **F**ramwork is really just what the name says, a framework for 
+The Lightweight and Performant Application Framework (LPAF) is really just what the name says, a framework for 
 development of performance-critical application.
 
 ## My Goal

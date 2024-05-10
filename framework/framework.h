@@ -38,8 +38,8 @@ typedef enum fwError : uint8_t {
  * @see Used as parameter for @c fwStartModule()
  */
 typedef struct fwStartModuleInfo {
-    enum fwModule Module;
-    uint8_t ModuleStartFlags;
+    enum fwModule module;
+    uint8_t moduleStartFlags;
 } __attribute__((aligned(2))) lfStartInfo;
 
 /**
@@ -71,5 +71,4 @@ void fwAdvance(
         void
         );
 
-=======
 #endif //LPAF_FRAMEWORK_H
