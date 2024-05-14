@@ -20,6 +20,9 @@ void fwiStartNativeModuleWindow() {
 
     RegisterClassExW(&wndClass);
 
+    CreateThread(nullptr, 0x80000, &fwiEventProcedure, nullptr, 0,
+                 &fwiWinState.nativeEventThreadHandle);
+
     fwiState.activeModules |= fwModuleWindow;
 }
 

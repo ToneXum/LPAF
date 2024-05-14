@@ -31,6 +31,18 @@ typedef enum fwError : uint8_t {
 } fwError;
 
 /**
+ * @brief Enum identifying event callbacks
+ * @see Used for @c fwSetEventCallback() as parameter
+ */
+typedef enum fwEventCallback {
+    fwEventCallbackMouseMove /*! The mouse has moved*/,
+    fwEventCallbackKeyDown /*! A key was pressed */ ,
+    fwEventCallbackKeyUp /*! A key was released */,
+    fwEventCallbackCloseRequest /*! A Window was requested to be closed */,
+    fwEventCallbackClose /*! A window was closed */,
+} fwEventCallback;
+
+/**
  * @brief The information used to start a module
  * @param[in] kModule Enum of type @c fwModule ; Specifies which module is supposed to be started
  * @param[in] kModuleStartFlags Flag set of type @c fwModuleStartFlags
@@ -50,7 +62,7 @@ typedef struct fwStartModuleInfo {
  * @see @c fwStartModuleInfo for starting information
  * @see @c fwError enum for error codes
  */
-bool fwStartModule(
+fwError fwStartModule(
         const struct fwStartModuleInfo* kpStartInfo
         );
 
@@ -64,11 +76,15 @@ void fwStopModule(
         );
 
 /**
- * @brief "Advances" the execution of the framework, re-pulls input and corrects state
- * @note Must be called at the end of the main application loop
+ * @brief Sets the callback function for a certain event; The function will then be executed when
+ * said event occurs
+ * @param[in] event Which event to set the callback for
+ * @param[int] func The function that will be executed once the event occurs
+ * @see @c fwEventCallback enum for events
  */
-void fwAdvance(
-        void
+fwError fwSetEventCallback(
+        enum fwEventCallback event,
+        uint16_t(*func)(void* high, void* low)
         );
 
 #endif //LPAF_FRAMEWORK_H

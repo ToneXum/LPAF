@@ -1,3 +1,5 @@
+#include <malloc.h>
+
 #include "framework.h"
 
 int main()

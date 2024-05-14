@@ -1,12 +1,8 @@
 #ifndef LPAF_INTERNAL_H
 #define LPAF_INTERNAL_H
 
-#include <pthread.h>
 #include <stdint.h>
 
-/**
- * @brief Enumeration for specifying the log level for the @c FancyLogX functions
- */
 typedef enum fwiLogLevel : uint8_t {
     fwiLogLevelError,
     fwiLogLevelWarning,
