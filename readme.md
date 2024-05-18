@@ -19,8 +19,9 @@ framework for development of performance-critical application.
 
 ## My Goal
 Many frameworks that are currently available either disregard runtime performance or let the 
-developer do a ludicrous amount of work configuring how the software should behave. Some others are
-so old to the point where they use practices which further hinder performance and usability.
+developer do ludicrous amounts of work configuring how the software should behave. Some others are
+so old to the point where outdated practices are being used which further hinder performance and
+usability.
 
 LPAF attempts to solve that problem by focusing on ease-of-use, a modern coding style and overhead
 low procedures. At its core, LPAF is abstracting OS-level API interactions with some flavor on top. 

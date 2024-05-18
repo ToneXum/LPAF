@@ -27,9 +27,7 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="b43a079c-b7ae-41fc-bc1a-f78f46edc6d3" name="Changes" comment="fix brain damage">
-      <change beforePath="$PROJECT_DIR$/readme.md" beforeDir="false" afterPath="$PROJECT_DIR$/readme.md" afterDir="false" />
-    </list>
+    <list default="true" id="b43a079c-b7ae-41fc-bc1a-f78f46edc6d3" name="Changes" comment="update readme.md" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -574,7 +572,15 @@
       <option name="project" value="LOCAL" />
       <updated>1716050663225</updated>
     </task>
-    <option name="localTasksCounter" value="43" />
+    <task id="LOCAL-00043" summary="update readme.md">
+      <option name="closed" value="true" />
+      <created>1716051899462</created>
+      <option name="number" value="00043" />
+      <option name="presentableId" value="LOCAL-00043" />
+      <option name="project" value="LOCAL" />
+      <updated>1716051899462</updated>
+    </task>
+    <option name="localTasksCounter" value="44" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -621,7 +627,6 @@
     <ignored-roots>
       <path value="$PROJECT_DIR$/Framework" />
     </ignored-roots>
-    <MESSAGE value="rename LoadFile, fix log level, update test" />
     <MESSAGE value="subtitles are now H2" />
     <MESSAGE value="add LoadFile to doc" />
     <MESSAGE value="clean up build config" />
@@ -634,7 +639,6 @@
     <MESSAGE value="more flexible error handling" />
     <MESSAGE value="implement socket creation" />
     <MESSAGE value="rename files for OS dependant implementations" />
-    <MESSAGE value="update readme.md" />
     <MESSAGE value="implement data streams over sockets, fix socket creation, rearrange definitions" />
     <MESSAGE value="fix window closing utilities, little optimisation, fix UnInitialise" />
     <MESSAGE value="larger error coverage for networking errors" />
@@ -647,7 +651,8 @@
     <MESSAGE value="lil test stuff" />
     <MESSAGE value="fix project settings" />
     <MESSAGE value="fix brain damage" />
-    <option name="LAST_COMMIT_MESSAGE" value="fix brain damage" />
+    <MESSAGE value="update readme.md" />
+    <option name="LAST_COMMIT_MESSAGE" value="update readme.md" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
