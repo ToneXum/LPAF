@@ -74,8 +74,8 @@ DWORD fwiEventProcedure(void* param) {
 }
 
 struct fwiWinAPIState* fwiGetWinState() {
-    static struct fwiWinAPIState* result = {};
-    return result;
+    static struct fwiWinAPIState data = {};
+    return &data;
 }
 
 void fwiHandleWin32Error(const char* sourceFunc, int line, int code) {
