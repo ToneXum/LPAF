@@ -25,7 +25,7 @@ usability.
 
 LPAF attempts to solve those problems by focusing on ease-of-use, a modern coding style and overhead
 low procedures. At its core, LPAF is simply abstracting OS-level API interactions with some flavor 
-on top. This makes LPAF perfect any performance, resource or time critical application. 
+on top. This makes LPAF perfect for any performance, resource or time critical application. 
 
 ## Documentation and Information
 Documentation exists in the form of doxygen for all symbols. Guides and tutorials are provided in `doc/`.
