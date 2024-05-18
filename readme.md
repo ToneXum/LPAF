@@ -23,9 +23,9 @@ developer do ludicrous amounts of work configuring how the software should behav
 so old to the point where outdated practices are being used which further hinder performance and
 usability.
 
-LPAF attempts to solve that problem by focusing on ease-of-use, a modern coding style and overhead
-low procedures. At its core, LPAF is abstracting OS-level API interactions with some flavor on top. 
-This makes LPAF perfect any performance, resource or time critical application. 
+LPAF attempts to solve those problems by focusing on ease-of-use, a modern coding style and overhead
+low procedures. At its core, LPAF is simply abstracting OS-level API interactions with some flavor 
+on top. This makes LPAF perfect any performance, resource or time critical application. 
 
 ## Documentation and Information
 Documentation exists in the form of doxygen for all symbols. Guides and tutorials are provided in `doc/`.
