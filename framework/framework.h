@@ -8,10 +8,11 @@
  * @see Used as parameter for @c fwStartModuleInfo
  */
 typedef enum fwModule : uint8_t {
-    fwModuleWindow      = 0b0001 /*! Module for windowed UI */,
-    fwModuleRender      = 0b0010 /*! Module for the renderer */,
-    fwModuleNetwork     = 0b0100 /*! Module for networking and sockets*/,
-    fwModuleMultimedia  = 0b1000 /*! Module for multimedia like video and sound */
+    fwModuleBase        = 0b00001 /*! Base */,
+    fwModuleWindow      = 0b00010 /*! Module for windowed UI */,
+    fwModuleRender      = 0b00100 /*! Module for the renderer */,
+    fwModuleNetwork     = 0b01000 /*! Module for networking and sockets*/,
+    fwModuleMultimedia  = 0b10000 /*! Module for multimedia like video and sound */
 } lfModule;
 
 /**
@@ -31,6 +32,18 @@ typedef enum fwError : uint8_t {
 } fwError;
 
 /**
+ * @brief Enum identifying event callbacks
+ * @see Used for @c fwSetEventCallback() as parameter
+ */
+typedef enum fwEventCallback {
+    fwEventCallbackMouseMove /*! The mouse has moved*/,
+    fwEventCallbackKeyDown /*! A key was pressed */ ,
+    fwEventCallbackKeyUp /*! A key was released */,
+    fwEventCallbackCloseRequest /*! A Window was requested to be closed */,
+    fwEventCallbackClose /*! A window was closed */,
+} fwEventCallback;
+
+/**
  * @brief The information used to start a module
  * @param[in] kModule Enum of type @c fwModule ; Specifies which module is supposed to be started
  * @param[in] kModuleStartFlags Flag set of type @c fwModuleStartFlags
@@ -38,8 +51,8 @@ typedef enum fwError : uint8_t {
  * @see Used as parameter for @c fwStartModule()
  */
 typedef struct fwStartModuleInfo {
-    enum fwModule Module;
-    uint8_t ModuleStartFlags;
+    enum fwModule module;
+    uint8_t moduleStartFlags;
 } __attribute__((aligned(2))) lfStartInfo;
 
 /**
@@ -50,7 +63,7 @@ typedef struct fwStartModuleInfo {
  * @see @c fwStartModuleInfo for starting information
  * @see @c fwError enum for error codes
  */
-bool fwStartModule(
+fwError fwStartModule(
         const struct fwStartModuleInfo* kpStartInfo
         );
 
@@ -63,13 +76,20 @@ void fwStopModule(
         enum fwModule module
         );
 
-/**
- * @brief "Advances" the execution of the framework, re-pulls input and corrects state
- * @note Must be called at the end of the main application loop
- */
-void fwAdvance(
+void fwStopAllModules(
         void
         );
 
-=======
+/**
+ * @brief Sets the callback function for a certain event; The function will then be executed when
+ * said event occurs
+ * @param[in] event Which event to set the callback for
+ * @param[int] func The function that will be executed once the event occurs
+ * @see @c fwEventCallback enum for events
+ */
+fwError fwSetEventCallback(
+        enum fwEventCallback event,
+        uint16_t(*func)(void* high, void* low)
+        );
+
 #endif //LPAF_FRAMEWORK_H

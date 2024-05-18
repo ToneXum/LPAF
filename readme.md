@@ -1,13 +1,8 @@
-<!-- This repo was createn on 13th of November in 2023 at 18:50 UTC+1 Berlin / Middle-European time -->
+<!-- This repo was created on 13th of November in 2023 at 18:50 UTC+1 Berlin / Middle-European time -->
 **This project is still far, far from finished and cannot possibly be used for production.**
 
 # LPAF
 
-<p align="center">
-  <img alt="Static Badge" src="https://img.shields.io/badge/documentation-almost%20none-orange">
-  <img alt="Static Badge" src="https://img.shields.io/badge/code%20coverage-horrible-crimson">
-  <img alt="Static Badge" src="https://img.shields.io/badge/trust%20me-im%20still%20working%20on%20it-white">
-</p>
 <p align="center">
   <img alt="GitHub Issues or Pull Requests" src="https://img.shields.io/github/issues/ToneXum/LPAF">
   <img alt="GitHub Issues or Pull Requests" src="https://img.shields.io/github/issues-closed/ToneXum/LPAF">
@@ -15,11 +10,11 @@
   <img alt="GitHub Issues or Pull Requests" src="https://img.shields.io/github/issues-pr-closed/ToneXum/LPAF">
 </p>
 <p align="center">
-  <img alt="GitHub repo size" src="https://img.shields.io/github/repo-size/ToneXum/LPAF">
+  <img alt="GitHub repo size" src="https://img.shields.io/github/languages/code-size/ToneXum/LPAF">
   <img alt="Lines of code" src="https://tokei.rs/b1/github/ToneXum/LPAF?category=code&style=flat">
 </p>
 
-The **L**ightweigt and **P**erfomant **A**pplication **F**ramwork is really just what the name says, a framework for 
+The Lightweight and Performant Application Framework (LPAF) is really just what the name says, a framework for 
 development of performance-critical application.
 
 ## My Goal

@@ -6,5 +6,8 @@ int main()
     startInfo.module = fwModuleWindow;
     fwStartModule(&startInfo);
 
+    // do shit here
+
+    fwStopAllModules();
     return 0;
 }
