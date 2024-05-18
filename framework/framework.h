@@ -8,10 +8,11 @@
  * @see Used as parameter for @c fwStartModuleInfo
  */
 typedef enum fwModule : uint8_t {
-    fwModuleWindow      = 0b0001 /*! Module for windowed UI */,
-    fwModuleRender      = 0b0010 /*! Module for the renderer */,
-    fwModuleNetwork     = 0b0100 /*! Module for networking and sockets*/,
-    fwModuleMultimedia  = 0b1000 /*! Module for multimedia like video and sound */
+    fwModuleBase        = 0b00001 /*! Base */,
+    fwModuleWindow      = 0b00010 /*! Module for windowed UI */,
+    fwModuleRender      = 0b00100 /*! Module for the renderer */,
+    fwModuleNetwork     = 0b01000 /*! Module for networking and sockets*/,
+    fwModuleMultimedia  = 0b10000 /*! Module for multimedia like video and sound */
 } lfModule;
 
 /**
@@ -73,6 +74,10 @@ fwError fwStartModule(
  */
 void fwStopModule(
         enum fwModule module
+        );
+
+void fwStopAllModules(
+        void
         );
 
 /**

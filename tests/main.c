@@ -1,5 +1,3 @@
-#include <malloc.h>
-
 #include "framework.h"
 
 int main()
@@ -8,5 +6,8 @@ int main()
     startInfo.module = fwModuleWindow;
     fwStartModule(&startInfo);
 
+    // do shit here
+
+    fwStopAllModules();
     return 0;
 }

@@ -4,11 +4,6 @@
 # LPAF
 
 <p align="center">
-  <img alt="Static Badge" src="https://img.shields.io/badge/documentation-almost%20none-orange">
-  <img alt="Static Badge" src="https://img.shields.io/badge/code%20coverage-horrible-crimson">
-  <img alt="Static Badge" src="https://img.shields.io/badge/trust%20me-im%20still%20working%20on%20it-white">
-</p>
-<p align="center">
   <img alt="GitHub Issues or Pull Requests" src="https://img.shields.io/github/issues/ToneXum/LPAF">
   <img alt="GitHub Issues or Pull Requests" src="https://img.shields.io/github/issues-closed/ToneXum/LPAF">
   <img alt="GitHub Issues or Pull Requests" src="https://img.shields.io/github/issues-pr/ToneXum/LPAF">

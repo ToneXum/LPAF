@@ -2,13 +2,13 @@ cmake_minimum_required(VERSION 3.27)
 project(LPAF)
 
 ### LANGUAGE CONFIG
-if (DEBUG)
-    add_definitions(-D _DEBUG)
+if (DEBUG MATCHES true)
+    add_definitions(-DBUILD_DEBUG)
 
     set(C_FLAGS "-Wall -Wextra -Wundef -O0 -g3")
     set(CXX_FLAGS "-Wall -Wextra -Wundef -O0 -g3")
-elseif (NDEBUG)
-    add_definitions(-D NDEBUG)
+elseif (DEBUG MATCHES false)
+    add_definitions(-DBUILD_RELEASE)
 
     set(C_FLAGS "-Wall -Wextra -Wundef -O3")
     set(CXX_FLAGS "-Wall -Wextra -Wundef -O3")

@@ -1,6 +1,7 @@
 #ifndef LPAF_INTERNAL_H
 #define LPAF_INTERNAL_H
 
+#include <pthread.h>
 #include <stdint.h>
 
 typedef enum fwiLogLevel : uint8_t {
@@ -14,24 +15,72 @@ typedef enum fwiLogLevel : uint8_t {
 /**
  * @brief @b DO @b NOT @b INSTANTIATE; Global framework state data
  */
-struct fwiStateData {
+struct fwiState {
     uint8_t activeModules;
-}; struct fwiStateData fwiState;
+    pthread_mutex_t loggerMutex;
+} __attribute__((aligned(16)));
+struct fwiState* fwiGetState();
 
-void fwiStartNativeModuleWindow();
-void fwiStartNativeModuleNetwork();
-void fwiStartNativeModuleMultimedia();
-void fwiStartNativeModuleRenderer();
+void fwiStartNativeModuleBase(
+        void
+        );
 
-void fwiStopNativeModuleWindow();
-void fwiStopNativeModuleNetwork();
-void fwiStopNativeModuleMultimedia();
-void fwiStopNativeModuleRenderer();
+void fwiStartNativeModuleWindow(
+        void
+        );
 
-void fwiLogA(const char* msg, enum fwiLogLevel);
-void fwiLogW(const wchar_t* msg, enum fwiLogLevel);
+void fwiStartNativeModuleNetwork(
+        void
+        );
 
-void fwiLogFollowupA(const char* msg, bool isLast);
-void fwiLogFollowupW(const wchar_t* msg, bool isLast);
+void fwiStartNativeModuleMultimedia(
+        void
+        );
+
+void fwiStartNativeModuleRenderer(
+        void
+        );
+
+void fwiStopNativeModuleBase(
+        void
+        );
+
+void fwiStopNativeModuleWindow(
+        void
+        );
+
+void fwiStopNativeModuleNetwork(
+        void
+        );
+
+void fwiStopNativeModuleMultimedia(
+        void
+        );
+
+void fwiStopNativeModuleRenderer(
+        void
+        );
+
+void fwiLogA(
+        const char* msg,
+        enum fwiLogLevel lll
+        );
+
+void fwiLogW(
+        const wchar_t* msg,
+        enum fwiLogLevel lll
+        );
+
+void fwiLogFollowupA(
+        const char* msg,
+        bool isLast
+        );
+
+void fwiLogFollowupW(
+        const wchar_t* msg,
+        bool isLast
+        );
+
+void fwiCrashToFatalError();
 
 #endif //LPAF_INTERNAL_H
