@@ -1,3 +1,17 @@
+// LPAF - lightweight and performant application framework
+// Copyright (C) 2024 ToneXum (Toni Stein)
+//
+// This program is free software: you can redistribute it and/or modify it under the terms of the
+// GNU General Public License as published by the Free Software Foundation, either version 3 of
+// the License, or any later version.
+//
+// This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+// without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License along with this program. If
+// not, see <https://www.gnu.org/licenses/>.
+
 #include "framework.h"
 #include "internal.h"
 #include "win32.h"
@@ -6,7 +20,7 @@
 
 void fwiStartNativeModuleWindow() {
     if (fwiGetState()->activeModules & fwModuleWindow) {
-        fwiLogA("Tried starting active window module", fwiLogLevelWarning);
+        fwiLogA(fwiLogLevelWarning, "Tried starting active window module");
         return;
     }
 
@@ -25,7 +39,7 @@ void fwiStartNativeModuleWindow() {
     CreateThread(nullptr, 0x80000, &fwiEventProcedure, nullptr, 0,
                  &fwiGetWinState()->nativeEventThreadHandle);
 
-    fwiLogA("Window module was stated", fwiLogLevelInfo);
+    fwiLogA(fwiLogLevelInfo, "Window module was stated");
     fwiGetState()->activeModules |= fwModuleWindow;
 }
 
@@ -45,11 +59,11 @@ void fwiStopNativeModuleWindow() {
     if (fwiGetState()->activeModules & fwModuleWindow) {
         struct fwiWinAPIState* state = fwiGetWinState();
         UnregisterClassW(state->className, state->instance);
-        fwiLogA("Window module was stopped", fwiLogLevelInfo);
+        fwiLogA(fwiLogLevelInfo, "Window module was stopped");
         fwiGetState()->activeModules &= ~fwModuleWindow;
     }
     else {
-        fwiLogA("Tried stopping inactive window module", fwiLogLevelWarning);
+        fwiLogA(fwiLogLevelWarning, "Tried stopping inactive window module");
     }
 }
 
@@ -82,4 +96,4 @@ void fwiHandleWin32Error(const char* sourceFunc, int line, int code) {
 
 }
 
-#endif
+#endif // PLATFORM_WINDOWS

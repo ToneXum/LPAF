@@ -27,7 +27,12 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="b43a079c-b7ae-41fc-bc1a-f78f46edc6d3" name="Changes" comment="update readme.md" />
+    <list default="true" id="b43a079c-b7ae-41fc-bc1a-f78f46edc6d3" name="Changes" comment="I lied">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/framework/framework.c" beforeDir="false" afterPath="$PROJECT_DIR$/framework/framework.c" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/framework/internal.c" beforeDir="false" afterPath="$PROJECT_DIR$/framework/internal.c" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/framework/internal.h" beforeDir="false" afterPath="$PROJECT_DIR$/framework/internal.h" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -91,9 +96,6 @@
   <component name="MarkdownSettingsMigration">
     <option name="stateVersion" value="1" />
   </component>
-  <component name="OCResolveContextSettings">
-    <option name="configuration" value="0-Debug-lpafLib" />
-  </component>
   <component name="ProblemsViewState">
     <option name="groupByToolId" value="true" />
     <option name="selectedTabId" value="CurrentFile" />
@@ -122,7 +124,7 @@
     "CMake Application.Framework_Lib.executor": "Run",
     "CMake Application.Test_Application.executor": "Run",
     "CMake Application.lpaf.executor": "Run",
-    "CMake Application.lpafLib.executor": "Debug",
+    "CMake Application.lpafLib.executor": "Run",
     "CMake Application.lpafTest.executor": "Run",
     "RunOnceActivity.OpenProjectViewOnStart": "true",
     "RunOnceActivity.ShowReadmeOnStart": "true",
@@ -156,11 +158,6 @@
     </key>
   </component>
   <component name="RunManager" selected="CMake Application.lpafLib">
-    <configuration default="true" type="CLionExternalRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true">
-      <method v="2">
-        <option name="CLION.EXTERNAL.BUILD" enabled="true" />
-      </method>
-    </configuration>
     <configuration name="lpafLib" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="LPAF" TARGET_NAME="lpafLib" CONFIG_NAME="Debug Clang" RUN_TARGET_PROJECT_NAME="LPAF" RUN_TARGET_NAME="lpafTest">
       <method v="2">
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
@@ -235,6 +232,7 @@
       <workItem from="1715105929356" duration="5777000" />
       <workItem from="1715200468395" duration="4310000" />
       <workItem from="1715266312137" duration="10896000" />
+      <workItem from="1716160549980" duration="1566000" />
     </task>
     <task id="LOCAL-00001" summary="initial rework">
       <option name="closed" value="true" />
@@ -580,7 +578,31 @@
       <option name="project" value="LOCAL" />
       <updated>1716051899462</updated>
     </task>
-    <option name="localTasksCounter" value="44" />
+    <task id="LOCAL-00044" summary="fix grammar in readme.md">
+      <option name="closed" value="true" />
+      <created>1716051996771</created>
+      <option name="number" value="00044" />
+      <option name="presentableId" value="LOCAL-00044" />
+      <option name="project" value="LOCAL" />
+      <updated>1716051996771</updated>
+    </task>
+    <task id="LOCAL-00045" summary="last edit to readme.md I swear">
+      <option name="closed" value="true" />
+      <created>1716052140258</created>
+      <option name="number" value="00045" />
+      <option name="presentableId" value="LOCAL-00045" />
+      <option name="project" value="LOCAL" />
+      <updated>1716052140258</updated>
+    </task>
+    <task id="LOCAL-00046" summary="I lied">
+      <option name="closed" value="true" />
+      <created>1716052188249</created>
+      <option name="number" value="00046" />
+      <option name="presentableId" value="LOCAL-00046" />
+      <option name="project" value="LOCAL" />
+      <updated>1716052188249</updated>
+    </task>
+    <option name="localTasksCounter" value="47" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -627,9 +649,6 @@
     <ignored-roots>
       <path value="$PROJECT_DIR$/Framework" />
     </ignored-roots>
-    <MESSAGE value="subtitles are now H2" />
-    <MESSAGE value="add LoadFile to doc" />
-    <MESSAGE value="clean up build config" />
     <MESSAGE value="rename, clean up, refactor" />
     <MESSAGE value="fix linking and logging issues" />
     <MESSAGE value="basic networking" />
@@ -652,7 +671,10 @@
     <MESSAGE value="fix project settings" />
     <MESSAGE value="fix brain damage" />
     <MESSAGE value="update readme.md" />
-    <option name="LAST_COMMIT_MESSAGE" value="update readme.md" />
+    <MESSAGE value="fix grammar in readme.md" />
+    <MESSAGE value="last edit to readme.md I swear" />
+    <MESSAGE value="I lied" />
+    <option name="LAST_COMMIT_MESSAGE" value="I lied" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
