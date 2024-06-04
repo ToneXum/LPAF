@@ -36,8 +36,8 @@ void fwiStartNativeModuleWindow() {
 
     RegisterClassExW(&wndClass);
 
-    CreateThread(nullptr, 0x80000, &fwiEventProcedure, nullptr, 0,
-                 &fwiGetWinState()->nativeEventThreadHandle);
+    //CreateThread(nullptr, 0x80000, &fwiEventProcedure, nullptr, 0,
+    //             &fwiGetWinState()->nativeEventThreadHandle);
 
     fwiLogA(fwiLogLevelInfo, "Window module was stated");
     fwiGetState()->activeModules |= fwModuleWindow;

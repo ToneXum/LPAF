@@ -20,3 +20,6 @@ desktop.ini
 
 # Link to Vulkan SDK
 Vulkan.lnk
+
+# Notes
+notes/**

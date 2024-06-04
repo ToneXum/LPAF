@@ -23,17 +23,20 @@ developer do ludicrous amounts of work configuring how the software should behav
 so old to the point where outdated practices are being used which further hinder performance and
 usability.
 
-LPAF attempts to solve those problems by focusing on ease-of-use, a modern coding style and overhead
-low procedures. At its core, LPAF is simply abstracting OS-level API interactions with some flavor 
-on top. This makes LPAF perfect for any performance, resource or time critical application. 
+LPAF attempts to solve those problems by focusing on a modern coding style and overhead
+low procedures while maintaining ease-of-use. At its core, LPAF is simply abstracting OS-level API 
+interactions with some flavor on top. This makes LPAF perfect for any performance, resource or time
+critical application. 
 
 ## Documentation and Information
-Documentation exists in the form of doxygen for all symbols. Guides and tutorials are provided in `doc/`.
+Documentation exists in the form of doxygen for all symbols. Guides and tutorials are provided in
+`doc/`.
 
 ## Contact
 For any inquiries you can send an E-Mail to tonexum@national.shitposting.agency (Yes, I'm not 
 joking. Checked every few days)
 
 ## Special thanks to JetBrains
-[JetBrains](https://jb.gg/) supports this project by providing a licence to their products for open source development.<br>
+[JetBrains](https://jb.gg/) supports this project by providing a licence to their products for open source 
+development.<br>
 <img style="width: 32%; height 32%;" src="https://resources.jetbrains.com/storage/products/company/brand/logos/jb_beam.png" alt="Main JetBrains Logo">

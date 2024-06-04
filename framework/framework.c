@@ -37,12 +37,14 @@ fwError fwStartModule(const struct fwStartModuleInfo* pStartInfo) {
             fwiStartNativeModuleMultimedia();
             break;
         }
-        default: {}
+        default: {
+            return fwErrorInvalidParameter;
+        }
     }
-    return 0;
+    return fwErrorSuccess;
 }
 
-void fwStopModule(enum fwModule module) {
+fwError fwStopModule(enum fwModule module) {
     switch (module) {
         case fwModuleWindow: {
             fwiStopNativeModuleWindow();
@@ -60,11 +62,15 @@ void fwStopModule(enum fwModule module) {
             fwiStopNativeModuleRenderer();
             break;
         }
-        default: {}
+        default: {
+            return fwErrorInvalidParameter;
+        }
     }
-    if (fwiGetState()->activeModules == 0) {
+    if (fwiGetState()->activeModules == 0b1) {
         fwiStopNativeModuleBase();
     }
+
+    return fwErrorSuccess;
 }
 
 void fwStopAllModules(void) {

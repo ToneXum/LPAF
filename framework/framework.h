@@ -41,21 +41,10 @@ typedef enum fwModuleStartFlags : uint8_t {
  * @brief Error codes returned by various functions when failure occurs
  */
 typedef enum fwError : uint8_t {
+    fwErrorSuccess /*! No error, everything went smoothly */,
     fwErrorOutOfMemory /*! Out of memory, allocation failed */,
     fwErrorInvalidParameter /*! A parameter contained an illegal or wrong value */
 } fwError;
-
-/**
- * @brief Enum identifying event callbacks
- * @see Used for @c fwSetEventCallback() as parameter
- */
-typedef enum fwEventCallback {
-    fwEventCallbackMouseMove /*! The mouse has moved*/,
-    fwEventCallbackKeyDown /*! A key was pressed */ ,
-    fwEventCallbackKeyUp /*! A key was released */,
-    fwEventCallbackCloseRequest /*! A Window was requested to be closed */,
-    fwEventCallbackClose /*! A window was closed */,
-} fwEventCallback;
 
 /**
  * @brief The information used to start a module
@@ -86,7 +75,7 @@ fwError fwStartModule(
  * @param[in] module Which module is supposed to be stopped
  * @see @c fwModule enum for modules
  */
-void fwStopModule(
+fwError fwStopModule(
         enum fwModule module
         );
 
@@ -95,18 +84,6 @@ void fwStopModule(
  */
 void fwStopAllModules(
         void
-        );
-
-/**
- * @brief Sets the callback function for a certain event; The function will then be executed when
- * said event occurs
- * @param[in] event Which event to set the callback for
- * @param[int] func The function that will be executed once the event occurs
- * @see @c fwEventCallback enum for events
- */
-fwError fwSetEventCallback(
-        enum fwEventCallback event,
-        uint16_t(*func)(void* high, void* low)
         );
 
 #endif //LPAF_FRAMEWORK_H
