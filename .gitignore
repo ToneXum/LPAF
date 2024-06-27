@@ -13,6 +13,8 @@ cmake-build-*
 desktop.ini
 
 # Binaries
+bin
+lib
 *.exe
 *.a
 *.so

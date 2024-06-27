@@ -16,6 +16,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <time.h>
+#include <wchar.h>
 
 #include "framework.h"
 #include "internal.h"
@@ -62,7 +63,7 @@ void fwiLogA(enum fwiLogLevel lll, const char* format,  ...) {
         }
     }
 
-    va_list args = nullptr;
+    va_list args = {0u};
     va_start(args);
     vprintf(format, args);
     va_end(args);
@@ -112,7 +113,7 @@ void fwiLogW(enum fwiLogLevel lll, const wchar_t* format, ...) {
         }
     }
 
-    va_list args = nullptr;
+    va_list args = {0u};
     va_start(args);
     vwprintf(format, args);
     va_end(args);
@@ -127,7 +128,7 @@ void fwiLogW(enum fwiLogLevel lll, const wchar_t* format, ...) {
 
 void fwiLogFollowupA(bool isLast, const char* format, ...) {
 #ifdef BUILD_DEBUG
-    va_list args = nullptr;
+    va_list args = {0u};
     va_start(args);
     if (isLast) {
         printf("\\ - ");
@@ -148,7 +149,7 @@ void fwiLogFollowupA(bool isLast, const char* format, ...) {
 
 void fwiLogFollowupW(bool isLast, const wchar_t* format, ...) {
 #ifdef BUILD_DEBUG
-    va_list args = nullptr;
+    va_list args = {0u};
     va_start(args);
     if (isLast) {
         wprintf(L"\\ - ");
