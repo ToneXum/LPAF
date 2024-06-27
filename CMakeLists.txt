@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.27)
 project(LPAF)
 
+# TODO: clean this mess
+
 ### LANGUAGE CONFIG
 if (DEBUG MATCHES true)
     add_definitions(-DBUILD_DEBUG)

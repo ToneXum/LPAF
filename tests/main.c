@@ -16,12 +16,6 @@
 
 int main()
 {
-    struct fwStartModuleInfo startInfo = {};
-    startInfo.module = fwModuleWindow;
-    fwStartModule(&startInfo);
 
-    fw
-
-    fwStopAllModules();
     return 0;
 }

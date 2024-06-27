@@ -15,6 +15,8 @@
 #ifndef LPAF_WINDOW_H
 #define LPAF_WINDOW_H
 
+#include <stddef.h>
+
 #include "framework.h"
 
 typedef enum fwWindowStyle : uint8_t {

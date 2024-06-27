@@ -15,11 +15,11 @@
 #ifndef LPAF_WIN32_H
 #define LPAF_WIN32_H
 
+#ifdef PLATFORM_WINDOWS
+
 #include <windows.h>
 // dbghelp.h depends on symbols from windows.h
 #include <dbghelp.h>
-
-#ifdef PLATFORM_WINDOWS
 
 #define FWI_HANDLE_FATAL_WIN32_ERROR fwiHandleWin32Error(__func__, __LINE__, GetLastError())
 

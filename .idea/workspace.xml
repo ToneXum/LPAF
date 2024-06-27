@@ -22,21 +22,19 @@
   </component>
   <component name="CMakeSettings">
     <configurations>
-      <configuration PROFILE_NAME="Debug Clang" ENABLED="true" CONFIG_NAME="Debug" TOOLCHAIN_NAME="MinGW Clang" GENERATION_OPTIONS="-DDEBUG=true -DCMAKE_LINKER=lld" />
-      <configuration PROFILE_NAME="Release Clang" ENABLED="true" CONFIG_NAME="Release" TOOLCHAIN_NAME="MinGW Clang" GENERATION_OPTIONS="-DDEBUG=false -DCMAKE_LINKER=lld" />
+      <configuration PROFILE_NAME="Debug" ENABLED="true" CONFIG_NAME="Debug" />
+      <configuration PROFILE_NAME="Release" ENABLED="true" CONFIG_NAME="Release" />
     </configurations>
   </component>
   <component name="ChangeListManager">
     <list default="true" id="b43a079c-b7ae-41fc-bc1a-f78f46edc6d3" name="Changes" comment="improve logging functionality and add licence notice">
-      <change afterPath="$PROJECT_DIR$/framework/window.c" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/framework/window.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/CMakeLists.txt" beforeDir="false" afterPath="$PROJECT_DIR$/CMakeLists.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/framework/framework.c" beforeDir="false" afterPath="$PROJECT_DIR$/framework/framework.c" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/framework/framework.h" beforeDir="false" afterPath="$PROJECT_DIR$/framework/framework.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/framework/win32.c" beforeDir="false" afterPath="$PROJECT_DIR$/framework/win32.c" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/readme.md" beforeDir="false" afterPath="$PROJECT_DIR$/readme.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/framework/internal.h" beforeDir="false" afterPath="$PROJECT_DIR$/framework/internal.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/framework/win32.h" beforeDir="false" afterPath="$PROJECT_DIR$/framework/win32.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/framework/window.h" beforeDir="false" afterPath="$PROJECT_DIR$/framework/window.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/main.c" beforeDir="false" afterPath="$PROJECT_DIR$/tests/main.c" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -46,7 +44,7 @@
   <component name="ClangdSettings">
     <option name="formatViaClangd" value="false" />
   </component>
-  <component name="ExecutionTargetManager" SELECTED_TARGET="CMakeBuildProfile:Debug Clang" />
+  <component name="ExecutionTargetManager" SELECTED_TARGET="CMakeBuildProfile:Debug" />
   <component name="FileTemplateManagerImpl">
     <option name="RECENT_TEMPLATES">
       <list>
@@ -84,8 +82,8 @@
   <component name="GitLabMergeRequestsSettings">{}</component>
   <component name="GithubPullRequestsUISettings">{
   &quot;selectedUrlAndAccountId&quot;: {
-    &quot;url&quot;: &quot;https://github.com/ToneXum/LPAF&quot;,
-    &quot;accountId&quot;: &quot;fedc32be-036a-4b9c-a888-046ee53b3bc2&quot;
+    &quot;url&quot;: &quot;https://github.com/ToneXum/LPAF.git&quot;,
+    &quot;accountId&quot;: &quot;f95c5551-1777-4c27-b85a-e40cc8198e62&quot;
   }
 }</component>
   <component name="HighlightingSettingsPerFile">
@@ -115,39 +113,40 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;ASKED_ADD_EXTERNAL_FILES&quot;: &quot;true&quot;,
-    &quot;ASKED_MARK_IGNORED_FILES_AS_EXCLUDED&quot;: &quot;true&quot;,
-    &quot;CMake Application.Framework_Lib.executor&quot;: &quot;Run&quot;,
-    &quot;CMake Application.Test_Application.executor&quot;: &quot;Run&quot;,
-    &quot;CMake Application.lpaf.executor&quot;: &quot;Run&quot;,
-    &quot;CMake Application.lpafLib.executor&quot;: &quot;Run&quot;,
-    &quot;CMake Application.lpafTest.executor&quot;: &quot;Run&quot;,
-    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.cidr.known.project.marker&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.readMode.enableVisualFormatting&quot;: &quot;true&quot;,
-    &quot;SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
-    &quot;SONARLINT_PRECOMMIT_ANALYSIS&quot;: &quot;true&quot;,
-    &quot;cf.first.check.clang-format&quot;: &quot;false&quot;,
-    &quot;cidr.known.project.marker&quot;: &quot;true&quot;,
-    &quot;deletionFromPopupRequiresConfirmation&quot;: &quot;false&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;master&quot;,
-    &quot;last_opened_file_path&quot;: &quot;D:/File Dump/Programming Projects/Framework/CMakeLists.txt&quot;,
-    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
-    &quot;node.js.detected.package.stylelint&quot;: &quot;true&quot;,
-    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
-    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
-    &quot;node.js.selected.package.stylelint&quot;: &quot;&quot;,
-    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
-    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
-    &quot;run.code.analysis.last.selected.profile&quot;: &quot;pProject Default&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;CMakeSettings&quot;,
-    &quot;structure.view.defaults.are.configured&quot;: &quot;true&quot;,
-    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "ASKED_ADD_EXTERNAL_FILES": "true",
+    "ASKED_MARK_IGNORED_FILES_AS_EXCLUDED": "true",
+    "CMake Application.Framework_Lib.executor": "Run",
+    "CMake Application.Test_Application.executor": "Run",
+    "CMake Application.lpaf.executor": "Run",
+    "CMake Application.lpafLib.executor": "Run",
+    "CMake Application.lpafTest.executor": "Run",
+    "RunOnceActivity.OpenProjectViewOnStart": "true",
+    "RunOnceActivity.RadMigrateCodeStyle": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.cidr.known.project.marker": "true",
+    "RunOnceActivity.readMode.enableVisualFormatting": "true",
+    "SHARE_PROJECT_CONFIGURATION_FILES": "true",
+    "SONARLINT_PRECOMMIT_ANALYSIS": "true",
+    "cf.first.check.clang-format": "false",
+    "cidr.known.project.marker": "true",
+    "deletionFromPopupRequiresConfirmation": "false",
+    "git-widget-placeholder": "master",
+    "last_opened_file_path": "/home/tonexum/clion-projects/lpaf",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.stylelint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.stylelint": "",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "run.code.analysis.last.selected.profile": "pProject Default",
+    "settings.editor.selected.configurable": "preferences.sourceCode",
+    "structure.view.defaults.are.configured": "true",
+    "vue.rearranger.settings.migration": "true"
   }
-}</component>
+}]]></component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
       <recent name="D:\File Dump\Programming Projects\Framework" />
@@ -156,12 +155,17 @@
     </key>
   </component>
   <component name="RunManager" selected="CMake Application.lpafTest">
-    <configuration name="lpafLib" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="LPAF" TARGET_NAME="lpafLib" CONFIG_NAME="Debug Clang" RUN_TARGET_PROJECT_NAME="LPAF" RUN_TARGET_NAME="lpafTest">
+    <configuration default="true" type="CLionExternalRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true">
+      <method v="2">
+        <option name="CLION.EXTERNAL.BUILD" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="lpafLib" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="LPAF" TARGET_NAME="lpafLib" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="LPAF" RUN_TARGET_NAME="lpafTest">
       <method v="2">
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
       </method>
     </configuration>
-    <configuration name="lpafTest" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="LPAF" TARGET_NAME="lpafTest" CONFIG_NAME="Debug Clang" RUN_TARGET_PROJECT_NAME="LPAF" RUN_TARGET_NAME="lpafTest">
+    <configuration name="lpafTest" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="LPAF" TARGET_NAME="lpafTest" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="LPAF" RUN_TARGET_NAME="lpafTest">
       <method v="2">
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
       </method>
@@ -233,6 +237,12 @@
       <workItem from="1716160549980" duration="1566000" />
       <workItem from="1717333874880" duration="8958000" />
       <workItem from="1717521030011" duration="10000" />
+      <workItem from="1719171183237" duration="909000" />
+      <workItem from="1719172117276" duration="2389000" />
+      <workItem from="1719182996590" duration="33000" />
+      <workItem from="1719234913032" duration="11000" />
+      <workItem from="1719235584231" duration="843000" />
+      <workItem from="1719507567951" duration="134000" />
     </task>
     <task id="LOCAL-00001" summary="initial rework">
       <option name="closed" value="true" />

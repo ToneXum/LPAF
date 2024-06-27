@@ -16,6 +16,7 @@
 #define LPAF_INTERNAL_H
 
 #include <pthread.h>
+#include <stddef.h>
 #include <stdint.h>
 
 typedef enum fwiLogLevel : uint8_t {
