@@ -27,15 +27,12 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="b43a079c-b7ae-41fc-bc1a-f78f46edc6d3" name="Changes" comment="I'm back! This time on Linux">
-      <change afterPath="$PROJECT_DIR$/framework/CMakeLists.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/framework/linux.c" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/framework/linux.h" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/tests/CMakeLists.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/CMakeLists.txt" beforeDir="false" afterPath="$PROJECT_DIR$/CMakeLists.txt" afterDir="false" />
+    <list default="true" id="b43a079c-b7ae-41fc-bc1a-f78f46edc6d3" name="Changes" comment="clean cmake list up">
+      <change beforePath="$PROJECT_DIR$/framework/framework.c" beforeDir="false" afterPath="$PROJECT_DIR$/framework/framework.c" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/framework/internal.c" beforeDir="false" afterPath="$PROJECT_DIR$/framework/internal.c" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/framework/internal.h" beforeDir="false" afterPath="$PROJECT_DIR$/framework/internal.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/framework/win32.c" beforeDir="false" afterPath="$PROJECT_DIR$/framework/win32.c" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/framework/window.h" beforeDir="false" afterPath="$PROJECT_DIR$/framework/window.h" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -95,7 +92,7 @@
   </component>
   <component name="ProblemsViewState">
     <option name="groupByToolId" value="true" />
-    <option name="selectedTabId" value="CurrentFile" />
+    <option name="selectedTabId" value="ProjectErrors" />
   </component>
   <component name="ProjectApplicationVersion">
     <option name="ide" value="CLion" />
@@ -243,7 +240,7 @@
       <workItem from="1719182996590" duration="33000" />
       <workItem from="1719234913032" duration="11000" />
       <workItem from="1719235584231" duration="843000" />
-      <workItem from="1719507567951" duration="1593000" />
+      <workItem from="1719507567951" duration="2042000" />
     </task>
     <task id="LOCAL-00001" summary="initial rework">
       <option name="closed" value="true" />
@@ -629,7 +626,15 @@
       <option name="project" value="LOCAL" />
       <updated>1719507819746</updated>
     </task>
-    <option name="localTasksCounter" value="49" />
+    <task id="LOCAL-00049" summary="clean cmake list up">
+      <option name="closed" value="true" />
+      <created>1719509214242</created>
+      <option name="number" value="00049" />
+      <option name="presentableId" value="LOCAL-00049" />
+      <option name="project" value="LOCAL" />
+      <updated>1719509214242</updated>
+    </task>
+    <option name="localTasksCounter" value="50" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -676,7 +681,6 @@
     <ignored-roots>
       <path value="$PROJECT_DIR$/Framework" />
     </ignored-roots>
-    <MESSAGE value="basic networking" />
     <MESSAGE value="fix error handling" />
     <MESSAGE value="first internal documentation" />
     <MESSAGE value="custom resource script" />
@@ -701,7 +705,8 @@
     <MESSAGE value="I lied" />
     <MESSAGE value="improve logging functionality and add licence notice" />
     <MESSAGE value="I'm back! This time on Linux" />
-    <option name="LAST_COMMIT_MESSAGE" value="I'm back! This time on Linux" />
+    <MESSAGE value="clean cmake list up" />
+    <option name="LAST_COMMIT_MESSAGE" value="clean cmake list up" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

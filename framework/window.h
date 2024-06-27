@@ -31,7 +31,7 @@ typedef struct fwWindowCreateInfo {
 } __attribute__((aligned(16))) fwWindowCreateInfo;
 
 fwError fwWindowCreate(
-        struct fwWindowCreateInfo* wndCrtInfo
+    fwWindowCreateInfo* wndCrtInfo
 );
 
 /**
@@ -55,7 +55,7 @@ typedef enum fwEventCallback {
  * @see @c fwEventCallback enum for events
  */
 fwError fwSetEventCallback(
-        enum fwEventCallback event,
+        fwEventCallback event,
         uint16_t(*func)(void* high, void* low)
 );
 

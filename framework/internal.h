@@ -16,7 +16,6 @@
 #define LPAF_INTERNAL_H
 
 #include <pthread.h>
-#include <stddef.h>
 #include <stdint.h>
 
 typedef enum fwiLogLevel : uint8_t {
@@ -77,13 +76,13 @@ void fwiStopNativeModuleRenderer(
         );
 
 void fwiLogA(
-        enum fwiLogLevel lll,
+        fwiLogLevel lll,
         const char* format,
         ...
         );
 
 void fwiLogW(
-        enum fwiLogLevel lll,
+        fwiLogLevel lll,
         const wchar_t* format,
         ...
         );

@@ -14,25 +14,24 @@
 
 #include <stdarg.h>
 #include <stdio.h>
-#include <string.h>
 #include <time.h>
 #include <wchar.h>
 
-#include "framework.h"
 #include "internal.h"
+#include "framework.h"
 
 struct fwiState* fwiGetState() {
     static struct fwiState dat = {};
     return &dat;
 }
 
-void fwiLogA(enum fwiLogLevel lll, const char* format,  ...) {
+void fwiLogA(const fwiLogLevel lll, const char* format,  ...) {
 #ifdef BUILD_DEBUG
-    time_t rawTime = time(nullptr);
-    struct tm* time = localtime(&rawTime);
+    const time_t rawTime  = time(nullptr);
+    const struct tm* time = localtime(&rawTime);
 
     char buf[10] = {};
-    size_t bytesWritten = strftime(buf, 10, "[%H:%M:%S", time);
+    const size_t bytesWritten = strftime(buf, 10, "[%H:%M:%S", time);
     if (bytesWritten == 0) {
         printf("Failed to get local time");
         return;
@@ -76,13 +75,13 @@ void fwiLogA(enum fwiLogLevel lll, const char* format,  ...) {
 #endif // BUILD_RELEASE
 }
 
-void fwiLogW(enum fwiLogLevel lll, const wchar_t* format, ...) {
+void fwiLogW(const fwiLogLevel lll, const wchar_t* format, ...) {
 #ifdef BUILD_DEBUG
-    time_t rawTime = time(nullptr);
-    struct tm* time = localtime(&rawTime);
+    const time_t rawTime  = time(nullptr);
+    const struct tm* time = localtime(&rawTime);
 
-    char buf[10] = {};
-    size_t bytesWritten = strftime(buf, 30, "[%H:%M:%S", time);
+    char buf[10]              = {};
+    const size_t bytesWritten = strftime(buf, 30, "[%H:%M:%S", time);
     if (bytesWritten == 0) {
         printf("Failed to get local time");
         return;
@@ -126,7 +125,7 @@ void fwiLogW(enum fwiLogLevel lll, const wchar_t* format, ...) {
 #endif // BUILD_RELEASE
 }
 
-void fwiLogFollowupA(bool isLast, const char* format, ...) {
+void fwiLogFollowupA(const bool isLast, const char* format, ...) {
 #ifdef BUILD_DEBUG
     va_list args = {0u};
     va_start(args);
@@ -147,7 +146,7 @@ void fwiLogFollowupA(bool isLast, const char* format, ...) {
 #endif // BUILD_RELEASE
 }
 
-void fwiLogFollowupW(bool isLast, const wchar_t* format, ...) {
+void fwiLogFollowupW(const bool isLast, const wchar_t* format, ...) {
 #ifdef BUILD_DEBUG
     va_list args = {0u};
     va_start(args);
@@ -171,11 +170,10 @@ void fwiLogFollowupW(bool isLast, const wchar_t* format, ...) {
 void fwiStartNativeModuleBase(void) {
     pthread_mutex_init(&fwiGetState()->loggerMutex, nullptr);
 
-    time_t rawTime = time(nullptr);
-    struct tm* time = localtime(&rawTime);
-
-    char buf[14] = {};
-    size_t bytesWritten = strftime(buf, 14, "%d.%m.%Y", time);
+    const time_t rawTime        = time(nullptr);
+    const struct tm* time       = localtime(&rawTime);
+    char buf[14]                = {};
+    const size_t bytesWritten   = strftime(buf, 14, "%d.%m.%Y", time);
     if (bytesWritten == 0) {
         fwiLogA(fwiLogLevelError, "Failed to get local time");
     }

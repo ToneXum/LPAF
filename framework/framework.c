@@ -15,12 +15,12 @@
 #include "framework.h"
 #include "internal.h"
 
-fwError fwStartModule(const struct fwStartModuleInfo* pStartInfo) {
+fwError fwStartModule(const struct fwStartModuleInfo* kpStartInfo) {
     if (!(fwiGetState()->activeModules & fwModuleBase)) {
         fwiStartNativeModuleBase();
     }
 
-    switch (pStartInfo->module) {
+    switch (kpStartInfo->module) {
         case fwModuleWindow: {
             fwiStartNativeModuleWindow();
             break;
@@ -44,7 +44,7 @@ fwError fwStartModule(const struct fwStartModuleInfo* pStartInfo) {
     return fwErrorSuccess;
 }
 
-fwError fwStopModule(enum fwModule module) {
+fwError fwStopModule(const enum fwModule module) {
     switch (module) {
         case fwModuleWindow: {
             fwiStopNativeModuleWindow();
@@ -74,7 +74,7 @@ fwError fwStopModule(enum fwModule module) {
 }
 
 void fwStopAllModules(void) {
-    struct fwiState* state = fwiGetState();
+    const struct fwiState* state = fwiGetState();
     if (state->activeModules & fwModuleWindow) {
         fwiStopNativeModuleWindow();
     }
