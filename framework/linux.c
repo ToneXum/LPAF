@@ -14,4 +14,22 @@
 
 #include "linux.h"
 
+#ifdef PLATFORM_LINUX
 
+void fwiStartNativeModuleWindow(void) {}
+
+void fwiStartNativeModuleNetwork(void) {}
+
+void fwiStartNativeModuleMultimedia(void) {}
+
+void fwiStartNativeModuleRenderer(void) {}
+
+void fwiStopNativeModuleWindow(void) {}
+
+void fwiStopNativeModuleNetwork(void) {}
+
+void fwiStopNativeModuleMultimedia(void) {}
+
+void fwiStopNativeModuleRenderer(void) {}
+
+#endif // PLATFORM_LINUX

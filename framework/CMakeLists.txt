@@ -19,7 +19,6 @@ set(FRAMEWORK_SOURCE
         internal.h
         win32.c
         win32.h
-        window.c
         window.h
         linux.c
         linux.h

@@ -17,6 +17,7 @@
 
 #include <pthread.h>
 #include <stdint.h>
+#include <wchar.h>
 
 typedef enum fwiLogLevel : uint8_t {
     fwiLogLevelError,

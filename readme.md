@@ -1,5 +1,4 @@
 <!-- This repo was created on 13th of November in 2023 at 18:50 UTC+1 Berlin / Middle-European time -->
-**This project is currently undergoing a rewrite since I have made some *questionable* design choices**
 
 # LPAF
 
@@ -16,6 +15,9 @@
 
 The Lightweight and Performant Application Framework (LPAF) is really just what the name says, a 
 framework for development of performance-critical application.
+
+As this project is in the early stages of development, LPAF will only focus on non-graphical 
+utilities. (or because of my lack of knowledge regarding graphics programming)
 
 ## My Goal
 Many frameworks that are currently available either disregard runtime performance or let the 
