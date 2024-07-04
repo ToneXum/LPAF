@@ -12,17 +12,29 @@
 // You should have received a copy of the GNU General Public License along with this program. If
 // not, see <https://www.gnu.org/licenses/>.
 
+// This is an exposed header
 #ifndef LPAF_FRAMEWORK_H
 #define LPAF_FRAMEWORK_H
 
 #include <stdint.h>
 
 /**
+ * @brief Error codes returned by various functions when failure occurs
+ */
+typedef enum fwError : uint8_t {
+    fwErrorSuccess /*! No error, everything went smoothly */,
+    fwErrorOutOfMemory /*! Out of memory, allocation failed */,
+    fwErrorInvalidParameter /*! A parameter contained an illegal or wrong value */,
+    fwErrorUnimplemented /*! This feature is not implemented on this platform */,
+    fwErrorGoodJob /*! You somehow caused a theoretically impossible failure */
+} fwError;
+
+/**
  * @brief Specifies a module of LPAF. For example the renderer or the networking subsystem
  * @see Used as parameter for @c fwStartModuleInfo
  */
 typedef enum fwModule : uint8_t {
-    fwModuleBase        = 0b00001 /*! Base */,
+    fwModuleBase        = 0b00001 /*! Base, passing this will cause error but no UB */,
     fwModuleWindow      = 0b00010 /*! Module for windowed UI */,
     fwModuleRender      = 0b00100 /*! Module for the renderer */,
     fwModuleNetwork     = 0b01000 /*! Module for networking and sockets*/,
@@ -36,15 +48,6 @@ typedef enum fwModule : uint8_t {
 typedef enum fwModuleStartFlags : uint8_t {
     fwWindowModuleStartNoWindowClose          = 0b10
 } lfModuleStartFlags;
-
-/**
- * @brief Error codes returned by various functions when failure occurs
- */
-typedef enum fwError : uint8_t {
-    fwErrorSuccess /*! No error, everything went smoothly */,
-    fwErrorOutOfMemory /*! Out of memory, allocation failed */,
-    fwErrorInvalidParameter /*! A parameter contained an illegal or wrong value */
-} fwError;
 
 /**
  * @brief The information used to start a module
@@ -85,5 +88,8 @@ fwError fwStopModule(
 void fwStopAllModules(
         void
         );
+
+fwError fwGetSystemCoreCount(int* res
+);
 
 #endif //LPAF_FRAMEWORK_H

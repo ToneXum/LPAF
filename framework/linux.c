@@ -16,6 +16,8 @@
 
 #ifdef PLATFORM_LINUX
 
+#include <unistd.h>
+
 void fwiStartNativeModuleWindow(void) {}
 
 void fwiStartNativeModuleNetwork(void) {}
@@ -31,5 +33,15 @@ void fwiStopNativeModuleNetwork(void) {}
 void fwiStopNativeModuleMultimedia(void) {}
 
 void fwiStopNativeModuleRenderer(void) {}
+
+fwError fwGetSystemCoreCount(int* res) {
+    const long count = sysconf(_SC_NPROCESSORS_ONLN);
+    if (count != -1) {
+        *res = count;
+        return fwErrorSuccess;
+    }
+    // could only fail if param is invalid which is isnt
+    return fwErrorGoodJob;
+}
 
 #endif // PLATFORM_LINUX

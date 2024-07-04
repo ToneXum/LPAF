@@ -15,4 +15,6 @@
 #ifndef LINUX_H
 #define LINUX_H
 
+#include "framework.h"
+
 #endif //LINUX_H
