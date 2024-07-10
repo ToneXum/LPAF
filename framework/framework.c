@@ -13,6 +13,9 @@
 // not, see <https://www.gnu.org/licenses/>.
 
 #include "framework.h"
+
+#include <stdio.h>
+
 #include "internal.h"
 
 fwError fwStartModule(const struct fwStartModuleInfo* kpStartInfo) {

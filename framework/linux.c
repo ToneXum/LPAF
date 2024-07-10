@@ -16,7 +16,12 @@
 
 #ifdef PLATFORM_LINUX
 
+#include <stdio.h>
+#include <stdlib.h>
 #include <unistd.h>
+
+#include <sys/stat.h>
+#include <sys/types.h>
 
 void fwiStartNativeModuleWindow(void) {}
 
@@ -34,14 +39,35 @@ void fwiStopNativeModuleMultimedia(void) {}
 
 void fwiStopNativeModuleRenderer(void) {}
 
-fwError fwGetSystemCoreCount(int* res) {
-    const long count = sysconf(_SC_NPROCESSORS_ONLN);
-    if (count != -1) {
-        *res = count;
+fwError fwGetSystemConfiguration(fwSystemConfiguration* res) {
+    res->cores  = sysconf(_SC_NPROCESSORS_ONLN);
+    // TODO: figure out why only first memory bank is counted
+    res->memory = sysconf(_SC_PHYS_PAGES) * sysconf(_SC_AVPHYS_PAGES) / 1048576; // 1024^2, to MiB
+    return fwErrorSuccess;
+}
+
+fwError fwLoadFileToMem(const char* filename, void** buffer, uint64_t* fileSize) {
+    FILE* file = fopen(filename, "rb");
+    if (file) {
+        const int32_t fileDescriptor = fileno(file); // should not error since file stream must be
+        // valid
+
+        struct stat fileStats;
+        if (fstat(fileDescriptor, &fileStats)) { // -1 on error
+            return fwErrorFailedToGetFileStats;
+        }
+
+        *fileSize = fileStats.st_size;
+        *buffer = malloc(*fileSize);
+        if (!(uintptr_t)*buffer) { // nullptr on error
+            return fwErrorOutOfMemory;
+        }
+
+        fread(*buffer, 1, *fileSize, file);
         return fwErrorSuccess;
     }
-    // could only fail if param is invalid which is isnt
-    return fwErrorGoodJob;
+
+    return fwErrorCouldNotOpenFile;
 }
 
 #endif // PLATFORM_LINUX

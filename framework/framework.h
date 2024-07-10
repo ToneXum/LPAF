@@ -1,4 +1,4 @@
-// LPAF - lightweight and performant application framework
+// LPAF - Lightweight and Performant Application Framework
 // Copyright (C) 2024 ToneXum (Toni Stein)
 //
 // This program is free software: you can redistribute it and/or modify it under the terms of the
@@ -18,6 +18,8 @@
 
 #include <stdint.h>
 
+// Only the finest documentation in here...
+
 /**
  * @brief Error codes returned by various functions when failure occurs
  */
@@ -26,6 +28,8 @@ typedef enum fwError : uint8_t {
     fwErrorOutOfMemory /*! Out of memory, allocation failed */,
     fwErrorInvalidParameter /*! A parameter contained an illegal or wrong value */,
     fwErrorUnimplemented /*! This feature is not implemented on this platform */,
+    fwErrorCouldNotOpenFile /*! Unable to open or correctly open the requested file */,
+    fwErrorFailedToGetFileStats /*! Failed to retrieve file information */,
     fwErrorGoodJob /*! You somehow caused a theoretically impossible failure */
 } fwError;
 
@@ -89,7 +93,44 @@ void fwStopAllModules(
         void
         );
 
-fwError fwGetSystemCoreCount(int* res
+/**
+ * @brief Struct containing system configuration information
+ * @param memory Physical memory in @b MebbiByte
+ * @param cores Online cores per socket
+ * @param sockets Sockets with processors installed
+ */
+typedef struct fwSystemConfiguration {
+    uint64_t memory;
+    uint16_t cores;
+    uint8_t sockets;
+
+} fwSystemConfiguration;
+
+/**
+ * @brief Retrieves the system configuration
+ * @param[out] res Pointer to struct where the result will be written to
+ * @return Does not return an error... wait what?
+ */
+fwError fwGetSystemConfiguration(
+    fwSystemConfiguration* res
+    );
+
+/**
+ * @brief Loads an entire file into an allocated memory buffer
+ * @note This function will allocate using malloc, when the buffer becomes unused it should be
+ *       released with @c free()
+ * @param[in] filename Name of, or path to, the file
+ * @param[out] buffer Buffer in which the file will be stored, will be allocted by this function
+ * @param[out] fileSize Size of the file and the buffer in bytes
+ * @return @c fwErrorCouldNotOpenFile when the file could not be opened, due to either permissions
+ *         or the file not existing
+ * @return @c fwErrorOutOfMemory when the file does not fit into free memory
+ * @return @c fwErrorFailedToGetFileStats when an I/O error occurs at syscall
+ */
+fwError fwLoadFileToMem(
+    const char* filename,
+    void** buffer,
+    uint64_t* fileSize
 );
 
 #endif //LPAF_FRAMEWORK_H

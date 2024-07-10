@@ -14,8 +14,21 @@
 
 #include "framework.h"
 
+#include <stdio.h>
+#include <unistd.h>
+#include <linux/limits.h>
+
 int main()
 {
+    char workingDir[PATH_MAX] = {0};
+    getcwd(workingDir, sizeof(workingDir));
+    printf("%s\n", workingDir);
+
+    void* fileMem = {nullptr};
+    uint64_t fileSize = {0};
+    fwLoadFileToMem("", &fileMem, &fileSize);
+
+    printf("%s\n", (char*)fileMem);
 
     return 0;
 }
