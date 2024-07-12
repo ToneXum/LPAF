@@ -16,7 +16,7 @@
 #include "internal.h"
 
 fwError fwStartModule(const struct fwStartModuleInfo* startInfo_kp) {
-    if (!(frameworkState_s.activeModules & fwModuleBase)) {
+    if (!(fwiGetState()->activeModules & fwModuleBase)) { // check if not module is active
         fwiStartNativeModuleBase();
     }
 
@@ -45,6 +45,7 @@ fwError fwStartModule(const struct fwStartModuleInfo* startInfo_kp) {
 }
 
 fwError fwStopModule(const enum fwModule module) {
+    bool fail = false;
     switch (module) {
         case fwModuleWindow: {
             fwiStopNativeModuleWindow();
@@ -63,30 +64,34 @@ fwError fwStopModule(const enum fwModule module) {
             break;
         }
         default: {
-            return fwErrorInvalidParameter;
+            fail = true;
         }
     }
-    if (frameworkState_s.activeModules == 0b1) {
+    if (fwiGetState()->activeModules == 0b1) {
         fwiStopNativeModuleBase();
+    }
+
+    if (fail) {
+        return fwErrorInvalidParameter;
     }
 
     return fwErrorSuccess;
 }
 
 void fwStopAllModules(void) {
-    if (frameworkState_s.activeModules & fwModuleWindow) {
+    if (fwiGetState()->activeModules & fwModuleWindow) {
         fwiStopNativeModuleWindow();
     }
-    if (frameworkState_s.activeModules & fwModuleNetwork) {
+    if (fwiGetState()->activeModules & fwModuleNetwork) {
         fwiStopNativeModuleNetwork();
     }
-    if (frameworkState_s.activeModules & fwModuleMultimedia) {
+    if (fwiGetState()->activeModules & fwModuleMultimedia) {
         fwiStopNativeModuleMultimedia();
     }
-    if (frameworkState_s.activeModules & fwModuleRender) {
+    if (fwiGetState()->activeModules & fwModuleRender) {
         fwiStopNativeModuleRenderer();
     }
-    if (frameworkState_s.activeModules & fwModuleBase) {
+    if (fwiGetState()->activeModules & fwModuleBase) {
         fwiStopNativeModuleBase();
     }
 }

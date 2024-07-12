@@ -20,15 +20,11 @@
 
 int main()
 {
-    char workingDir[PATH_MAX] = {0};
-    getcwd(workingDir, sizeof(workingDir));
-    printf("%s\n", workingDir);
+    struct fwStartModuleInfo strtInf = {};
+    strtInf.module = fwModuleBase;
+    fwStartModule(&strtInf);
 
-    void* fileMem = {nullptr};
-    uint64_t fileSize = {0};
-    fwLoadFileToMem("", &fileMem, &fileSize);
-
-    printf("%s\n", (char*)fileMem);
+    fwStopModule(fwModuleBase);
 
     return 0;
 }

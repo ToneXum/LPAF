@@ -12,9 +12,9 @@
 // You should have received a copy of the GNU General Public License along with this program. If
 // not, see <https://www.gnu.org/licenses/>.
 
-#include "linux.h"
-
 #ifdef PLATFORM_LINUX
+
+#include "framework.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -48,26 +48,25 @@ fwError fwGetSystemConfiguration(fwSystemConfiguration* res_p) {
 
 fwError fwLoadFileToMem(const char* filename_p, void** buffer_pp, uint64_t* fileSize_p) {
     FILE* file = fopen(filename_p, "rb");
-    if (file) {
-        const int32_t fileDescriptor = fileno(file); // should not error since file stream must be
-        // valid
-
-        struct stat fileStats;
-        if (fstat(fileDescriptor, &fileStats)) { // -1 on error
-            return fwErrorFailedToGetFileStats;
-        }
-
-        *fileSize_p = fileStats.st_size;
-        *buffer_pp = malloc(*fileSize_p);
-        if (!(uintptr_t)*buffer_pp) { // nullptr on error
-            return fwErrorOutOfMemory;
-        }
-
-        fread(*buffer_pp, 1, *fileSize_p, file);
-        return fwErrorSuccess;
+    if (!(uintptr_t)file) {
+        return fwErrorCouldNotOpenFile;
     }
 
-    return fwErrorCouldNotOpenFile;
+    const int32_t fileDescriptor = fileno(file); // should not error since file stream must be valid
+
+    struct stat fileStats;
+    if (fstat(fileDescriptor, &fileStats)) { // -1 on error
+        return fwErrorFailedToGetFileStats;
+    }
+
+    *fileSize_p = fileStats.st_size;
+    *buffer_pp = malloc(*fileSize_p);
+    if (!(uintptr_t)*buffer_pp) {
+        return fwErrorOutOfMemory;
+    }
+
+    fread(*buffer_pp, 1, *fileSize_p, file);
+    return fwErrorSuccess;
 }
 
 #endif // PLATFORM_LINUX

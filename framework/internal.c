@@ -20,6 +20,12 @@
 #include "internal.h"
 #include "framework.h"
 
+struct fwiState frameworkState_s = {0};
+
+struct fwiState* fwiGetState(void) {
+    return &frameworkState_s;
+}
+
 void fwiLogA(const fwiLogLevel lll, const char* format_p,  ...) {
 #ifdef BUILD_DEBUG
     const time_t rawTime  = time(nullptr);
@@ -36,23 +42,23 @@ void fwiLogA(const fwiLogLevel lll, const char* format_p,  ...) {
 
     switch (lll) {
         case fwiLogLevelError: {
-            printf("%s ERROR]: ", buf);
+            printf("%s "FW_ESCAPE_RED"ERROR"FW_ESCAPE_NORMAL"]: ", buf);
             break;
         }
         case fwiLogLevelWarning: {
-            printf("%s WARNING]: ", buf);
+            printf("%s "FW_ESCAPE_YELLOW"WARNING"FW_ESCAPE_NORMAL"]: ", buf);
             break;
         }
         case fwiLogLevelInfo: {
-            printf("%s INFO]: ", buf);
+            printf("%s "FW_ESCAPE_CYAN"INFO"FW_ESCAPE_NORMAL"]: ", buf);
             break;
         }
         case fwiLogLevelDebug: {
-            printf("%s DEBUG]: ", buf);
+            printf("%s "FW_ESCAPE_GREEN"DEBUG"FW_ESCAPE_NORMAL"]: ", buf);
             break;
         }
         case fwiLogLevelBench: {
-            printf("%s BENCHMARK]: ", buf);
+            printf("%s "FW_ESCAPE_MAGENTA"BENCHMARK"FW_ESCAPE_NORMAL"]: ", buf);
             break;
         }
     }
@@ -66,7 +72,7 @@ void fwiLogA(const fwiLogLevel lll, const char* format_p,  ...) {
     pthread_mutex_unlock(&frameworkState_s.loggerMutex);
 #endif // BUILD_DEBUG
 #ifdef BUILD_RELEASE
-    // TODO: implement logging to file for ASCI
+    // TODO: implement logging to file
 #endif // BUILD_RELEASE
 }
 
@@ -116,7 +122,7 @@ void fwiLogW(const fwiLogLevel lll, const wchar_t* format_p, ...) {
     pthread_mutex_unlock(&frameworkState_s.loggerMutex);
 #endif // BUILD_DEBUG
 #ifdef BUILD_RELEASE
-    // TODO: implement logging to file for UFT-16
+    // TODO: implement logging to file
 #endif // BUILD_RELEASE
 }
 
@@ -137,7 +143,7 @@ void fwiLogFollowupA(const bool isLast, const char* format_p, ...) {
     va_end(args);
 #endif // BUILD_DEBUG
 #ifdef BUILD_RELEASE
-    //TODO: implement follow-up logging to file for ASCI
+    //TODO: implement follow-up logging to file
 #endif // BUILD_RELEASE
 }
 
@@ -158,7 +164,7 @@ void fwiLogFollowupW(const bool isLast, const wchar_t* format_p, ...) {
     va_end(args);
 #endif // BUILD_DEBUG
 #ifdef BUILD_RELEASE
-    //TODO: implement follow-up logging to file for UFT-16
+    //TODO: implement follow-up logging to file
 #endif // BUILD_RELEASE
 }
 
