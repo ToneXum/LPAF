@@ -39,15 +39,15 @@ void fwiStopNativeModuleMultimedia(void) {}
 
 void fwiStopNativeModuleRenderer(void) {}
 
-fwError fwGetSystemConfiguration(fwSystemConfiguration* res) {
-    res->cores  = sysconf(_SC_NPROCESSORS_ONLN);
+fwError fwGetSystemConfiguration(fwSystemConfiguration* res_p) {
+    res_p->cores  = sysconf(_SC_NPROCESSORS_ONLN);
     // TODO: figure out why only first memory bank is counted
-    res->memory = sysconf(_SC_PHYS_PAGES) * sysconf(_SC_AVPHYS_PAGES) / 1048576; // 1024^2, to MiB
+    res_p->memory = sysconf(_SC_PHYS_PAGES) * sysconf(_SC_AVPHYS_PAGES) / 1048576; // 1024^2, to MiB
     return fwErrorSuccess;
 }
 
-fwError fwLoadFileToMem(const char* filename, void** buffer, uint64_t* fileSize) {
-    FILE* file = fopen(filename, "rb");
+fwError fwLoadFileToMem(const char* filename_p, void** buffer_pp, uint64_t* fileSize_p) {
+    FILE* file = fopen(filename_p, "rb");
     if (file) {
         const int32_t fileDescriptor = fileno(file); // should not error since file stream must be
         // valid
@@ -57,13 +57,13 @@ fwError fwLoadFileToMem(const char* filename, void** buffer, uint64_t* fileSize)
             return fwErrorFailedToGetFileStats;
         }
 
-        *fileSize = fileStats.st_size;
-        *buffer = malloc(*fileSize);
-        if (!(uintptr_t)*buffer) { // nullptr on error
+        *fileSize_p = fileStats.st_size;
+        *buffer_pp = malloc(*fileSize_p);
+        if (!(uintptr_t)*buffer_pp) { // nullptr on error
             return fwErrorOutOfMemory;
         }
 
-        fread(*buffer, 1, *fileSize, file);
+        fread(*buffer_pp, 1, *fileSize_p, file);
         return fwErrorSuccess;
     }
 

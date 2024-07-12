@@ -17,11 +17,7 @@ set(FRAMEWORK_SOURCE
         framework.h
         internal.c
         internal.h
-        win32.c
-        win32.h
-        window.h
         linux.c
-        linux.h
 )
 add_library(lpafLib STATIC ${FRAMEWORK_SOURCE})
 set_target_properties(lpafLib PROPERTIES

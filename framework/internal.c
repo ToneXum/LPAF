@@ -20,12 +20,7 @@
 #include "internal.h"
 #include "framework.h"
 
-struct fwiState* fwiGetState() {
-    static struct fwiState dat = {};
-    return &dat;
-}
-
-void fwiLogA(const fwiLogLevel lll, const char* format,  ...) {
+void fwiLogA(const fwiLogLevel lll, const char* format_p,  ...) {
 #ifdef BUILD_DEBUG
     const time_t rawTime  = time(nullptr);
     const struct tm* time = localtime(&rawTime);
@@ -37,7 +32,7 @@ void fwiLogA(const fwiLogLevel lll, const char* format,  ...) {
         return;
     }
 
-    pthread_mutex_lock(&fwiGetState()->loggerMutex);
+    pthread_mutex_lock(&frameworkState_s.loggerMutex);
 
     switch (lll) {
         case fwiLogLevelError: {
@@ -64,18 +59,18 @@ void fwiLogA(const fwiLogLevel lll, const char* format,  ...) {
 
     va_list args = {0u};
     va_start(args);
-    vprintf(format, args);
+    vprintf(format_p, args);
     va_end(args);
     printf("\n");
 
-    pthread_mutex_unlock(&fwiGetState()->loggerMutex);
+    pthread_mutex_unlock(&frameworkState_s.loggerMutex);
 #endif // BUILD_DEBUG
 #ifdef BUILD_RELEASE
     // TODO: implement logging to file for ASCI
 #endif // BUILD_RELEASE
 }
 
-void fwiLogW(const fwiLogLevel lll, const wchar_t* format, ...) {
+void fwiLogW(const fwiLogLevel lll, const wchar_t* format_p, ...) {
 #ifdef BUILD_DEBUG
     const time_t rawTime  = time(nullptr);
     const struct tm* time = localtime(&rawTime);
@@ -87,7 +82,7 @@ void fwiLogW(const fwiLogLevel lll, const wchar_t* format, ...) {
         return;
     }
 
-    pthread_mutex_lock(&fwiGetState()->loggerMutex);
+    pthread_mutex_lock(&frameworkState_s.loggerMutex);
 
     switch (lll) {
         case fwiLogLevelError: {
@@ -114,29 +109,29 @@ void fwiLogW(const fwiLogLevel lll, const wchar_t* format, ...) {
 
     va_list args = {0u};
     va_start(args);
-    vwprintf(format, args);
+    vwprintf(format_p, args);
     va_end(args);
     printf("\n");
 
-    pthread_mutex_unlock(&fwiGetState()->loggerMutex);
+    pthread_mutex_unlock(&frameworkState_s.loggerMutex);
 #endif // BUILD_DEBUG
 #ifdef BUILD_RELEASE
     // TODO: implement logging to file for UFT-16
 #endif // BUILD_RELEASE
 }
 
-void fwiLogFollowupA(const bool isLast, const char* format, ...) {
+void fwiLogFollowupA(const bool isLast, const char* format_p, ...) {
 #ifdef BUILD_DEBUG
     va_list args = {0u};
     va_start(args);
     if (isLast) {
         printf("\\ - ");
-        vprintf(format, args);
+        vprintf(format_p, args);
         printf("\n");
     }
     else {
         printf("| - ");
-        vprintf(format, args);
+        vprintf(format_p, args);
         printf("\n");
     }
     va_end(args);
@@ -146,18 +141,18 @@ void fwiLogFollowupA(const bool isLast, const char* format, ...) {
 #endif // BUILD_RELEASE
 }
 
-void fwiLogFollowupW(const bool isLast, const wchar_t* format, ...) {
+void fwiLogFollowupW(const bool isLast, const wchar_t* format_p, ...) {
 #ifdef BUILD_DEBUG
     va_list args = {0u};
     va_start(args);
     if (isLast) {
         wprintf(L"\\ - ");
-        vwprintf(format, args);
+        vwprintf(format_p, args);
         wprintf(L"\n");
     }
     else {
         wprintf(L"| - ");
-        vwprintf(format, args);
+        vwprintf(format_p, args);
         wprintf(L"\n");
     }
     va_end(args);
@@ -168,7 +163,7 @@ void fwiLogFollowupW(const bool isLast, const wchar_t* format, ...) {
 }
 
 void fwiStartNativeModuleBase(void) {
-    pthread_mutex_init(&fwiGetState()->loggerMutex, nullptr);
+    pthread_mutex_init(&frameworkState_s.loggerMutex, nullptr);
 
     const time_t rawTime        = time(nullptr);
     const struct tm* time       = localtime(&rawTime);
@@ -178,16 +173,14 @@ void fwiStartNativeModuleBase(void) {
         fwiLogA(fwiLogLevelError, "Failed to get local time");
     }
 
-    fwiGetState()->activeModules |= fwModuleBase;
+    frameworkState_s.activeModules |= fwModuleBase;
 
     fwiLogA(fwiLogLevelInfo, "Base module was started");
     fwiLogA(fwiLogLevelInfo, "The current date is %s (D.M.Y)", buf);
 }
 
 void fwiStopNativeModuleBase(void) {
-    pthread_mutex_destroy(&fwiGetState()->loggerMutex);
-
-    fwiGetState()->activeModules &= ~fwModuleBase;
-
+    frameworkState_s.activeModules &= ~fwModuleBase;
     fwiLogA(fwiLogLevelInfo, "Base module was stopped");
+    pthread_mutex_destroy(&frameworkState_s.loggerMutex);
 }

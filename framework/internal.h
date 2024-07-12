@@ -28,13 +28,13 @@ typedef enum fwiLogLevel : uint8_t {
 } fwiLogLevel;
 
 /**
- * @brief @b DO @b NOT @b INSTANTIATE; Global framework state data
+ * @brief Do not instanciate
  */
 struct fwiState {
     uint8_t activeModules;
     pthread_mutex_t loggerMutex;
 } __attribute__((aligned(16)));
-struct fwiState* fwiGetState();
+struct fwiState frameworkState_s = {0};
 
 void fwiStartNativeModuleBase(
         void
@@ -76,27 +76,54 @@ void fwiStopNativeModuleRenderer(
         void
         );
 
+/**
+ * @brief printf with added timestamp and log level color
+ * @param lll[in] Log level of the message
+ * @param format_p[in] Format string of the output message, mechanically the same as printf
+ * @param ...[in] Replacement parameters for placeholders
+ */
 void fwiLogA(
-        fwiLogLevel lll,
-        const char* format,
+        enum fwiLogLevel lll,
+        const char* format_p,
         ...
         );
 
+/**
+ * @brief printf with added timestamp and log level color
+ * @param lll[in] Log level of the message
+ * @param format_p[in] Format string of the output message, placeholders are mechanically the same
+ *                     as printf
+ * @param ...[in] Replacement parameters for placeholders
+ */
 void fwiLogW(
-        fwiLogLevel lll,
-        const wchar_t* format,
+        enum fwiLogLevel lll,
+        const wchar_t* format_p,
         ...
         );
 
+/**
+ * @brief makes it look like the message was appended to the one before it
+ * @param isLast[in] If this message is the last one, for visual completeness
+ * @param format_p[in] Format string of the output message, placeholders are mechanically the same
+ *                     as printf
+ * @param ...[in] Replacement parameters for placeholders
+ */
 void fwiLogFollowupA(
         bool isLast,
-        const char* format,
+        const char* format_p,
         ...
         );
 
+/**
+ * @brief makes it look like the message was appended to the one before it
+ * @param isLast[in] If this message is the last one, for visual completeness
+ * @param format_p[in] Format string of the output message, placeholders are mechanically the same
+ *                     as printf
+ * @param ...[in] Replacement parameters for placeholders
+ */
 void fwiLogFollowupW(
         bool isLast,
-        const wchar_t* format,
+        const wchar_t* format_p,
         ...
         );
 

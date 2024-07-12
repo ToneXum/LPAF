@@ -27,13 +27,19 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="b43a079c-b7ae-41fc-bc1a-f78f46edc6d3" name="Changes" comment="smol util func">
-      <change beforePath="$PROJECT_DIR$/.idea/editor.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/editor.xml" afterDir="false" />
+    <list default="true" id="b43a079c-b7ae-41fc-bc1a-f78f46edc6d3" name="Changes" comment="implement load file to memory">
+      <change beforePath="$PROJECT_DIR$/.idea/inspectionProfiles/Project_Default.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/inspectionProfiles/Project_Default.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/framework/CMakeLists.txt" beforeDir="false" afterPath="$PROJECT_DIR$/framework/CMakeLists.txt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/framework/framework.c" beforeDir="false" afterPath="$PROJECT_DIR$/framework/framework.c" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/framework/framework.h" beforeDir="false" afterPath="$PROJECT_DIR$/framework/framework.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/framework/internal.c" beforeDir="false" afterPath="$PROJECT_DIR$/framework/internal.c" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/framework/internal.h" beforeDir="false" afterPath="$PROJECT_DIR$/framework/internal.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/framework/linux.c" beforeDir="false" afterPath="$PROJECT_DIR$/framework/linux.c" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/main.c" beforeDir="false" afterPath="$PROJECT_DIR$/tests/main.c" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/framework/linux.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/framework/win32.c" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/framework/win32.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/framework/window.h" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -255,19 +261,26 @@
     "node.js.selected.package.tslint": "(autodetect)",
     "nodejs_package_manager_path": "npm",
     "run.code.analysis.last.selected.profile": "pProject Default",
-    "settings.editor.selected.configurable": "reference.settingsdialog.project.grazie",
+    "settings.editor.selected.configurable": "org.jetbrains.plugins.github.ui.GithubSettingsConfigurable",
     "structure.view.defaults.are.configured": "true",
     "vue.rearranger.settings.migration": "true"
   }
 }]]></component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/bin" />
+      <recent name="$PROJECT_DIR$" />
       <recent name="D:\File Dump\Programming Projects\Framework" />
       <recent name="D:\File Dump\Programming Projects\Framework\Framework" />
       <recent name="D:\File Dump\Programming Projects\Framework\Documentation" />
     </key>
   </component>
   <component name="RunManager" selected="CMake Application.lpafTest">
+    <configuration default="true" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
     <configuration name="lpafLib" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="true" PASS_PARENT_ENVS_2="true" PROJECT_NAME="LPAF" TARGET_NAME="lpafLib" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="LPAF" RUN_TARGET_NAME="lpafTest">
       <method v="2">
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
@@ -356,15 +369,10 @@
       <workItem from="1720112801412" duration="2220000" />
       <workItem from="1720373086900" duration="4662000" />
       <workItem from="1720547143137" duration="44000" />
-      <workItem from="1720634814374" duration="4975000" />
-    </task>
-    <task id="LOCAL-00004" summary="delete visual studios project files">
-      <option name="closed" value="true" />
-      <created>1709327398610</created>
-      <option name="number" value="00004" />
-      <option name="presentableId" value="LOCAL-00004" />
-      <option name="project" value="LOCAL" />
-      <updated>1709327398610</updated>
+      <workItem from="1720634814374" duration="5793000" />
+      <workItem from="1720714738634" duration="670000" />
+      <workItem from="1720787020335" duration="2222000" />
+      <workItem from="1720794982990" duration="1775000" />
     </task>
     <task id="LOCAL-00005" summary="finish rework">
       <option name="closed" value="true" />
@@ -750,7 +758,15 @@
       <option name="project" value="LOCAL" />
       <updated>1720113423022</updated>
     </task>
-    <option name="localTasksCounter" value="53" />
+    <task id="LOCAL-00053" summary="implement load file to memory">
+      <option name="closed" value="true" />
+      <created>1720640276824</created>
+      <option name="number" value="00053" />
+      <option name="presentableId" value="LOCAL-00053" />
+      <option name="project" value="LOCAL" />
+      <updated>1720640276824</updated>
+    </task>
+    <option name="localTasksCounter" value="54" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -797,7 +813,6 @@
     <ignored-roots>
       <path value="$PROJECT_DIR$/Framework" />
     </ignored-roots>
-    <MESSAGE value="more flexible error handling" />
     <MESSAGE value="implement socket creation" />
     <MESSAGE value="rename files for OS dependant implementations" />
     <MESSAGE value="implement data streams over sockets, fix socket creation, rearrange definitions" />
@@ -822,7 +837,8 @@
     <MESSAGE value="a little code quality" />
     <MESSAGE value="put a lazy excuse in readme.md" />
     <MESSAGE value="smol util func" />
-    <option name="LAST_COMMIT_MESSAGE" value="smol util func" />
+    <MESSAGE value="implement load file to memory" />
+    <option name="LAST_COMMIT_MESSAGE" value="implement load file to memory" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

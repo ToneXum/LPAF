@@ -18,10 +18,8 @@
 
 #include <stdint.h>
 
-// Only the finest documentation in here...
-
 /**
- * @brief Error codes returned by various functions when failure occurs
+ * @brief Error codes
  */
 typedef enum fwError : uint8_t {
     fwErrorSuccess /*! No error, everything went smoothly */,
@@ -34,61 +32,52 @@ typedef enum fwError : uint8_t {
 } fwError;
 
 /**
- * @brief Specifies a module of LPAF. For example the renderer or the networking subsystem
- * @see Used as parameter for @c fwStartModuleInfo
+ * @brief Identifies a module of LPAF
+ * @note Used as parameter for @c fwStartModuleInfo
  */
 typedef enum fwModule : uint8_t {
-    fwModuleBase        = 0b00001 /*! Base, passing this will cause error but no UB */,
-    fwModuleWindow      = 0b00010 /*! Module for windowed UI */,
-    fwModuleRender      = 0b00100 /*! Module for the renderer */,
-    fwModuleNetwork     = 0b01000 /*! Module for networking and sockets*/,
-    fwModuleMultimedia  = 0b10000 /*! Module for multimedia like video and sound */
-} lfModule;
-
-/**
- * @brief Flags that specify how a module should be started; They modify the behaviour of said
- * module
- */
-typedef enum fwModuleStartFlags : uint8_t {
-    fwWindowModuleStartNoWindowClose          = 0b10
-} lfModuleStartFlags;
+    fwModuleBase        = 0b0000'0001 /*! Base, passing this will cause error but no UB */,
+    fwModuleWindow      = 0b0000'0010 /*! Module for windowed UI */,
+    fwModuleRender      = 0b0000'0100 /*! Module for the renderer */,
+    fwModuleNetwork     = 0b0000'1000 /*! Module for networking and sockets*/,
+    fwModuleMultimedia  = 0b0001'0000 /*! Module for multimedia like video and sound */
+} fwModule;
 
 /**
  * @brief The information used to start a module
- * @param[in] kModule Enum of type @c fwModule ; Specifies which module is supposed to be started
- * @param[in] kModuleStartFlags Flag set of type @c fwModuleStartFlags
- * @see @c fwModuleStartFlags for the aforementioned flags
- * @see Used as parameter for @c fwStartModule()
+ * @param module @c fwModule enum specifying which module is supposed to be started
+ * @note Used as parameter for @c fwStartModule()
  */
 typedef struct fwStartModuleInfo {
     enum fwModule module;
-    uint8_t moduleStartFlags;
-} __attribute__((aligned(2))) lfStartInfo;
+    // uint8_t moduleStartFlags; TODO: implement module context
+} __attribute__((aligned(2))) fwStartInfo;
 
 /**
  * @brief Starts a module of the framework
- * @param[in] kpStartInfo Pointer a @c fwStartModuleInfo struct containing information about the
- * module that is supposed to be started
- * @return @c NULL on success, an error code on failure
- * @see @c fwStartModuleInfo for starting information
- * @see @c fwError enum for error codes
- */
+ * @param startInfo_kp[in] Pointer to a @c fwStartModuleInfo struct containing information about the
+ *                        module that is supposed to be started
+ * @return @c fwErrorSuccess No error occured
+ * @return @c fwErrorInvalidParameter The provided module was not valid
+ */ // PlatIndepImp
 fwError fwStartModule(
-        const struct fwStartModuleInfo* kpStartInfo
+        const struct fwStartModuleInfo* startInfo_kp
         );
 
 /**
  * @brief Stops a module of the framework
- * @param[in] module Which module is supposed to be stopped
- * @see @c fwModule enum for modules
- */
+ * @note See @c fwModule enum for modules
+ * @param module[in] Which module is supposed to be stopped
+ * @return @c fwErrorSuccess No error occured
+ * @return @c fwErrorInvalidParameter The module parameter was not a valid module
+ */ // PlatIndepImp
 fwError fwStopModule(
         enum fwModule module
         );
 
 /**
  * @brief Stops all currently active modules
- */
+ */ // PlatIndepImp
 void fwStopAllModules(
         void
         );
@@ -98,6 +87,7 @@ void fwStopAllModules(
  * @param memory Physical memory in @b MebbiByte
  * @param cores Online cores per socket
  * @param sockets Sockets with processors installed
+ * @note Used as param for @c fwGetSystemConfiguration
  */
 typedef struct fwSystemConfiguration {
     uint64_t memory;
@@ -108,29 +98,30 @@ typedef struct fwSystemConfiguration {
 
 /**
  * @brief Retrieves the system configuration
- * @param[out] res Pointer to struct where the result will be written to
- * @return Does not return an error... wait what?
- */
+ * @note TODO: This is implementation is shit, rework this.
+ */ // PlatDepImp
 fwError fwGetSystemConfiguration(
-    fwSystemConfiguration* res
+    fwSystemConfiguration* res_p
     );
 
 /**
  * @brief Loads an entire file into an allocated memory buffer
  * @note This function will allocate using malloc, when the buffer becomes unused it should be
  *       released with @c free()
- * @param[in] filename Name of, or path to, the file
- * @param[out] buffer Buffer in which the file will be stored, will be allocted by this function
- * @param[out] fileSize Size of the file and the buffer in bytes
- * @return @c fwErrorCouldNotOpenFile when the file could not be opened, due to either permissions
+ * @param filename_p[in] Name of, or path to, the file
+ * @param buffer_pp[out] Address of a pointer to the buffer in which the file will be stored, will be
+ *                    allocted by this function
+ * @param fileSize_p[out] Size of the file and the buffer in bytes
+ * @return @c fwErrorSuccess No error occured
+ * @return @c fwErrorCouldNotOpenFile The file could not be opened, due to either permissions
  *         or the file not existing
- * @return @c fwErrorOutOfMemory when the file does not fit into free memory
- * @return @c fwErrorFailedToGetFileStats when an I/O error occurs at syscall
- */
+ * @return @c fwErrorOutOfMemory The file does not fit into free memory
+ * @return @c fwErrorFailedToGetFileStats An I/O error occurs at syscall
+ */ // PlatDepImp
 fwError fwLoadFileToMem(
-    const char* filename,
-    void** buffer,
-    uint64_t* fileSize
+    const char* filename_p,
+    void** buffer_pp,
+    uint64_t* fileSize_p
 );
 
 #endif //LPAF_FRAMEWORK_H
