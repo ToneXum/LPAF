@@ -159,6 +159,8 @@ void fwiLogFollowupW(
         ...
         );
 
-void fwiCrashToFatalError();
+void fwiLogErrno(
+    void
+    );
 
 #endif //LPAF_INTERNAL_H

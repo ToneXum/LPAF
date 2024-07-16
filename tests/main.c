@@ -12,19 +12,38 @@
 // You should have received a copy of the GNU General Public License along with this program. If
 // not, see <https://www.gnu.org/licenses/>.
 
-#include "framework.h"
+#include <errno.h>
+#include <stdlib.h>
 
-#include <stdio.h>
-#include <unistd.h>
-#include <linux/limits.h>
+#include "framework.h"
 
 int main()
 {
     struct fwStartModuleInfo strtInf = {};
-    strtInf.module = fwModuleBase;
+    strtInf.module = fwModuleNetwork;
     fwStartModule(&strtInf);
 
-    fwStopModule(fwModuleBase);
+    struct fwSocketCreateInfo createInfo = {0};
+    createInfo.addressFamily  = fwSocketAddressFamilyIPv4;
+    createInfo.socketType     = fwSocketTypeStream;
+    fwSocket socket;
+    fwError call1 = fwSocketCreate(&createInfo, &socket);
+
+    struct fwSocketConnectInfo connectInfo = {};
+    connectInfo.target_p = "tonexum.org";
+    connectInfo.port_p = "80";
+    connectInfo.targetKind = fwSocketConnectionTargetInternetDomainName;
+    fwError call2 = fwSocketConnect(socket, &createInfo, &connectInfo);
+
+    const char httpRequest[38] = "GET / HTTP/1.1\r\nHost: www.tonexum.org\r\n";
+    char* buffer = malloc(4096);
+
+    fwError call3 = fwSocketSend(socket, httpRequest, sizeof(httpRequest));
+    fwError call4 = fwSocketReceive(socket, buffer, 4096);
+
+    fwError call5 = fwSocketClose(socket);
+
+    fwStopModule(fwModuleNetwork);
 
     return 0;
 }

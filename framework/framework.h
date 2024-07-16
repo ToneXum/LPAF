@@ -17,6 +17,7 @@
 #define LPAF_FRAMEWORK_H
 
 #include <stdint.h>
+#include <stddef.h>
 
 /**
  * @brief Error codes
@@ -26,8 +27,16 @@ typedef enum fwError : uint8_t {
     fwErrorOutOfMemory /*! Out of memory, allocation failed */,
     fwErrorInvalidParameter /*! A parameter contained an illegal or wrong value */,
     fwErrorUnimplemented /*! This feature is not implemented on this platform */,
-    fwErrorCouldNotOpenFile /*! Unable to open or correctly open the requested file */,
-    fwErrorFailedToGetFileStats /*! Failed to retrieve file information */,
+
+    fwErrorFileUnableToOpen /*! Unable to open or correctly open the requested file */,
+    fwErrorFileStats /*! Failed to retrieve file information */,
+
+    fwErrorSocketAddressInUse,
+    fwErrorSocketDomainName,
+    fwErrorSocketConnection,
+    fwErrorSocketSend,
+    fwErrorSocketReceive,
+
     fwErrorGoodJob /*! You somehow caused a theoretically impossible failure */
 } fwError;
 
@@ -51,7 +60,7 @@ typedef enum fwModule : uint8_t {
 typedef struct fwStartModuleInfo {
     enum fwModule module;
     // uint8_t moduleStartFlags; TODO: implement module context
-} __attribute__((aligned(2))) fwStartInfo;
+} fwStartInfo;
 
 /**
  * @brief Starts a module of the framework
@@ -93,7 +102,6 @@ typedef struct fwSystemConfiguration {
     uint64_t memory;
     uint16_t cores;
     uint8_t sockets;
-
 } fwSystemConfiguration;
 
 /**
@@ -101,7 +109,7 @@ typedef struct fwSystemConfiguration {
  * @note TODO: This is implementation is shit, rework this.
  */ // PlatDepImp
 fwError fwGetSystemConfiguration(
-    fwSystemConfiguration* res_p
+    struct fwSystemConfiguration* res_p
     );
 
 /**
@@ -109,8 +117,8 @@ fwError fwGetSystemConfiguration(
  * @note This function will allocate using malloc, when the buffer becomes unused it should be
  *       released with @c free()
  * @param filename_p[in] Name of, or path to, the file
- * @param buffer_pp[out] Address of a pointer to the buffer in which the file will be stored, will be
- *                    allocted by this function
+ * @param buffer_pp[out] Address of a pointer to the buffer in which the file will be stored, will
+ *                       be allocted by this function
  * @param fileSize_p[out] Size of the file and the buffer in bytes
  * @return @c fwErrorSuccess No error occured
  * @return @c fwErrorCouldNotOpenFile The file could not be opened, due to either permissions
@@ -123,5 +131,64 @@ fwError fwLoadFileToMem(
     void** buffer_pp,
     uint64_t* fileSize_p
 );
+
+typedef uintptr_t fwSocket;
+
+typedef enum fwSocketAddressFamily : uint8_t {
+    fwSocketAddressFamilyIPv4,
+    fwSocketAddressFamilyIPv6,
+    fwSocketAddressFamilyLocal,
+    fwSocketAddressFamilyBlueTooth
+} fwSocketAddressFamily;
+
+typedef enum fwSocketType : uint8_t {
+    fwSocketTypeStream,
+    fwSocketTypeDatagram,
+    fwSocketTypeRaw
+} fwSocketType;
+
+typedef struct fwSocketCreateInfo {
+    enum fwSocketAddressFamily addressFamily;
+    enum fwSocketType socketType;
+} fwSocketCreateInfo;
+
+fwError fwSocketCreate(
+    const struct fwSocketCreateInfo* sockCrtInf,
+    fwSocket* sfdop_p
+    );
+
+typedef enum fwSocketConnectionTargetKind : uint8_t {
+    fwSocketConnectionTargetInternetProtocollAddress,
+    fwSocketConnectionTargetInternetDomainName,
+    fwSocketConnectionTargetLocalHostNamme
+} fwSocketConnectionTarget;
+
+typedef struct fwSocketConnectInfo {
+    const char* target_p;
+    const char* port_p;
+    enum fwSocketConnectionTargetKind targetKind;
+} fwSocketConnectionInfo;
+
+fwError fwSocketConnect(
+    fwSocket sfdop,
+    const struct fwSocketCreateInfo* createInfo_p,
+    const struct fwSocketConnectInfo* connectInfo_p
+    );
+
+fwError fwSocketSend(
+    fwSocket sfdop,
+    const void* data,
+    size_t ammount
+    );
+
+fwError fwSocketReceive(
+    fwSocket sfdop,
+    void* buffer,
+    size_t ammount
+);
+
+fwError fwSocketClose(
+    fwSocket sfdop
+    );
 
 #endif //LPAF_FRAMEWORK_H
