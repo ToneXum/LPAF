@@ -127,79 +127,114 @@ fwError fwSocketCreate(const struct fwSocketCreateInfo* sockCrtInf, fwSocket* sf
         }
     }
 
-    *sfdop_p = socket(domain, type, 0);
+    if ((*sfdop_p = socket(domain, type, 0)) == -1) {
+        fwiLogErrno();
+    }
+    fwiLogA(fwiLogLevelInfo, "Socket %d was created", *sfdop_p);
     return fwErrorSuccess;
 }
 
 fwError fwSocketConnect(const fwSocket sfdop, const struct fwSocketCreateInfo* createInfo_p,
                         const fwSocketConnectionInfo* connectInfo_p) {
-    if (connectInfo_p->targetKind == fwSocketConnectionTargetInternetDomainName) {
-        struct addrinfo hint      = {};
-        struct addrinfo* res      = {};
-        const struct addrinfo *it = {};
-        hint.ai_family            = createInfo_p->addressFamily;
-        hint.ai_socktype          = createInfo_p->socketType;
-
-        if (getaddrinfo(connectInfo_p->target_p, connectInfo_p->port_p, &hint, &res)) {
-            return fwErrorSocketDomainName;
-        }
-
-        for (it = res; it->ai_next != nullptr; it = it->ai_next) {
-            if (connect(sfdop, res->ai_addr, res->ai_addrlen)) {
-                close(sfdop);
-                continue;
-            }
-            break;
-        }
-
-        if (it->ai_next == nullptr) {
-            return fwErrorSocketConnection;
-        }
-
-        freeaddrinfo(res);
-        return fwErrorSuccess;
-    }
-
-    if (strlen(connectInfo_p->target_p) > 14) {
-        return fwErrorInvalidParameter;
-    }
-
-    struct sockaddr foreignAddr = {};
+    uint8_t addrFam = {};
     switch (createInfo_p->addressFamily) {
-        case fwSocketAddressFamilyLocal: {
-            foreignAddr.sa_family = AF_LOCAL;
-            break;
-        }
         case fwSocketAddressFamilyIPv4: {
-            foreignAddr.sa_family = AF_INET;
+            addrFam = AF_INET;
             break;
         }
         case fwSocketAddressFamilyIPv6: {
-            foreignAddr.sa_family = AF_INET6;
+            addrFam = AF_INET6;
+            break;
+        }
+        case fwSocketAddressFamilyLocal: {
+            addrFam = AF_LOCAL;
             break;
         }
         case fwSocketAddressFamilyBlueTooth: {
-            foreignAddr.sa_family = AF_BLUETOOTH;
+            addrFam = AF_BLUETOOTH;
             break;
         }
-        default: {
-            return fwErrorInvalidParameter;
+    }
+
+    uint8_t sockType = {};
+    switch (createInfo_p->socketType) {
+        case fwSocketTypeStream: {
+            sockType = SOCK_STREAM;
+            break;
+        }
+        case fwSocketTypeDatagram: {
+            sockType = SOCK_DGRAM;
+            break;
+        }
+        case fwSocketTypeRaw: {
+            sockType = SOCK_RAW;
+            break;
         }
     }
 
-    strcpy(foreignAddr.sa_data, connectInfo_p->target_p);
+    switch (connectInfo_p->targetKind) {
+        case fwSocketConnectionTargetInternetDomainName: {
+            struct addrinfo hint      = {};
+            struct addrinfo* res      = {};
+            const struct addrinfo *it = {};
 
-    if (connect(sfdop, &foreignAddr, sizeof(foreignAddr))) {
-        int e = errno;
-        close(sfdop);
-        return fwErrorSocketConnection;
+            hint.ai_family            = addrFam;
+            hint.ai_socktype          = sockType;
+
+            if (getaddrinfo(connectInfo_p->target_p, connectInfo_p->port_p, &hint, &res)) {
+                freeaddrinfo(res);
+                return fwErrorSocketDomainName;
+            }
+
+            it = res;
+            do {
+                if (connect(sfdop, it->ai_addr, it->ai_addrlen) == -1) {
+                    fwiLogErrno();
+                    close(sfdop);
+                    it = it->ai_next;
+                    continue;
+                }
+                break;
+            } while (it != nullptr);
+
+            if (it == nullptr) {
+                freeaddrinfo(res);
+                return fwErrorSocketConnection;
+            }
+
+            fwiLogA(fwiLogLevelInfo, "Socket %d connected", sfdop);
+            freeaddrinfo(res);
+            return fwErrorSuccess;
+        }
+        case fwSocketConnectionTargetInternetProtocollAddress: {
+            if (strlen(connectInfo_p->target_p) > 14) {
+                return fwErrorInvalidParameter;
+            }
+
+            struct sockaddr foreignAddr = {};
+            foreignAddr.sa_family = addrFam;
+
+            strcpy(foreignAddr.sa_data, connectInfo_p->target_p);
+
+            if (connect(sfdop, &foreignAddr, sizeof(foreignAddr)) == -1) {
+                fwiLogErrno();
+                close(sfdop);
+                return fwErrorSocketConnection;
+            }
+
+            fwiLogA(fwiLogLevelInfo, "Socket %d connected", sfdop);
+            return fwErrorSuccess;
+        }
+        case fwSocketConnectionTargetLocalHostNamme:
+            return fwErrorUnimplemented; // TODO: resolvable local hostnames
+        default:
+            return fwErrorInvalidParameter;
     }
-
-    return fwErrorSuccess;
 }
 
 fwError fwSocketSend(const fwSocket sfdop, const void* data, const size_t ammount) {
     if (write(sfdop, data, ammount) == -1) {
+        fwiLogErrno();
         return fwErrorSocketSend;
     }
     return fwErrorSuccess;
@@ -207,6 +242,7 @@ fwError fwSocketSend(const fwSocket sfdop, const void* data, const size_t ammoun
 
 fwError fwSocketReceive(const fwSocket sfdop, void* buffer, const size_t ammount) {
     if (read(sfdop, buffer, ammount) == -1) {
+        fwiLogErrno();
         return fwErrorSocketReceive;
     }
     return fwErrorSuccess;
@@ -214,20 +250,13 @@ fwError fwSocketReceive(const fwSocket sfdop, void* buffer, const size_t ammount
 
 fwError fwSocketClose(const fwSocket sfdop) {
     close(sfdop);
+    fwiLogA(fwiLogLevelInfo, "Socket %d was closed", sfdop);
     return fwErrorSuccess;
 }
 
 void fwiLogErrno(void) {
     const int32_t err = errno;
-    const char* msg;
-
-    switch (err) {
-        default: {
-            msg = "";
-        }
-    }
-
-    fwiLogA(fwiLogLevelError, "System call failure: %s", msg);
+    fwiLogA(fwiLogLevelError, "System call failure with code %d", err);
 }
 
 #endif // PLATFORM_LINUX
