@@ -24,6 +24,7 @@
 
 #include <errno.h>
 #include <netdb.h>
+#include <arpa/inet.h>
 #include <sys/socket.h>
 #include <sys/stat.h>
 #include <sys/types.h>
@@ -135,7 +136,7 @@ fwError fwSocketCreate(const struct fwSocketCreateInfo* sockCrtInf, fwSocket* sf
 }
 
 fwError fwSocketConnect(const fwSocket sfdop, const struct fwSocketCreateInfo* createInfo_p,
-                        const fwSocketConnectionInfo* connectInfo_p) {
+                        const struct fwSocketConnectInfo* connectInfo_p) {
     uint8_t addrFam = {};
     switch (createInfo_p->addressFamily) {
         case fwSocketAddressFamilyIPv4: {
@@ -176,7 +177,6 @@ fwError fwSocketConnect(const fwSocket sfdop, const struct fwSocketCreateInfo* c
         case fwSocketConnectionTargetInternetDomainName: {
             struct addrinfo hint      = {};
             struct addrinfo* res      = {};
-            const struct addrinfo *it = {};
 
             hint.ai_family            = addrFam;
             hint.ai_socktype          = sockType;
@@ -186,9 +186,9 @@ fwError fwSocketConnect(const fwSocket sfdop, const struct fwSocketCreateInfo* c
                 return fwErrorSocketDomainName;
             }
 
-            it = res;
+            const struct addrinfo *it = res;
             do {
-                if (connect(sfdop, it->ai_addr, it->ai_addrlen) == -1) {
+                if (connect(sfdop, it->ai_addr, sizeof(struct sockaddr_in)) == -1) {
                     fwiLogErrno();
                     close(sfdop);
                     it = it->ai_next;
@@ -211,12 +211,12 @@ fwError fwSocketConnect(const fwSocket sfdop, const struct fwSocketCreateInfo* c
                 return fwErrorInvalidParameter;
             }
 
-            struct sockaddr foreignAddr = {};
-            foreignAddr.sa_family = addrFam;
+            struct sockaddr_in addr = {};
+            addr.sin_family = addrFam;
+            addr.sin_port = htons(atoi(connectInfo_p->port_p));
+            inet_pton(addrFam, connectInfo_p->target_p, &addr.sin_addr);
 
-            strcpy(foreignAddr.sa_data, connectInfo_p->target_p);
-
-            if (connect(sfdop, &foreignAddr, sizeof(foreignAddr)) == -1) {
+            if (connect(sfdop, (struct sockaddr*)&addr, sizeof(addr)) == -1) {
                 fwiLogErrno();
                 close(sfdop);
                 return fwErrorSocketConnection;

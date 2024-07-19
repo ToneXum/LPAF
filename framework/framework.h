@@ -167,7 +167,7 @@ typedef struct fwSocketConnectInfo {
     const char* target_p;
     const char* port_p;
     enum fwSocketConnectionTargetKind targetKind;
-} fwSocketConnectionInfo;
+} fwSocketConnectInfo;
 
 fwError fwSocketConnect(
     fwSocket sfdop,

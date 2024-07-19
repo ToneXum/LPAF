@@ -12,8 +12,13 @@
 // You should have received a copy of the GNU General Public License along with this program. If
 // not, see <https://www.gnu.org/licenses/>.
 
-#include <errno.h>
+#include <netdb.h>
+#include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+#include <strings.h>
+#include <unistd.h>
+#include <sys/socket.h>
 
 #include "framework.h"
 
@@ -30,9 +35,9 @@ int main()
     fwError call1 = fwSocketCreate(&createInfo, &socket);
 
     struct fwSocketConnectInfo connectInfo = {};
-    connectInfo.target_p = "tonexum.org";
+    connectInfo.target_p = "192.168.178.24";
     connectInfo.port_p = "80";
-    connectInfo.targetKind = fwSocketConnectionTargetInternetDomainName;
+    connectInfo.targetKind = fwSocketConnectionTargetInternetProtocollAddress;
     fwError call2 = fwSocketConnect(socket, &createInfo, &connectInfo);
 
     const char httpRequest[38] = "GET / HTTP/1.1\r\nHost: www.tonexum.org\r\n";
