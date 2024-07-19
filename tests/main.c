@@ -30,7 +30,7 @@ int main()
 
     struct fwSocketCreateInfo createInfo = {0};
     createInfo.addressFamily  = fwSocketAddressFamilyIPv4;
-    createInfo.socketType     = fwSocketTypeStream;
+    createInfo.socketProtocol     = fwSocketTypeStream;
     fwSocket socket;
     fwError call1 = fwSocketCreate(&createInfo, &socket);
 

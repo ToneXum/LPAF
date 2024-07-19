@@ -110,7 +110,7 @@ fwError fwSocketCreate(const struct fwSocketCreateInfo* sockCrtInf, fwSocket* sf
         }
     }
 
-    switch (sockCrtInf->socketType) {
+    switch (sockCrtInf->socketProtocol) {
         case fwSocketTypeStream: {
             type = SOCK_STREAM;
             break;
@@ -155,21 +155,27 @@ fwError fwSocketConnect(const fwSocket sfdop, const struct fwSocketCreateInfo* c
             addrFam = AF_BLUETOOTH;
             break;
         }
+        default: {
+            return fwErrorInvalidParameter;
+        }
     }
 
     uint8_t sockType = {};
-    switch (createInfo_p->socketType) {
+    switch (createInfo_p->socketProtocol) {
         case fwSocketTypeStream: {
             sockType = SOCK_STREAM;
             break;
         }
         case fwSocketTypeDatagram: {
             sockType = SOCK_DGRAM;
-            break;
+            return fwErrorSuccess;
         }
         case fwSocketTypeRaw: {
             sockType = SOCK_RAW;
-            break;
+            return fwErrorSuccess;
+        }
+        default: {
+            return fwErrorInvalidParameter;
         }
     }
 
@@ -184,13 +190,11 @@ fwError fwSocketConnect(const fwSocket sfdop, const struct fwSocketCreateInfo* c
 
             if (getaddrinfo(connectInfo_p->target_p, connectInfo_p->port_p, &hint, &res)) {
                 freeaddrinfo(res);
-                return fwErrorSocketDomainName;
+                return fwErrorSocketTargetName;
             }
 
             const struct addrinfo *it = res;
             do {
-                struct sockaddr_in *p = (struct sockaddr_in *)it->ai_addr;
-
                 if (connect(sfdop, it->ai_addr, sizeof(struct sockaddr_in)) == -1) {
                     fwiLogErrno();
                     close(sfdop);
@@ -254,7 +258,9 @@ fwError fwSocketReceive(const fwSocket sfdop, void* buffer, const size_t ammount
 }
 
 fwError fwSocketClose(const fwSocket sfdop) {
-    close(sfdop);
+    if (close(sfdop) == -1) {
+        return fwErrorInvalidParameter;
+    }
     fwiLogA(fwiLogLevelInfo, "Socket %d was closed", sfdop);
     return fwErrorSuccess;
 }
