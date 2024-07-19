@@ -174,6 +174,7 @@ fwError fwSocketConnect(const fwSocket sfdop, const struct fwSocketCreateInfo* c
     }
 
     switch (connectInfo_p->targetKind) {
+        case fwSocketConnectionTargetLocalHostNamme:
         case fwSocketConnectionTargetInternetDomainName: {
             struct addrinfo hint      = {};
             struct addrinfo* res      = {};
@@ -188,6 +189,8 @@ fwError fwSocketConnect(const fwSocket sfdop, const struct fwSocketCreateInfo* c
 
             const struct addrinfo *it = res;
             do {
+                struct sockaddr_in *p = (struct sockaddr_in *)it->ai_addr;
+
                 if (connect(sfdop, it->ai_addr, sizeof(struct sockaddr_in)) == -1) {
                     fwiLogErrno();
                     close(sfdop);
@@ -202,7 +205,7 @@ fwError fwSocketConnect(const fwSocket sfdop, const struct fwSocketCreateInfo* c
                 return fwErrorSocketConnection;
             }
 
-            fwiLogA(fwiLogLevelInfo, "Socket %d connected", sfdop);
+            fwiLogA(fwiLogLevelDebug, "Socket %d connected", sfdop);
             freeaddrinfo(res);
             return fwErrorSuccess;
         }
@@ -222,29 +225,31 @@ fwError fwSocketConnect(const fwSocket sfdop, const struct fwSocketCreateInfo* c
                 return fwErrorSocketConnection;
             }
 
-            fwiLogA(fwiLogLevelInfo, "Socket %d connected", sfdop);
+            fwiLogA(fwiLogLevelDebug, "Socket %d connected", sfdop);
             return fwErrorSuccess;
         }
-        case fwSocketConnectionTargetLocalHostNamme:
-            return fwErrorUnimplemented; // TODO: resolvable local hostnames
         default:
             return fwErrorInvalidParameter;
     }
 }
 
 fwError fwSocketSend(const fwSocket sfdop, const void* data, const size_t ammount) {
-    if (write(sfdop, data, ammount) == -1) {
+    const size_t written = write(sfdop, data, ammount);
+    if (written == -1) {
         fwiLogErrno();
         return fwErrorSocketSend;
     }
+    fwiLogA(fwiLogLevelDebug, "Socket %d sent %d bytes", sfdop, written);
     return fwErrorSuccess;
 }
 
 fwError fwSocketReceive(const fwSocket sfdop, void* buffer, const size_t ammount) {
-    if (read(sfdop, buffer, ammount) == -1) {
+    const size_t readden = read(sfdop, buffer, ammount); // grammar 100
+    if (readden == -1) {
         fwiLogErrno();
         return fwErrorSocketReceive;
     }
+    fwiLogA(fwiLogLevelDebug, "Socket %d received %d bytes", sfdop, readden);
     return fwErrorSuccess;
 }
 

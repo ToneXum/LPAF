@@ -35,12 +35,17 @@ int main()
     fwError call1 = fwSocketCreate(&createInfo, &socket);
 
     struct fwSocketConnectInfo connectInfo = {};
-    connectInfo.target_p = "192.168.178.24";
+    connectInfo.target_p = "server";
     connectInfo.port_p = "80";
     connectInfo.targetKind = fwSocketConnectionTargetInternetProtocollAddress;
     fwError call2 = fwSocketConnect(socket, &createInfo, &connectInfo);
 
-    const char httpRequest[38] = "GET / HTTP/1.1\r\nHost: www.tonexum.org\r\n";
+    // Okay so what really confused me here was the response the socket got.
+    // Turns out, nginx only responds to off-standard requests when they are invalid.
+    // Therefore I got confused when the **correctly** formatted request did not get a response from
+    // my webserver.
+
+    const char httpRequest[38] = "GET / HTTP/1.1\rHost: www.tonexum.org\r\n";
     char* buffer = malloc(4096);
 
     fwError call3 = fwSocketSend(socket, httpRequest, sizeof(httpRequest));
