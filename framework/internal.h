@@ -159,8 +159,7 @@ void fwiLogFollowupW(
         ...
         );
 
-void fwiLogErrno(
-    void
-    );
+void fwiLogErrno(const char* location, int32_t line
+);
 
 #endif //LPAF_INTERNAL_H

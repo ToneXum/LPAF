@@ -12,13 +12,8 @@
 // You should have received a copy of the GNU General Public License along with this program. If
 // not, see <https://www.gnu.org/licenses/>.
 
-#include <netdb.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
-#include <strings.h>
-#include <unistd.h>
-#include <sys/socket.h>
 
 #include "framework.h"
 
@@ -28,24 +23,21 @@ int main()
     strtInf.module = fwModuleNetwork;
     fwStartModule(&strtInf);
 
-    struct fwSocketCreateInfo createInfo = {0};
-    createInfo.addressFamily  = fwSocketAddressFamilyIPv4;
-    createInfo.socketProtocol     = fwSocketTypeStream;
     fwSocket socket;
-    fwError call1 = fwSocketCreate(&createInfo, &socket);
+    fwError call1 = fwSocketCreate(fwSocketAddressFamilyIPv4, fwSocketProtocolStream, &socket);
 
-    struct fwSocketConnectInfo connectInfo = {};
-    connectInfo.target_p = "server";
-    connectInfo.port_p = "80";
-    connectInfo.targetKind = fwSocketConnectionTargetInternetProtocollAddress;
-    fwError call2 = fwSocketConnect(socket, &createInfo, &connectInfo);
+    struct fwSocketAddress connection = {};
+    connection.target_p     = "tonexum.org";
+    connection.port_p       = "80";
+    fwError call2 = fwSocketConnect(socket, &connection);
 
     // Okay so what really confused me here was the response the socket got.
     // Turns out, nginx only responds to off-standard requests when they are invalid.
     // Therefore I got confused when the **correctly** formatted request did not get a response from
     // my webserver.
 
-    const char httpRequest[38] = "GET / HTTP/1.1\rHost: www.tonexum.org\r\n";
+    const char httpRequest[] = "GET / HTTP/1.1\r\nHost: www.tonexum.org\r\n";
+
     char* buffer = malloc(4096);
 
     fwError call3 = fwSocketSend(socket, httpRequest, sizeof(httpRequest));
@@ -53,7 +45,11 @@ int main()
 
     fwError call5 = fwSocketClose(socket);
 
+    printf("%s", buffer);
+
     fwStopModule(fwModuleNetwork);
+
+    free(buffer);
 
     return 0;
 }
