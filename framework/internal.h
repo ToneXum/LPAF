@@ -50,9 +50,10 @@ typedef enum fwiLogLevel : uint8_t {
  * @brief Do not instanciate
  */
 struct fwiState {
-    uint8_t activeModules;
     pthread_mutex_t loggerMutex;
-} __attribute__((aligned(16)));
+    uint8_t activeModules;
+    bool baseIsUp;
+};
 
 struct fwiState* fwiGetState(
     void
@@ -60,53 +61,53 @@ struct fwiState* fwiGetState(
 
 // PlatIndepImp
 void fwiStartNativeModuleBase(
-        void
-        );
+    void
+    );
 
 // PlatDepImp
 void fwiStartNativeModuleWindow(
-        void
-        );
+    void
+    );
 
 // PlatDepImp
 void fwiStartNativeModuleNetwork(
-        void
-        );
+    void
+    );
 
 // PlatDepImp
 void fwiStartNativeModuleMultimedia(
-        void
-        );
+    void
+    );
 
 // PlatDepImp
 void fwiStartNativeModuleRenderer(
-        void
-        );
+    void
+    );
 
 // PlatIndepImp
 void fwiStopNativeModuleBase(
-        void
-        );
+    void
+    );
 
 // PlatDepImp
 void fwiStopNativeModuleWindow(
-        void
-        );
+    void
+    );
 
 // PlatDepImp
 void fwiStopNativeModuleNetwork(
-        void
-        );
+    void
+    );
 
 // PlatDepImp
 void fwiStopNativeModuleMultimedia(
-        void
-        );
+    void
+    );
 
 // PlatDepImp
 void fwiStopNativeModuleRenderer(
-        void
-        );
+    void
+    );
 
 /**
  * @brief printf with added timestamp and log level color
@@ -115,10 +116,10 @@ void fwiStopNativeModuleRenderer(
  * @param ...[in] Replacement parameters for placeholders
  */ // PlatIndepImp
 void fwiLogA(
-        enum fwiLogLevel lll,
-        const char* format_p,
-        ...
-        );
+    enum fwiLogLevel lll,
+    const char* format_p,
+    ...
+    );
 
 /**
  * @brief printf with added timestamp and log level color
@@ -128,10 +129,10 @@ void fwiLogA(
  * @param ...[in] Replacement parameters for placeholders
  */ // PlatIndepImp
 void fwiLogW(
-        enum fwiLogLevel lll,
-        const wchar_t* format_p,
-        ...
-        );
+    enum fwiLogLevel lll,
+    const wchar_t* format_p,
+    ...
+    );
 
 /**
  * @brief makes it look like the message was appended to the one before it
@@ -141,10 +142,10 @@ void fwiLogW(
  * @param ...[in] Replacement parameters for placeholders
  */ // PlatIndepImp
 void fwiLogFollowupA(
-        bool isLast,
-        const char* format_p,
-        ...
-        );
+    bool isLast,
+    const char* format_p,
+    ...
+    );
 
 /**
  * @brief makes it look like the message was appended to the one before it
@@ -154,12 +155,14 @@ void fwiLogFollowupA(
  * @param ...[in] Replacement parameters for placeholders
  */ // PlatIndepImp
 void fwiLogFollowupW(
-        bool isLast,
-        const wchar_t* format_p,
-        ...
-        );
+    bool isLast,
+    const wchar_t* format_p,
+    ...
+    );
 
-void fwiLogErrno(const char* location, int32_t line
-);
+void fwiLogErrno(
+    const char* location,
+    int32_t line
+    );
 
 #endif //LPAF_INTERNAL_H

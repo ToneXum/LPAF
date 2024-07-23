@@ -27,6 +27,7 @@ typedef enum fwError : uint8_t {
     fwErrorOutOfMemory /*! Out of memory, allocation failed */,
     fwErrorInvalidParameter /*! A parameter contained an illegal or wrong value */,
     fwErrorUnimplemented /*! This feature is not implemented on this platform */,
+    fwErrorModule /*! The module failed to start */,
 
     fwErrorFileUnableToOpen /*! Unable to open or correctly open the requested file */,
     fwErrorFileStats /*! Failed to retrieve file information */,
@@ -48,33 +49,28 @@ typedef enum fwError : uint8_t {
  * @note Used as parameter for @c fwStartModuleInfo.
  */
 typedef enum fwModule : uint8_t {
-    fwModuleBase        = 0b0000'0001 /*! Base, passing this will cause error but no UB */,
-    fwModuleWindow      = 0b0000'0010 /*! Module for windowed UI */,
-    fwModuleRender      = 0b0000'0100 /*! Module for the renderer */,
-    fwModuleNetwork     = 0b0000'1000 /*! Module for networking and sockets*/,
-    fwModuleMultimedia  = 0b0001'0000 /*! Module for multimedia like video and sound */
+    fwModuleWindow      = 0b0000'0001 /*! Module for windowed UI */,
+    fwModuleRender      = 0b0000'0010 /*! Module for the renderer */,
+    fwModuleNetwork     = 0b0000'0100 /*! Module for networking and sockets*/,
+    fwModuleMultimedia  = 0b0000'1000 /*! Module for multimedia like video and sound */
 } fwModule;
 
-/**
- * @brief The information used to start a module.
- * @param module @c fwModule enum specifying which module is supposed to be started
- * @note Used as parameter for @c fwStartModule().
- */
-typedef struct fwStartModuleInfo {
-    enum fwModule module;
-    // uint8_t moduleStartFlags; TODO: implement module context
-} fwStartInfo;
+typedef enum fwModuleFlags : uint32_t {
+    /*! Test */
+    fwModuleFlag        = 0b0000'0000'0000'0000'0000'0000'0000'0000
+} fwModuleFlags;
 
 /**
  * @brief Starts a module of the framework.
- * @param startInfo_kp[in] Pointer to a @c fwStartModuleInfo struct containing information about the
- *                        module that is supposed to be started
+ * @param module[in] Which module is supposed to be started
+ * @param flags[in] Flags for the module, these may modify the behaviour of it
  * @return @c fwErrorSuccess No error occured
  * @return @c fwErrorInvalidParameter The provided module was not valid
  */ // PlatIndepImp
 fwError fwStartModule(
-        const struct fwStartModuleInfo* startInfo_kp
-        );
+    fwModule module,
+    uint32_t flags
+    );
 
 /**
  * @brief Stops a module of the framework.
@@ -84,15 +80,15 @@ fwError fwStartModule(
  * @note See @c fwModule enum for modules.
  */ // PlatIndepImp
 fwError fwStopModule(
-        enum fwModule module
-        );
+    enum fwModule module
+    );
 
 /**
  * @brief Stops all currently active modules.
  */ // PlatIndepImp
 void fwStopAllModules(
-        void
-        );
+    void
+    );
 
 /**
  * @brief Struct containing system configuration information.
@@ -109,7 +105,6 @@ typedef struct fwSystemConfiguration {
 
 /**
  * @brief Retrieves the system configuration.
- * @note TODO: This is implementation is shit, rework this.
  */ // PlatDepImp
 fwError fwGetSystemConfiguration(
     struct fwSystemConfiguration* res_p
@@ -133,7 +128,7 @@ fwError fwLoadFileToMem(
     const char* filename_p,
     void** buffer_pp,
     uint64_t* fileSize_p
-);
+    );
 
 typedef uintptr_t fwSocket;
 
@@ -171,7 +166,7 @@ fwError fwSocketCreate(
     enum fwSocketAddressFamily addressFamily,
     enum fwSocketProtocol protocol,
     fwSocket* sfdop_p
-);
+    );
 
 typedef struct fwSocketAddress {
     const char* target_p;
@@ -192,15 +187,18 @@ typedef struct fwSocketAddress {
 fwError fwSocketConnect(
     fwSocket sfdop,
     const fwSocketAddress* connectInfo_p
-);
+    );
 
 fwError fwSocketBind(
     fwSocket sfdop,
     const struct fwSocketAddress* localAddress
     );
 
-fwError fwSocketAccept(fwSocket sfdop, fwSocket* newSocket, char* foreignAddress
-);
+fwError fwSocketAccept(
+    fwSocket sfdop,
+    fwSocket* newSocket,
+    char* foreignAddress
+    );
 
 /**
  * @brief Sends data over a connected socket.
@@ -232,7 +230,7 @@ fwError fwSocketReceive(
     fwSocket sfdop,
     void* buffer,
     size_t ammount
-);
+    );
 
 /**
  * @brief Closes the specified socket.

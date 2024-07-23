@@ -19,9 +19,7 @@
 
 int main()
 {
-    struct fwStartModuleInfo strtInf = {};
-    strtInf.module = fwModuleNetwork;
-    fwStartModule(&strtInf);
+    fwStartModule(fwModuleNetwork, 0);
 
     fwSocket socket;
     fwError call1 = fwSocketCreate(fwSocketAddressFamilyIPv4, fwSocketProtocolStream, &socket);

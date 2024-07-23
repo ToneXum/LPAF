@@ -22,17 +22,15 @@
   </component>
   <component name="CMakeSettings">
     <configurations>
-      <configuration PROFILE_NAME="Debug" ENABLED="true" CONFIG_NAME="Debug" GENERATION_OPTIONS="-DCMAKE_LINKER=lld" />
-      <configuration PROFILE_NAME="Release" ENABLED="true" CONFIG_NAME="Release" GENERATION_OPTIONS="-DCMAKE_LINKER=lld" />
+      <configuration PROFILE_NAME="Debug" ENABLED="true" CONFIG_NAME="Debug" TOOLCHAIN_NAME="Default" GENERATION_OPTIONS="-DCMAKE_LINKER=lld" />
+      <configuration PROFILE_NAME="Release" ENABLED="true" CONFIG_NAME="Release" TOOLCHAIN_NAME="Default" GENERATION_OPTIONS="-DCMAKE_LINKER=lld" />
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="b43a079c-b7ae-41fc-bc1a-f78f46edc6d3" name="Changes" comment="add documentation to new socket utilities">
-      <change beforePath="$PROJECT_DIR$/.idea/inspectionProfiles/Project_Default.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/inspectionProfiles/Project_Default.xml" afterDir="false" />
+    <list default="true" id="b43a079c-b7ae-41fc-bc1a-f78f46edc6d3" name="Changes" comment="implement server sockets, overhaul the socket system">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/framework/framework.c" beforeDir="false" afterPath="$PROJECT_DIR$/framework/framework.c" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/framework/framework.h" beforeDir="false" afterPath="$PROJECT_DIR$/framework/framework.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/framework/internal.h" beforeDir="false" afterPath="$PROJECT_DIR$/framework/internal.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/framework/linux.c" beforeDir="false" afterPath="$PROJECT_DIR$/framework/linux.c" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/tests/main.c" beforeDir="false" afterPath="$PROJECT_DIR$/tests/main.c" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -218,7 +216,7 @@
     "node.js.selected.package.tslint": "(autodetect)",
     "nodejs_package_manager_path": "npm",
     "run.code.analysis.last.selected.profile": "pProject Default",
-    "settings.editor.selected.configurable": "dynamic.analysis.tools.valgrind",
+    "settings.editor.selected.configurable": "CPPToolchains",
     "structure.view.defaults.are.configured": "true",
     "vue.rearranger.settings.migration": "true"
   }
@@ -233,6 +231,11 @@
     </key>
   </component>
   <component name="RunManager" selected="CMake Application.lpafTest">
+    <configuration default="true" type="CLionExternalRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true">
+      <method v="2">
+        <option name="CLION.EXTERNAL.BUILD" enabled="true" />
+      </method>
+    </configuration>
     <configuration name="lpafLib" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="true" PASS_PARENT_ENVS_2="true" PROJECT_NAME="LPAF" TARGET_NAME="lpafLib" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="LPAF" RUN_TARGET_NAME="lpafTest">
       <method v="2">
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
@@ -337,15 +340,8 @@
       <workItem from="1721405472922" duration="13000" />
       <workItem from="1721473702714" duration="7570000" />
       <workItem from="1721645700855" duration="8814000" />
-      <workItem from="1721669879180" duration="6884000" />
-    </task>
-    <task id="LOCAL-00012" summary="reformat readme.md">
-      <option name="closed" value="true" />
-      <created>1709407568516</created>
-      <option name="number" value="00012" />
-      <option name="presentableId" value="LOCAL-00012" />
-      <option name="project" value="LOCAL" />
-      <updated>1709407568516</updated>
+      <workItem from="1721669879180" duration="7215000" />
+      <workItem from="1721764573933" duration="1520000" />
     </task>
     <task id="LOCAL-00013" summary="reformat readme.md (again)">
       <option name="closed" value="true" />
@@ -731,7 +727,15 @@
       <option name="project" value="LOCAL" />
       <updated>1721397148587</updated>
     </task>
-    <option name="localTasksCounter" value="61" />
+    <task id="LOCAL-00061" summary="implement server sockets, overhaul the socket system">
+      <option name="closed" value="true" />
+      <created>1721677086917</created>
+      <option name="number" value="00061" />
+      <option name="presentableId" value="LOCAL-00061" />
+      <option name="project" value="LOCAL" />
+      <updated>1721677086917</updated>
+    </task>
+    <option name="localTasksCounter" value="62" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -778,7 +782,6 @@
     <ignored-roots>
       <path value="$PROJECT_DIR$/Framework" />
     </ignored-roots>
-    <MESSAGE value="restartable window manager thread" />
     <MESSAGE value="implement synchronous window creation" />
     <MESSAGE value="delete everything and simplify the CMakeLists.txt" />
     <MESSAGE value="fix CMakeLists.txt" />
@@ -803,14 +806,15 @@
     <MESSAGE value="implement somewhat more working internet" />
     <MESSAGE value="implement working internet" />
     <MESSAGE value="add documentation to new socket utilities" />
-    <option name="LAST_COMMIT_MESSAGE" value="add documentation to new socket utilities" />
+    <MESSAGE value="implement server sockets, overhaul the socket system" />
+    <option name="LAST_COMMIT_MESSAGE" value="implement server sockets, overhaul the socket system" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
       <breakpoints>
         <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
           <url>file://$PROJECT_DIR$/tests/main.c</url>
-          <line>51</line>
+          <line>53</line>
           <option name="timeStamp" value="4" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">

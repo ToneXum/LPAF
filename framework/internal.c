@@ -179,14 +179,14 @@ void fwiStartNativeModuleBase(void) {
         fwiLogA(fwiLogLevelError, "Failed to get local time");
     }
 
-    frameworkState_s.activeModules |= fwModuleBase;
+    fwiGetState()->baseIsUp = true;
 
     fwiLogA(fwiLogLevelInfo, "Base module was started");
     fwiLogA(fwiLogLevelInfo, "The current date is %s (D.M.Y)", buf);
 }
 
 void fwiStopNativeModuleBase(void) {
-    frameworkState_s.activeModules &= ~fwModuleBase;
+    fwiGetState()->baseIsUp = false;
     fwiLogA(fwiLogLevelInfo, "Base module was stopped");
     pthread_mutex_destroy(&frameworkState_s.loggerMutex);
 }
