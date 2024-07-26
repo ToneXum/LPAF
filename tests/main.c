@@ -12,9 +12,6 @@
 // You should have received a copy of the GNU General Public License along with this program. If
 // not, see <https://www.gnu.org/licenses/>.
 
-#include <stdio.h>
-#include <stdlib.h>
-
 #include "framework.h"
 #include "tests.h"
 
@@ -26,12 +23,11 @@ int main()
     TST(fwSocketCreate(fwSocketAddressFamilyIPv4, fwSocketProtocolStream, &socket));
 
     struct fwSocketAddress localAddress = {};
-    localAddress.target_p = "192.178.168.69";
-    localAddress.port_p = "50654";
+    localAddress.target_p = FW_SOCKET_ADDRESS_ANY;
+    localAddress.port_p = "1024";
     TST(fwSocketBind(socket, &localAddress));
 
-    fwSocket newSocket;
-    TST(fwSocketAccept(socket, &newSocket, nullptr));
+    TST(fwSocketClose(socket));
 
     TST(fwStopModule(fwModuleNetwork));
 

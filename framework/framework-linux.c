@@ -102,39 +102,40 @@ fwError fwSocketCreate(const fwSocketAddressFamily addressFamily, const fwSocket
         }
     }
 
-    union fwiNativeSocket nativeSocket = {};
+    struct fwiNativeSocketState* nativeSocket;
 
     // This memory is not leaked, is it put into the hands of the user in the form of an unsigned
     // long, which is then reinterpreted. Freed in fwSocketClose
-    // ReSharper disable once CppDFAMemoryLeak
-    if ((nativeSocket.pt = malloc(sizeof(struct fwiNativeSocketState)) + targetAddressSize) == nullptr) {
+    if ((nativeSocket = malloc(sizeof(struct fwiNativeSocketState) + targetAddressSize)) == nullptr) {
         return fwErrorOutOfMemory;
     }
-    memset(nativeSocket.pt, 0, sizeof(struct fwiNativeSocketState) + targetAddressSize);
-    nativeSocket.pt->targetAddress = (char*)&nativeSocket.pt->targetAddress +
+    // Can you spot the difference which cost me a ẃhole week to debug?
+    //if ((nativeSocket = malloc(sizeof(struct fwiNativeSocketState)) + targetAddressSize) == nullptr) {
+
+    memset(nativeSocket, 0, sizeof(struct fwiNativeSocketState) + targetAddressSize);
+    nativeSocket->targetAddress = (char*)&nativeSocket->targetAddress +
                                      sizeof(struct fwiNativeSocketState);
 
-    nativeSocket.pt->protocol       = realProtocol;
-    nativeSocket.pt->addressFamily  = realAddressFamily;
-    if ((nativeSocket.pt->fileDescriptor = socket(realAddressFamily, realProtocol, 0)) == -1) {
+    nativeSocket->protocol       = realProtocol;
+    nativeSocket->addressFamily  = realAddressFamily;
+    if ((nativeSocket->fileDescriptor = socket(realAddressFamily, realProtocol, 0)) == -1) {
         FWI_LOG_ERRNO;
     }
 
-    *sfdop_p = nativeSocket.id;
+    *sfdop_p = (uintptr_t)nativeSocket;
 
-    fwiLogA(fwiLogLevelInfo, "New socket (ID: %X) was created", nativeSocket.id);
+    fwiLogA(fwiLogLevelInfo, "New socket (ID: %X) was created", nativeSocket);
     return fwErrorSuccess;
 }
 
 fwError fwSocketConnect(const fwSocket sfdop, const fwSocketAddress* connectInfo_p) {
-    union fwiNativeSocket nativeSocket = {};
-    nativeSocket.id = sfdop;
+    struct fwiNativeSocketState* nativeSocket = {(struct fwiNativeSocketState*)sfdop};
 
     struct addrinfo hint      = {};
     struct addrinfo* res      = {};
 
-    hint.ai_family            = nativeSocket.pt->addressFamily;
-    hint.ai_socktype          = nativeSocket.pt->protocol;
+    hint.ai_family            = nativeSocket->addressFamily;
+    hint.ai_socktype          = nativeSocket->protocol;
 
     if (getaddrinfo(connectInfo_p->target_p, connectInfo_p->port_p, &hint, &res)) {
         freeaddrinfo(res);
@@ -143,7 +144,7 @@ fwError fwSocketConnect(const fwSocket sfdop, const fwSocketAddress* connectInfo
 
     const struct addrinfo *it = res;
     do {
-        if (connect(nativeSocket.pt->fileDescriptor, it->ai_addr, sizeof(struct sockaddr_in)) == -1) {
+        if (connect(nativeSocket->fileDescriptor, it->ai_addr, sizeof(struct sockaddr_in)) == -1) {
             FWI_LOG_ERRNO;
             close(sfdop);
             it = it->ai_next;
@@ -157,32 +158,31 @@ fwError fwSocketConnect(const fwSocket sfdop, const fwSocketAddress* connectInfo
         return fwErrorSocketConnection;
     }
 
-    nativeSocket.pt->connected = true;
-    nativeSocket.pt->bound = true;
-    strncpy(nativeSocket.pt->targetAddress, connectInfo_p->target_p, 108);
+    nativeSocket->connected = true;
+    nativeSocket->bound = true;
+    strncpy(nativeSocket->targetAddress, connectInfo_p->target_p, 108);
 
-    fwiLogA(fwiLogLevelInfo, "Socket (ID: %X) connected to %s", nativeSocket.id, connectInfo_p->target_p);
+    fwiLogA(fwiLogLevelInfo, "Socket (ID: %X) connected to %s", nativeSocket, connectInfo_p->target_p);
     return fwErrorSuccess;
 }
 
 fwError fwSocketBind(const fwSocket sfdop, const struct fwSocketAddress* localAddress) {
-    union fwiNativeSocket nativeSocket = {};
-    nativeSocket.id = sfdop;
+    struct fwiNativeSocketState* nativeSocket = {(struct fwiNativeSocketState*)sfdop};
 
-    switch (nativeSocket.pt->addressFamily) {
+    switch (nativeSocket->addressFamily) {
         case AF_INET6:
         case AF_INET: {
             struct sockaddr_in address = {};
-            address.sin_family = nativeSocket.pt->addressFamily;
+            address.sin_family = nativeSocket->addressFamily;
             address.sin_port = htons(atoi(localAddress->port_p));
 
             if (strcmp(localAddress->target_p, FW_SOCKET_ADDRESS_ANY)) {
                 address.sin_addr.s_addr = INADDR_ANY;
             } else {
-                inet_pton(nativeSocket.pt->addressFamily, localAddress->target_p, &address.sin_addr);
+                inet_pton(nativeSocket->addressFamily, localAddress->target_p, &address.sin_addr);
             }
 
-            if (bind(nativeSocket.pt->fileDescriptor, (struct sockaddr*)&address,
+            if (bind(nativeSocket->fileDescriptor, (struct sockaddr*)&address,
                 sizeof(address)) == -1) {
                 FWI_LOG_ERRNO;
                 return fwErrorSocketBind;
@@ -195,7 +195,7 @@ fwError fwSocketBind(const fwSocket sfdop, const struct fwSocketAddress* localAd
             address.sun_family = AF_LOCAL;
             strncpy(address.sun_path, localAddress->target_p, sizeof(address.sun_path) - 1);
 
-            if (bind(nativeSocket.pt->fileDescriptor, (struct sockaddr*)&address,
+            if (bind(nativeSocket->fileDescriptor, (struct sockaddr*)&address,
                 sizeof(address)) == -1) {
                 FWI_LOG_ERRNO;
                 return fwErrorSocketBind;
@@ -208,45 +208,44 @@ fwError fwSocketBind(const fwSocket sfdop, const struct fwSocketAddress* localAd
         }
     }
 
-    nativeSocket.pt->bound = true;
-    fwiLogA(fwiLogLevelInfo, "Socket (ID: %X) was bound to %s", nativeSocket.id, localAddress->target_p);
+    nativeSocket->bound = true;
+    fwiLogA(fwiLogLevelInfo, "Socket (ID: %X) was bound to %s", nativeSocket, localAddress->target_p);
     return fwErrorSuccess;
 }
 
 fwError fwSocketAccept(const fwSocket sfdop, fwSocket* newSocket, char* foreignAddress) {
-    union fwiNativeSocket nativeSocket = {};
-    nativeSocket.id = sfdop;
+    struct fwiNativeSocketState* nativeSocket = {};
 
-    if (nativeSocket.pt->bound == false) {
+    if (nativeSocket->bound == false) {
         return fwErrorSocketNotBound;
     }
 
-    if (listen(nativeSocket.pt->fileDescriptor, 128) == -1) {
+    if (listen(nativeSocket->fileDescriptor, 128) == -1) {
         FWI_LOG_ERRNO;
         return fwErrorSocketListen;
     }
 
     // ReSharper disable once CppDFAMemoryLeak
-    struct fwiNativeSocketState* nativeSocketState = malloc(sizeof(struct fwiNativeSocketState));
-    if (nativeSocketState == nullptr) {
+    struct fwiNativeSocketState* newNativeSocket = malloc(sizeof(struct fwiNativeSocketState));
+    if (newNativeSocket == nullptr) {
         return fwErrorOutOfMemory;
     }
 
-    switch (nativeSocket.pt->addressFamily) {
+    switch (nativeSocket->addressFamily) {
         case AF_INET: {
             struct sockaddr_in address = {};
             socklen_t sockSize = sizeof(address);
 
-            nativeSocketState->connected      = true;
-            nativeSocketState->bound          = true;
-            nativeSocketState->protocol       = nativeSocket.pt->protocol;
-            nativeSocketState->addressFamily  = nativeSocket.pt->addressFamily;
-            nativeSocketState->fileDescriptor = accept(nativeSocket.pt->fileDescriptor,
+            newNativeSocket->connected      = true;
+            newNativeSocket->bound          = true;
+            newNativeSocket->protocol       = nativeSocket->protocol;
+            newNativeSocket->addressFamily  = nativeSocket->addressFamily;
+            newNativeSocket->fileDescriptor = accept(nativeSocket->fileDescriptor,
                                                        (struct sockaddr*)&address, &sockSize);
-            inet_ntop(AF_INET, &address.sin_addr, nativeSocket.pt->targetAddress, INET_ADDRSTRLEN);
+            inet_ntop(AF_INET, &address.sin_addr, nativeSocket->targetAddress, INET_ADDRSTRLEN);
 
             if (foreignAddress != nullptr) {
-                strncpy(foreignAddress, nativeSocketState->targetAddress, INET_ADDRSTRLEN);
+                strncpy(foreignAddress, newNativeSocket->targetAddress, INET_ADDRSTRLEN);
             }
 
             break;
@@ -255,16 +254,16 @@ fwError fwSocketAccept(const fwSocket sfdop, fwSocket* newSocket, char* foreignA
             struct sockaddr_in6 address = {};
             socklen_t sockSize = sizeof(address);
 
-            nativeSocketState->connected      = true;
-            nativeSocketState->bound          = true;
-            nativeSocketState->protocol       = nativeSocket.pt->protocol;
-            nativeSocketState->addressFamily  = nativeSocket.pt->addressFamily;
-            nativeSocketState->fileDescriptor = accept(nativeSocket.pt->fileDescriptor,
+            newNativeSocket->connected      = true;
+            newNativeSocket->bound          = true;
+            newNativeSocket->protocol       = nativeSocket->protocol;
+            newNativeSocket->addressFamily  = nativeSocket->addressFamily;
+            newNativeSocket->fileDescriptor = accept(nativeSocket->fileDescriptor,
                                                        (struct sockaddr*)&address, &sockSize);
-            inet_ntop(AF_INET6, &address.sin6_addr, nativeSocket.pt->targetAddress, INET6_ADDRSTRLEN);
+            inet_ntop(AF_INET6, &address.sin6_addr, nativeSocket->targetAddress, INET6_ADDRSTRLEN);
 
             if (foreignAddress != nullptr) {
-                strncpy(foreignAddress, nativeSocketState->targetAddress, INET6_ADDRSTRLEN);
+                strncpy(foreignAddress, newNativeSocket->targetAddress, INET6_ADDRSTRLEN);
             }
 
             break;
@@ -273,16 +272,16 @@ fwError fwSocketAccept(const fwSocket sfdop, fwSocket* newSocket, char* foreignA
             struct sockaddr_un address = {};
             socklen_t sockSize = sizeof(address);
 
-            nativeSocketState->connected      = true;
-            nativeSocketState->bound          = true;
-            nativeSocketState->protocol       = nativeSocket.pt->protocol;
-            nativeSocketState->addressFamily  = nativeSocket.pt->addressFamily;
-            nativeSocketState->fileDescriptor = accept(nativeSocket.pt->fileDescriptor,
+            newNativeSocket->connected      = true;
+            newNativeSocket->bound          = true;
+            newNativeSocket->protocol       = nativeSocket->protocol;
+            newNativeSocket->addressFamily  = nativeSocket->addressFamily;
+            newNativeSocket->fileDescriptor = accept(nativeSocket->fileDescriptor,
                                                        (struct sockaddr*)&address, &sockSize);
-            inet_ntop(AF_INET, &address.sun_path, nativeSocket.pt->targetAddress, 108);
+            inet_ntop(AF_INET, &address.sun_path, nativeSocket->targetAddress, 108);
 
             if (foreignAddress != nullptr) {
-                strncpy(foreignAddress, nativeSocketState->targetAddress, 108);
+                strncpy(foreignAddress, newNativeSocket->targetAddress, 108);
             }
 
             break;
@@ -292,55 +291,49 @@ fwError fwSocketAccept(const fwSocket sfdop, fwSocket* newSocket, char* foreignA
         }
     }
 
-    if (nativeSocketState->fileDescriptor == -1) {
+    if (newNativeSocket->fileDescriptor == -1) {
         FWI_LOG_ERRNO;
-        free(nativeSocketState);
+        free(newNativeSocket);
         return fwErrorSocketAccept;
     }
 
-    union fwiNativeSocket newNativeSocket = {};
-    newNativeSocket.pt = nativeSocketState;
-
-    *newSocket = nativeSocket.id;
+    *newSocket = (uintptr_t)newNativeSocket;
 
     return fwErrorSuccess;
 }
 
 fwError fwSocketSend(const fwSocket sfdop, const void* data, const size_t ammount) {
-    union fwiNativeSocket nativeSocket = {};
-    nativeSocket.id = sfdop;
+    struct fwiNativeSocketState* nativeSocket = {(struct fwiNativeSocketState*)sfdop};
 
-    const size_t written = write(nativeSocket.pt->fileDescriptor, data, ammount);
+    const size_t written = write(nativeSocket->fileDescriptor, data, ammount);
     if (written == -1) {
         FWI_LOG_ERRNO;
         return fwErrorSocketSend;
     }
-    fwiLogA(fwiLogLevelDebug, "Socket (ID: %X) sent %d bytes", nativeSocket.id, written);
+    fwiLogA(fwiLogLevelDebug, "Socket (ID: %X) sent %d bytes", nativeSocket, written);
     return fwErrorSuccess;
 }
 
 fwError fwSocketReceive(const fwSocket sfdop, void* buffer, const size_t ammount) {
-    union fwiNativeSocket nativeSocket = {};
-    nativeSocket.id = sfdop;
+    struct fwiNativeSocketState* nativeSocket = {(struct fwiNativeSocketState*)sfdop};
 
-    const size_t readden = read(nativeSocket.pt->fileDescriptor, buffer, ammount); // grammar 100
+    const size_t readden = read(nativeSocket->fileDescriptor, buffer, ammount); // grammar 100
     if (readden == -1) {
         FWI_LOG_ERRNO;
         return fwErrorSocketReceive;
     }
-    fwiLogA(fwiLogLevelDebug, "Socket (ID: %X) received %d bytes", nativeSocket.id, readden);
+    fwiLogA(fwiLogLevelDebug, "Socket (ID: %X) received %d bytes", nativeSocket, readden);
     return fwErrorSuccess;
 }
 
 fwError fwSocketClose(const fwSocket sfdop) {
-    union fwiNativeSocket nativeSocket = {};
-    nativeSocket.id = sfdop;
+    struct fwiNativeSocketState* nativeSocket = {(struct fwiNativeSocketState*)sfdop};
 
-    if (close(nativeSocket.pt->fileDescriptor) == -1) {
+    if (close(nativeSocket->fileDescriptor) == -1) {
         return fwErrorInvalidParameter;
     }
 
-    free(nativeSocket.pt);
+    free(nativeSocket);
 
     fwiLogA(fwiLogLevelInfo, "Socket (ID: %X) was closed", sfdop);
     return fwErrorSuccess;

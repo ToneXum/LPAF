@@ -27,9 +27,4 @@ struct fwiNativeSocketState {
     bool connected, bound;
 };
 
-union fwiNativeSocket {
-    fwSocket id;
-    struct fwiNativeSocketState* pt;
-};
-
 #endif //LINUX_H
