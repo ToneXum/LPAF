@@ -12,16 +12,24 @@
 // You should have received a copy of the GNU General Public License along with this program. If
 // not, see <https://www.gnu.org/licenses/>.
 
-#ifndef LPAF_TESTS_H
-#define LPAF_TESTS_H
+#ifndef LINUX_H
+#define LINUX_H
 
 #include "framework.h"
 
-#define TST(f) { fwError e = 0; if ((e = f) != 0) { tstLogFrameworkFail(e, __func__, __LINE__); } }
+#define FWI_LOG_ERRNO fwiLogErrno(__func__, __LINE__)
 
-void tstLogFrameworkFail(
-    fwError error,
-    const char* location,
-    int32_t line);
+struct fwiNativeSocketState {
+    char* targetAddress;
+    int32_t addressFamily;
+    int32_t protocol;
+    int32_t fileDescriptor;
+    bool connected, bound;
+};
 
-#endif //LPAF_TESTS_H
+union fwiNativeSocket {
+    fwSocket id;
+    struct fwiNativeSocketState* pt;
+};
+
+#endif //LINUX_H

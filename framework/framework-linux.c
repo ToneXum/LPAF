@@ -14,8 +14,8 @@
 
 #ifdef PLATFORM_LINUX
 
-#include "framework.h"
 #include "internal.h"
+#include "linux.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -27,49 +27,7 @@
 #include <arpa/inet.h>
 #include <sys/socket.h>
 #include <sys/stat.h>
-#include <sys/types.h>
 #include <sys/un.h>
-
-#define FWI_LOG_ERRNO fwiLogErrno(__func__, __LINE__)
-
-struct fwiNativeSocketState {
-    char* targetAddress;
-    int32_t addressFamily;
-    int32_t protocol;
-    int32_t fileDescriptor;
-    bool connected, bound;
-};
-
-union fwiNativeSocket {
-    fwSocket id;
-    struct fwiNativeSocketState* pt;
-};
-
-void fwiStartNativeModuleWindow(void) {}
-
-void fwiStartNativeModuleNetwork(void) {
-    fwiLogA(fwiLogLevelInfo, "Networking module for Linux was started");
-
-    // Because Linux is just better there is no state to be set before networking syscall can be
-    // used
-}
-
-void fwiStartNativeModuleMultimedia(void) {}
-
-void fwiStartNativeModuleRenderer(void) {}
-
-void fwiStopNativeModuleWindow(void) {}
-
-void fwiStopNativeModuleNetwork(void) {
-    fwiLogA(fwiLogLevelInfo, "Networking module for Linux was stopped");
-
-    // Because Linux is just better there is no state to be set after networking syscalls are done
-    // being used
-}
-
-void fwiStopNativeModuleMultimedia(void) {}
-
-void fwiStopNativeModuleRenderer(void) {}
 
 fwError fwGetSystemConfiguration(fwSystemConfiguration* res_p) {
     res_p->cores  = sysconf(_SC_NPROCESSORS_ONLN);
@@ -217,7 +175,12 @@ fwError fwSocketBind(const fwSocket sfdop, const struct fwSocketAddress* localAd
             struct sockaddr_in address = {};
             address.sin_family = nativeSocket.pt->addressFamily;
             address.sin_port = htons(atoi(localAddress->port_p));
-            inet_pton(nativeSocket.pt->addressFamily, localAddress->target_p, &address.sin_addr);
+
+            if (strcmp(localAddress->target_p, FW_SOCKET_ADDRESS_ANY)) {
+                address.sin_addr.s_addr = INADDR_ANY;
+            } else {
+                inet_pton(nativeSocket.pt->addressFamily, localAddress->target_p, &address.sin_addr);
+            }
 
             if (bind(nativeSocket.pt->fileDescriptor, (struct sockaddr*)&address,
                 sizeof(address)) == -1) {
@@ -254,6 +217,10 @@ fwError fwSocketAccept(const fwSocket sfdop, fwSocket* newSocket, char* foreignA
     union fwiNativeSocket nativeSocket = {};
     nativeSocket.id = sfdop;
 
+    if (nativeSocket.pt->bound == false) {
+        return fwErrorSocketNotBound;
+    }
+
     if (listen(nativeSocket.pt->fileDescriptor, 128) == -1) {
         FWI_LOG_ERRNO;
         return fwErrorSocketListen;
@@ -277,7 +244,11 @@ fwError fwSocketAccept(const fwSocket sfdop, fwSocket* newSocket, char* foreignA
             nativeSocketState->fileDescriptor = accept(nativeSocket.pt->fileDescriptor,
                                                        (struct sockaddr*)&address, &sockSize);
             inet_ntop(AF_INET, &address.sin_addr, nativeSocket.pt->targetAddress, INET_ADDRSTRLEN);
-            strncpy(foreignAddress, nativeSocketState->targetAddress, INET_ADDRSTRLEN);
+
+            if (foreignAddress != nullptr) {
+                strncpy(foreignAddress, nativeSocketState->targetAddress, INET_ADDRSTRLEN);
+            }
+
             break;
         }
         case AF_INET6: {
@@ -291,7 +262,11 @@ fwError fwSocketAccept(const fwSocket sfdop, fwSocket* newSocket, char* foreignA
             nativeSocketState->fileDescriptor = accept(nativeSocket.pt->fileDescriptor,
                                                        (struct sockaddr*)&address, &sockSize);
             inet_ntop(AF_INET6, &address.sin6_addr, nativeSocket.pt->targetAddress, INET6_ADDRSTRLEN);
-            strncpy(foreignAddress, nativeSocketState->targetAddress, INET6_ADDRSTRLEN);
+
+            if (foreignAddress != nullptr) {
+                strncpy(foreignAddress, nativeSocketState->targetAddress, INET6_ADDRSTRLEN);
+            }
+
             break;
         }
         case AF_LOCAL: {
@@ -305,7 +280,11 @@ fwError fwSocketAccept(const fwSocket sfdop, fwSocket* newSocket, char* foreignA
             nativeSocketState->fileDescriptor = accept(nativeSocket.pt->fileDescriptor,
                                                        (struct sockaddr*)&address, &sockSize);
             inet_ntop(AF_INET, &address.sun_path, nativeSocket.pt->targetAddress, 108);
-            strncpy(foreignAddress, nativeSocketState->targetAddress, 108);
+
+            if (foreignAddress != nullptr) {
+                strncpy(foreignAddress, nativeSocketState->targetAddress, 108);
+            }
+
             break;
         }
         default: {
@@ -315,6 +294,7 @@ fwError fwSocketAccept(const fwSocket sfdop, fwSocket* newSocket, char* foreignA
 
     if (nativeSocketState->fileDescriptor == -1) {
         FWI_LOG_ERRNO;
+        free(nativeSocketState);
         return fwErrorSocketAccept;
     }
 

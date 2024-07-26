@@ -40,6 +40,7 @@ typedef enum fwError : uint8_t {
     fwErrorSocketBind /*! Failed to bind socket */,
     fwErrorSocketListen /*! Failed to put a socket into the listening state */,
     fwErrorSocketAccept /*! Failed to accept a new connection */,
+    fwErrorSocketNotBound /*! Could not listen on the socket since it was not bound */,
 
     fwErrorGoodJob /*! You somehow caused a theoretically impossible failure */
 } fwError;
@@ -168,6 +169,19 @@ fwError fwSocketCreate(
     fwSocket* sfdop_p
     );
 
+/**
+ * All available addresses
+ */
+#define FW_SOCKET_ADDRESS_ANY "any"
+
+/**
+ * @brief Specifies the address of another machine or local socket
+ * @param target_p Is an address, name or path to the peer
+ * @param port_p Is the port number the peer was bound to
+ * @note If the address family is local, the port number will be ignored since that contruct does
+ *       not apply to local sockets.
+ * @note Used as parameter for @c fwSocketConnect and @c fwSocketBind .
+ */
 typedef struct fwSocketAddress {
     const char* target_p;
     const char* port_p;
@@ -181,14 +195,20 @@ typedef struct fwSocketAddress {
  * @return @c fwErrorSuccess No error occured
  * @return @c fwErrorSocketTargetName Could not resolve the name of the target to an IP address
  * @return @c fwErrorSocketConnection Could not connect to the target
- * @return @c fwErrorInvalidParameter Target IP was too long (>14 characters) or Invalid
- *                                    enumerations in @c createInfo_p
+ * @return @c fwErrorInvalidParameter Invalid enumerations in @c createInfo_p
  */ // PlatDepImp
 fwError fwSocketConnect(
     fwSocket sfdop,
-    const fwSocketAddress* connectInfo_p
+    const struct fwSocketAddress* connectInfo_p
     );
 
+/**
+ * @brief Binds a socket to a local interface and port number
+ * @param sfdop[in] Socket that is supposed to be bound
+ * @param localAddress[in] Address information on where to bind the socket to
+ * @return @c fwErrorSuccess No error occured
+ * @return @c fwErrorSocketBind Failed to bind the socket
+ */ // PlatDepImp
 fwError fwSocketBind(
     fwSocket sfdop,
     const struct fwSocketAddress* localAddress

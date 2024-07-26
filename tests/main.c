@@ -16,38 +16,24 @@
 #include <stdlib.h>
 
 #include "framework.h"
+#include "tests.h"
 
 int main()
 {
     fwStartModule(fwModuleNetwork, 0);
 
     fwSocket socket;
-    fwError call1 = fwSocketCreate(fwSocketAddressFamilyIPv4, fwSocketProtocolStream, &socket);
+    TST(fwSocketCreate(fwSocketAddressFamilyIPv4, fwSocketProtocolStream, &socket));
 
-    struct fwSocketAddress connection = {};
-    connection.target_p     = "tonexum.org";
-    connection.port_p       = "80";
-    fwError call2 = fwSocketConnect(socket, &connection);
+    struct fwSocketAddress localAddress = {};
+    localAddress.target_p = "192.178.168.69";
+    localAddress.port_p = "50654";
+    TST(fwSocketBind(socket, &localAddress));
 
-    // Okay so what really confused me here was the response the socket got.
-    // Turns out, nginx only responds to off-standard requests when they are invalid.
-    // Therefore I got confused when the **correctly** formatted request did not get a response from
-    // my webserver.
+    fwSocket newSocket;
+    TST(fwSocketAccept(socket, &newSocket, nullptr));
 
-    const char httpRequest[] = "GET / HTTP/1.1\r\nHost: www.tonexum.org\r\n";
-
-    char* buffer = malloc(4096);
-
-    fwError call3 = fwSocketSend(socket, httpRequest, sizeof(httpRequest));
-    fwError call4 = fwSocketReceive(socket, buffer, 4096);
-
-    fwError call5 = fwSocketClose(socket);
-
-    printf("%s", buffer);
-
-    fwStopModule(fwModuleNetwork);
-
-    free(buffer);
+    TST(fwStopModule(fwModuleNetwork));
 
     return 0;
 }

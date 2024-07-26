@@ -17,7 +17,9 @@ set(FRAMEWORK_SOURCE
         framework.h
         internal.c
         internal.h
-        linux.c
+        framework-linux.c
+        internal-linux.c
+        linux.h
 )
 add_library(lpafLib STATIC ${FRAMEWORK_SOURCE})
 set_target_properties(lpafLib PROPERTIES

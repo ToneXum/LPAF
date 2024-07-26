@@ -13,3 +13,9 @@
 // not, see <https://www.gnu.org/licenses/>.
 
 #include "tests.h"
+
+#include <stdio.h>
+
+void tstLogFrameworkFail(const fwError error, const char* location, const int32_t line) {
+    printf("Call in %s failed with %d at line %d\n", location, error, line);
+}
