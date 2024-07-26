@@ -12,19 +12,13 @@
 // You should have received a copy of the GNU General Public License along with this program. If
 // not, see <https://www.gnu.org/licenses/>.
 
+// This header contains symbols that are shared between all Linux-specific implementation files
+
 #ifndef LINUX_H
 #define LINUX_H
 
 #include "framework.h"
 
 #define FWI_LOG_ERRNO fwiLogErrno(__func__, __LINE__)
-
-struct fwiNativeSocketState {
-    char* targetAddress;
-    int32_t addressFamily;
-    int32_t protocol;
-    int32_t fileDescriptor;
-    bool connected, bound;
-};
 
 #endif //LINUX_H

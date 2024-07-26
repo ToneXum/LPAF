@@ -12,6 +12,8 @@
 // You should have received a copy of the GNU General Public License along with this program. If
 // not, see <https://www.gnu.org/licenses/>.
 
+// This implementation file contains implementations for platform independant, internal symbols
+
 #include <stdarg.h>
 #include <stdio.h>
 #include <time.h>

@@ -12,6 +12,8 @@
 // You should have received a copy of the GNU General Public License along with this program. If
 // not, see <https://www.gnu.org/licenses/>.
 
+// This implementation file contains implementations for platform specific, exposed symbols
+
 #ifdef PLATFORM_LINUX
 
 #include "internal.h"
@@ -28,6 +30,14 @@
 #include <sys/socket.h>
 #include <sys/stat.h>
 #include <sys/un.h>
+
+struct fwiNativeSocketState {
+    char* targetAddress;
+    int32_t addressFamily;
+    int32_t protocol;
+    int32_t fileDescriptor;
+    bool connected, bound;
+};
 
 fwError fwGetSystemConfiguration(fwSystemConfiguration* res_p) {
     res_p->cores  = sysconf(_SC_NPROCESSORS_ONLN);
@@ -109,7 +119,7 @@ fwError fwSocketCreate(const fwSocketAddressFamily addressFamily, const fwSocket
     if ((nativeSocket = malloc(sizeof(struct fwiNativeSocketState) + targetAddressSize)) == nullptr) {
         return fwErrorOutOfMemory;
     }
-    // Can you spot the difference which cost me a ẃhole week to debug?
+    // Can you spot the difference which cost me a whole week to debug?
     //if ((nativeSocket = malloc(sizeof(struct fwiNativeSocketState)) + targetAddressSize) == nullptr) {
 
     memset(nativeSocket, 0, sizeof(struct fwiNativeSocketState) + targetAddressSize);

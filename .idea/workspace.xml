@@ -27,12 +27,7 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="b43a079c-b7ae-41fc-bc1a-f78f46edc6d3" name="Changes" comment="refactor platform implementations into individual files">
-      <change beforePath="$PROJECT_DIR$/.idea/editor.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/editor.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/framework/framework-linux.c" beforeDir="false" afterPath="$PROJECT_DIR$/framework/framework-linux.c" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/framework/internal.h" beforeDir="false" afterPath="$PROJECT_DIR$/framework/internal.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/framework/linux.h" beforeDir="false" afterPath="$PROJECT_DIR$/framework/linux.h" afterDir="false" />
+    <list default="true" id="b43a079c-b7ae-41fc-bc1a-f78f46edc6d3" name="Changes" comment="move that one parenthesis that broke the whole app">
       <change beforePath="$PROJECT_DIR$/tests/main.c" beforeDir="false" afterPath="$PROJECT_DIR$/tests/main.c" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -294,15 +289,7 @@
       <workItem from="1721669879180" duration="7215000" />
       <workItem from="1721764573933" duration="5766000" />
       <workItem from="1722016788893" duration="1488000" />
-      <workItem from="1722018385247" duration="2923000" />
-    </task>
-    <task id="LOCAL-00015" summary="os specific implementations">
-      <option name="closed" value="true" />
-      <created>1710593706632</created>
-      <option name="number" value="00015" />
-      <option name="presentableId" value="LOCAL-00015" />
-      <option name="project" value="LOCAL" />
-      <updated>1710593706632</updated>
+      <workItem from="1722018385247" duration="3334000" />
     </task>
     <task id="LOCAL-00016" summary="implement load file to memory">
       <option name="closed" value="true" />
@@ -688,7 +675,15 @@
       <option name="project" value="LOCAL" />
       <updated>1722017773174</updated>
     </task>
-    <option name="localTasksCounter" value="64" />
+    <task id="LOCAL-00064" summary="move that one parenthesis that broke the whole app">
+      <option name="closed" value="true" />
+      <created>1722021453178</created>
+      <option name="number" value="00064" />
+      <option name="presentableId" value="LOCAL-00064" />
+      <option name="project" value="LOCAL" />
+      <updated>1722021453179</updated>
+    </task>
+    <option name="localTasksCounter" value="65" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -735,7 +730,6 @@
     <ignored-roots>
       <path value="$PROJECT_DIR$/Framework" />
     </ignored-roots>
-    <MESSAGE value="fix CMakeLists.txt" />
     <MESSAGE value="lil test stuff" />
     <MESSAGE value="fix project settings" />
     <MESSAGE value="fix brain damage" />
@@ -760,7 +754,8 @@
     <MESSAGE value="implement server sockets, overhaul the socket system" />
     <MESSAGE value="slight improvement to module handling; more consistent code formatting" />
     <MESSAGE value="refactor platform implementations into individual files" />
-    <option name="LAST_COMMIT_MESSAGE" value="refactor platform implementations into individual files" />
+    <MESSAGE value="move that one parenthesis that broke the whole app" />
+    <option name="LAST_COMMIT_MESSAGE" value="move that one parenthesis that broke the whole app" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

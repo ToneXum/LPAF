@@ -12,7 +12,8 @@
 // You should have received a copy of the GNU General Public License along with this program. If
 // not, see <https://www.gnu.org/licenses/>.
 
-// This is an exposed header
+// This header contains all end-dev symbols
+
 #ifndef LPAF_FRAMEWORK_H
 #define LPAF_FRAMEWORK_H
 

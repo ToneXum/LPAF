@@ -24,7 +24,7 @@ int main()
 
     struct fwSocketAddress localAddress = {};
     localAddress.target_p = FW_SOCKET_ADDRESS_ANY;
-    localAddress.port_p = "1024";
+    localAddress.port_p = "1024"; // root needed for anything bellow 1024
     TST(fwSocketBind(socket, &localAddress));
 
     TST(fwSocketClose(socket));
