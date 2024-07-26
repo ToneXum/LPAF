@@ -27,7 +27,10 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="b43a079c-b7ae-41fc-bc1a-f78f46edc6d3" name="Changes" comment="move that one parenthesis that broke the whole app">
+    <list default="true" id="b43a079c-b7ae-41fc-bc1a-f78f46edc6d3" name="Changes" comment="add file explanation comment for all files">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/framework/framework-linux.c" beforeDir="false" afterPath="$PROJECT_DIR$/framework/framework-linux.c" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/framework/internal-linux.c" beforeDir="false" afterPath="$PROJECT_DIR$/framework/internal-linux.c" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/tests/main.c" beforeDir="false" afterPath="$PROJECT_DIR$/tests/main.c" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -94,6 +97,14 @@
     <setting file="mock:///dummy.cpp" root0="SKIP_HIGHLIGHTING" />
     <setting file="mock:///dummy.cpp" root0="SKIP_HIGHLIGHTING" />
     <setting file="mock:///dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///dummy.cpp" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/tests/main.c" root0="FORCE_HIGHLIGHTING" />
     <setting file="file:///usr/include/asm-generic/errno-base.h" root0="FORCE_HIGHLIGHTING" />
     <setting file="file:///usr/include/asm-generic/errno.h" root0="FORCE_HIGHLIGHTING" />
@@ -145,7 +156,7 @@
     "CMake Application.Test_Application.executor": "Run",
     "CMake Application.lpaf.executor": "Run",
     "CMake Application.lpafLib.executor": "Run",
-    "CMake Application.lpafTest.executor": "Run",
+    "CMake Application.lpafTest.executor": "Debug",
     "RunOnceActivity.OpenProjectViewOnStart": "true",
     "RunOnceActivity.RadMigrateCodeStyle": "true",
     "RunOnceActivity.ShowReadmeOnStart": "true",
@@ -289,15 +300,7 @@
       <workItem from="1721669879180" duration="7215000" />
       <workItem from="1721764573933" duration="5766000" />
       <workItem from="1722016788893" duration="1488000" />
-      <workItem from="1722018385247" duration="3334000" />
-    </task>
-    <task id="LOCAL-00016" summary="implement load file to memory">
-      <option name="closed" value="true" />
-      <created>1710596675599</created>
-      <option name="number" value="00016" />
-      <option name="presentableId" value="LOCAL-00016" />
-      <option name="project" value="LOCAL" />
-      <updated>1710596675599</updated>
+      <workItem from="1722018385247" duration="5868000" />
     </task>
     <task id="LOCAL-00017" summary="rename LoadFile, fix log level, update test">
       <option name="closed" value="true" />
@@ -683,7 +686,15 @@
       <option name="project" value="LOCAL" />
       <updated>1722021453179</updated>
     </task>
-    <option name="localTasksCounter" value="65" />
+    <task id="LOCAL-00065" summary="add file explanation comment for all files">
+      <option name="closed" value="true" />
+      <created>1722022139165</created>
+      <option name="number" value="00065" />
+      <option name="presentableId" value="LOCAL-00065" />
+      <option name="project" value="LOCAL" />
+      <updated>1722022139165</updated>
+    </task>
+    <option name="localTasksCounter" value="66" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -730,7 +741,6 @@
     <ignored-roots>
       <path value="$PROJECT_DIR$/Framework" />
     </ignored-roots>
-    <MESSAGE value="lil test stuff" />
     <MESSAGE value="fix project settings" />
     <MESSAGE value="fix brain damage" />
     <MESSAGE value="update readme.md" />
@@ -755,7 +765,8 @@
     <MESSAGE value="slight improvement to module handling; more consistent code formatting" />
     <MESSAGE value="refactor platform implementations into individual files" />
     <MESSAGE value="move that one parenthesis that broke the whole app" />
-    <option name="LAST_COMMIT_MESSAGE" value="move that one parenthesis that broke the whole app" />
+    <MESSAGE value="add file explanation comment for all files" />
+    <option name="LAST_COMMIT_MESSAGE" value="add file explanation comment for all files" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

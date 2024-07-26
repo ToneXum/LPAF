@@ -12,7 +12,7 @@
 // You should have received a copy of the GNU General Public License along with this program. If
 // not, see <https://www.gnu.org/licenses/>.
 
-// This implementation file contains implementations for platform specific, internal symbols
+// This implementation file contains implementations for Linux-specific, internal symbols
 
 #ifdef PLATFORM_LINUX
 

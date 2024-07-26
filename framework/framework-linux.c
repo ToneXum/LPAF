@@ -12,7 +12,7 @@
 // You should have received a copy of the GNU General Public License along with this program. If
 // not, see <https://www.gnu.org/licenses/>.
 
-// This implementation file contains implementations for platform specific, exposed symbols
+// This implementation file contains implementations for Linux-specific, exposed symbols
 
 #ifdef PLATFORM_LINUX
 
@@ -224,7 +224,7 @@ fwError fwSocketBind(const fwSocket sfdop, const struct fwSocketAddress* localAd
 }
 
 fwError fwSocketAccept(const fwSocket sfdop, fwSocket* newSocket, char* foreignAddress) {
-    struct fwiNativeSocketState* nativeSocket = {};
+    const struct fwiNativeSocketState* nativeSocket = {(struct fwiNativeSocketState*)sfdop};
 
     if (nativeSocket->bound == false) {
         return fwErrorSocketNotBound;
