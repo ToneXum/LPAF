@@ -9,7 +9,7 @@
   <img alt="GitHub Issues or Pull Requests" src="https://img.shields.io/github/issues-pr-closed/ToneXum/LPAF">
 </p>
 <p align="center">
-  <img alt="GitHub repo size" src="https://img.shields.io/github/languages/code-size/ToneXum/LPAF">
+  <img alt="GitHub repo size" src="https://img.shields.io/github/repo-size/ToneXum/LPAF">
   <!--<img alt="Lines of code" src="https://tokei.rs/b1/github/ToneXum/LPAF?category=code&style=flat">-->
   <img alt="Lines of Code" src="https://img.shields.io/endpoint?url=https%3A%2F%2Fghloc.vercel.app%2Fapi%2FToneXum%2FLPAF%2Fbadge%3Ffilter%3D.c%24%2C.cpp%24%2C.h%24%2C.hpp%24&label=Lines%20of%20Code&color=orange">
 </p>
