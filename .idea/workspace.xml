@@ -27,11 +27,17 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="b43a079c-b7ae-41fc-bc1a-f78f46edc6d3" name="Changes" comment="add file explanation comment for all files">
+    <list default="true" id="b43a079c-b7ae-41fc-bc1a-f78f46edc6d3" name="Changes" comment="implement client-server example">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/framework/framework-linux.c" beforeDir="false" afterPath="$PROJECT_DIR$/framework/framework-linux.c" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/framework/framework.c" beforeDir="false" afterPath="$PROJECT_DIR$/framework/framework.c" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/framework/framework.h" beforeDir="false" afterPath="$PROJECT_DIR$/framework/framework.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/framework/internal-linux.c" beforeDir="false" afterPath="$PROJECT_DIR$/framework/internal-linux.c" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/framework/internal.c" beforeDir="false" afterPath="$PROJECT_DIR$/framework/internal.c" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/framework/internal.h" beforeDir="false" afterPath="$PROJECT_DIR$/framework/internal.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/CMakeLists.txt" beforeDir="false" afterPath="$PROJECT_DIR$/tests/CMakeLists.txt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/tests/main.c" beforeDir="false" afterPath="$PROJECT_DIR$/tests/main.c" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/tests.c" beforeDir="false" afterPath="$PROJECT_DIR$/tests/tests.c" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/tests.h" beforeDir="false" afterPath="$PROJECT_DIR$/tests/tests.h" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -95,16 +101,6 @@
     <setting file="mock:///dummy.cpp" root0="SKIP_HIGHLIGHTING" />
     <setting file="mock:///dummy.cpp" root0="SKIP_HIGHLIGHTING" />
     <setting file="mock:///dummy.cpp" root0="SKIP_HIGHLIGHTING" />
-    <setting file="mock:///dummy.cpp" root0="SKIP_HIGHLIGHTING" />
-    <setting file="mock:///dummy.cpp" root0="SKIP_HIGHLIGHTING" />
-    <setting file="mock:///dummy.cpp" root0="SKIP_HIGHLIGHTING" />
-    <setting file="mock:///dummy.cpp" root0="SKIP_HIGHLIGHTING" />
-    <setting file="mock:///dummy.cpp" root0="SKIP_HIGHLIGHTING" />
-    <setting file="mock:///dummy.cpp" root0="SKIP_HIGHLIGHTING" />
-    <setting file="mock:///dummy.cpp" root0="SKIP_HIGHLIGHTING" />
-    <setting file="mock:///dummy.cpp" root0="SKIP_HIGHLIGHTING" />
-    <setting file="mock:///dummy.cpp" root0="SKIP_HIGHLIGHTING" />
-    <setting file="mock:///dummy.cpp" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/tests/main.c" root0="FORCE_HIGHLIGHTING" />
     <setting file="file:///usr/include/asm-generic/errno-base.h" root0="FORCE_HIGHLIGHTING" />
     <setting file="file:///usr/include/asm-generic/errno.h" root0="FORCE_HIGHLIGHTING" />
@@ -123,6 +119,7 @@
     <setting file="file:///usr/include/stdint.h" root0="FORCE_HIGHLIGHTING" />
     <setting file="file:///usr/include/sys/socket.h" root0="FORCE_HIGHLIGHTING" />
     <setting file="file:///usr/include/sys/un.h" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file:///usr/include/wayland-server-core.h" root0="FORCE_HIGHLIGHTING" />
   </component>
   <component name="MarkdownSettingsMigration">
     <option name="stateVersion" value="1" />
@@ -178,7 +175,7 @@
     "node.js.selected.package.tslint": "(autodetect)",
     "nodejs_package_manager_path": "npm",
     "run.code.analysis.last.selected.profile": "pProject Default",
-    "settings.editor.selected.configurable": "dynamic.analysis.tools.valgrind",
+    "settings.editor.selected.configurable": "CMakeSettings",
     "structure.view.defaults.are.configured": "true",
     "vue.rearranger.settings.migration": "true"
   }
@@ -300,15 +297,12 @@
       <workItem from="1721669879180" duration="7215000" />
       <workItem from="1721764573933" duration="5766000" />
       <workItem from="1722016788893" duration="1488000" />
-      <workItem from="1722018385247" duration="5868000" />
-    </task>
-    <task id="LOCAL-00017" summary="rename LoadFile, fix log level, update test">
-      <option name="closed" value="true" />
-      <created>1710598241082</created>
-      <option name="number" value="00017" />
-      <option name="presentableId" value="LOCAL-00017" />
-      <option name="project" value="LOCAL" />
-      <updated>1710598241082</updated>
+      <workItem from="1722018385247" duration="6287000" />
+      <workItem from="1722027734088" duration="2524000" />
+      <workItem from="1722266866317" duration="377000" />
+      <workItem from="1722270567528" duration="2948000" />
+      <workItem from="1722526815612" duration="20000" />
+      <workItem from="1722810306993" duration="528000" />
     </task>
     <task id="LOCAL-00018" summary="subtitles are now H2">
       <option name="closed" value="true" />
@@ -694,7 +688,15 @@
       <option name="project" value="LOCAL" />
       <updated>1722022139165</updated>
     </task>
-    <option name="localTasksCounter" value="66" />
+    <task id="LOCAL-00066" summary="implement client-server example">
+      <option name="closed" value="true" />
+      <created>1722024267234</created>
+      <option name="number" value="00066" />
+      <option name="presentableId" value="LOCAL-00066" />
+      <option name="project" value="LOCAL" />
+      <updated>1722024267234</updated>
+    </task>
+    <option name="localTasksCounter" value="67" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -741,7 +743,6 @@
     <ignored-roots>
       <path value="$PROJECT_DIR$/Framework" />
     </ignored-roots>
-    <MESSAGE value="fix project settings" />
     <MESSAGE value="fix brain damage" />
     <MESSAGE value="update readme.md" />
     <MESSAGE value="fix grammar in readme.md" />
@@ -766,10 +767,18 @@
     <MESSAGE value="refactor platform implementations into individual files" />
     <MESSAGE value="move that one parenthesis that broke the whole app" />
     <MESSAGE value="add file explanation comment for all files" />
-    <option name="LAST_COMMIT_MESSAGE" value="add file explanation comment for all files" />
+    <MESSAGE value="implement client-server example" />
+    <option name="LAST_COMMIT_MESSAGE" value="implement client-server example" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
+          <url>file://$PROJECT_DIR$/tests/main.c</url>
+          <line>23</line>
+          <option name="timeStamp" value="1" />
+        </line-breakpoint>
+      </breakpoints>
       <default-breakpoints>
         <breakpoint enabled="true" type="CidrExceptionBreakpoint" />
       </default-breakpoints>

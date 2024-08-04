@@ -24,51 +24,48 @@ fwError fwStartModule(const fwModule module, const uint32_t flags) {
 
     switch (module) {
         case fwModuleWindow: {
-            fwiStartNativeModuleWindow();
-            break;
+            return fwiStartNativeModuleWindow();
         }
         case fwModuleRender: {
-            fwiStartNativeModuleRenderer();
-            break;
+            return fwiStartNativeModuleRenderer();
         }
         case fwModuleNetwork: {
-            fwiStartNativeModuleNetwork();
-            break;
+            return fwiStartNativeModuleNetwork();
         }
         case fwModuleMultimedia: {
-            fwiStartNativeModuleMultimedia();
-            break;
+            return fwiStartNativeModuleMultimedia();
         }
         default: {
             return fwErrorInvalidParameter;
         }
     }
-    return fwErrorSuccess;
 }
 
 fwError fwStopModule(const enum fwModule module) {
     bool fail = false;
+    fwError ret = 0;
     switch (module) {
         case fwModuleWindow: {
-            fwiStopNativeModuleWindow();
+            ret = fwiStopNativeModuleWindow();
             break;
         }
         case fwModuleNetwork: {
-            fwiStopNativeModuleNetwork();
+            ret = fwiStopNativeModuleNetwork();
             break;
         }
         case fwModuleMultimedia: {
-            fwiStopNativeModuleMultimedia();
+            ret = fwiStopNativeModuleMultimedia();
             break;
         }
         case fwModuleRender: {
-            fwiStopNativeModuleRenderer();
+            ret = fwiStopNativeModuleRenderer();
             break;
         }
         default: {
             fail = true;
         }
     }
+
     if (!fwiGetState()->baseIsUp) {
         fwiStopNativeModuleBase();
     }
@@ -77,7 +74,7 @@ fwError fwStopModule(const enum fwModule module) {
         return fwErrorInvalidParameter;
     }
 
-    return fwErrorSuccess;
+    return ret;
 }
 
 void fwStopAllModules(void) {

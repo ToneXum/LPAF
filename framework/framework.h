@@ -43,6 +43,8 @@ typedef enum fwError : uint8_t {
     fwErrorSocketAccept /*! Failed to accept a new connection */,
     fwErrorSocketNotBound /*! Could not listen on the socket since it was not bound */,
 
+    fwErrorWindowConnect /*! Could not connect to the wayland server */,
+
     fwErrorGoodJob /*! You somehow caused a theoretically impossible failure */
 } fwError;
 
@@ -156,18 +158,18 @@ typedef enum fwSocketProtocol : uint8_t {
 
 /**
  * @brief Creates a two-way using the information given.
- * @param addressFamily
- * @param protocol
  * @param sfdop_p[out] Identifier for the newly created socket
+ * @param addressFamily[in] Address family the socket is operating on
+ * @param protocol[in] Handshake and connection protocol the socket will be using
  * @return @c fwErrorSuccess No error occured
  * @return @c fwErrorInvalidParameter A value that does not correspond to an enumerated identifier
  *                                    was passed to @c sockCrtInf
- * @note See @c fwSocketCreateInfo for the sypnosis of creation information.
+ * @note See @c fwSocketAddressFamily for address families and @c fwSocketProtocol for protocols.
  */ // PlatDepImp
 fwError fwSocketCreate(
+    fwSocket* sfdop_p,
     enum fwSocketAddressFamily addressFamily,
-    enum fwSocketProtocol protocol,
-    fwSocket* sfdop_p
+    enum fwSocketProtocol protocol
     );
 
 /**
@@ -215,6 +217,25 @@ fwError fwSocketBind(
     const struct fwSocketAddress* localAddress
     );
 
+/**
+ * @brief Waits for, and then accepts an incoming connection on a socket
+ * @param sfdop[in] Socket that will be handeling the incomming connection
+ * @param newSocket[out] New socket created from the connection
+ * @param foreignAddress[out] Address of the peer that opened the connection
+ * @return @c fwErrorSuccess No error occured
+ * @return @c fwErrorOutOfMemory Out of memory
+ * @return @c fwErrorSocketNotBound The socket that is supposed to handle the incomming
+ *                                  connection was not bound
+ * @return @c fwErrorSocketListen The system call, marking the socket as listening, failed
+ * @return @c fwErrorSocketAccept Failed to accept the new connection
+ * @note The reason why using one socket to accept the connection and then spawning another, is to
+ *       re-use the old socket to accept more connections. Each new socket spawned is the connected
+ *       state, such that it can immediatly be used to interact with the peer.
+ * @note If the connection is unwanted, the new socket can be immediatly closed with
+ *       @c fwSocketClose() .
+ * @note The capacity of the @c foreignAddress output buffer must be at least 16 byte for an IPv4
+ *       address, 46 byte for an IPv6 address and 108 byte for a local address.
+ */ // PlatDepImp
 fwError fwSocketAccept(
     fwSocket sfdop,
     fwSocket* newSocket,

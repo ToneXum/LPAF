@@ -170,7 +170,7 @@ void fwiLogFollowupW(const bool isLast, const wchar_t* format_p, ...) {
 #endif // BUILD_RELEASE
 }
 
-void fwiStartNativeModuleBase(void) {
+fwError fwiStartNativeModuleBase(void) {
     pthread_mutex_init(&frameworkState_s.loggerMutex, nullptr);
 
     const time_t rawTime        = time(nullptr);
@@ -185,10 +185,14 @@ void fwiStartNativeModuleBase(void) {
 
     fwiLogA(fwiLogLevelInfo, "Base module was started");
     fwiLogA(fwiLogLevelInfo, "The current date is %s (D.M.Y)", buf);
+
+    return fwErrorSuccess;
 }
 
-void fwiStopNativeModuleBase(void) {
+fwError fwiStopNativeModuleBase(void) {
     fwiGetState()->baseIsUp = false;
     fwiLogA(fwiLogLevelInfo, "Base module was stopped");
     pthread_mutex_destroy(&frameworkState_s.loggerMutex);
+
+    return fwErrorSuccess;
 }

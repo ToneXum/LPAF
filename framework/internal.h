@@ -21,6 +21,8 @@
 #include <stdint.h>
 #include <wchar.h>
 
+#include "framework.h"
+
 /**
  * @brief ANSI escape sequences
  */
@@ -62,52 +64,52 @@ struct fwiState* fwiGetState(
     );
 
 // PlatIndepImp
-void fwiStartNativeModuleBase(
+fwError fwiStartNativeModuleBase(
     void
     );
 
 // PlatDepImp
-void fwiStartNativeModuleWindow(
+fwError fwiStartNativeModuleWindow(
     void
     );
 
 // PlatDepImp
-void fwiStartNativeModuleNetwork(
+fwError fwiStartNativeModuleNetwork(
     void
     );
 
 // PlatDepImp
-void fwiStartNativeModuleMultimedia(
+fwError fwiStartNativeModuleMultimedia(
     void
     );
 
 // PlatDepImp
-void fwiStartNativeModuleRenderer(
+fwError fwiStartNativeModuleRenderer(
     void
     );
 
 // PlatIndepImp
-void fwiStopNativeModuleBase(
+fwError fwiStopNativeModuleBase(
     void
     );
 
 // PlatDepImp
-void fwiStopNativeModuleWindow(
+fwError fwiStopNativeModuleWindow(
     void
     );
 
 // PlatDepImp
-void fwiStopNativeModuleNetwork(
+fwError fwiStopNativeModuleNetwork(
     void
     );
 
 // PlatDepImp
-void fwiStopNativeModuleMultimedia(
+fwError fwiStopNativeModuleMultimedia(
     void
     );
 
 // PlatDepImp
-void fwiStopNativeModuleRenderer(
+fwError fwiStopNativeModuleRenderer(
     void
     );
 

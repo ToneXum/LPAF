@@ -24,4 +24,16 @@ void tstLogFrameworkFail(
     const char* location,
     int32_t line);
 
+void tstUnitNetworkClient(
+    void
+    );
+
+void tstUnitNetworkServer(
+    void
+    );
+
+void tstUnitWindow(
+    void
+    );
+
 #endif //LPAF_TESTS_H

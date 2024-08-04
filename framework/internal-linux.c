@@ -19,30 +19,58 @@
 #include "internal.h"
 #include "linux.h"
 
-void fwiStartNativeModuleWindow(void) {}
+#include <wayland-client.h>
 
-void fwiStartNativeModuleNetwork(void) {
+static struct wl_display* display = {};
+
+fwError fwiStartNativeModuleWindow(void) {
+    display = wl_display_connect(nullptr);
+
+    struct wl_registry* reg = wl_display_get_registry(display);
+
+    if (display == nullptr) {
+        return fwErrorWindowConnect;
+    }
+    return fwErrorSuccess;
+}
+
+fwError fwiStopNativeModuleWindow(void) {
+    wl_display_disconnect(display);
+    return fwErrorSuccess;
+}
+
+fwError fwiStartNativeModuleNetwork(void) {
     fwiLogA(fwiLogLevelInfo, "Networking module was started");
 
     // Because Linux is just better there is no state to be set before networking syscall can be
     // used
+
+    return fwErrorSuccess;
 }
 
-void fwiStartNativeModuleMultimedia(void) {}
-
-void fwiStartNativeModuleRenderer(void) {}
-
-void fwiStopNativeModuleWindow(void) {}
-
-void fwiStopNativeModuleNetwork(void) {
+fwError fwiStopNativeModuleNetwork(void) {
     fwiLogA(fwiLogLevelInfo, "Networking module was stopped");
 
     // Because Linux is just better there is no state to be set after networking syscalls are done
     // being used
+
+    return fwErrorSuccess;
 }
 
-void fwiStopNativeModuleMultimedia(void) {}
+fwError fwiStartNativeModuleRenderer(void) {
+    return fwErrorUnimplemented;
+}
 
-void fwiStopNativeModuleRenderer(void) {}
+fwError fwiStopNativeModuleRenderer(void) {
+    return fwErrorUnimplemented;
+}
+
+fwError fwiStartNativeModuleMultimedia(void) {
+    return fwErrorUnimplemented;
+}
+
+fwError fwiStopNativeModuleMultimedia(void) {
+    return fwErrorUnimplemented;
+}
 
 #endif // PLATFORM_LINUX
